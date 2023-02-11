@@ -1,14 +1,18 @@
 const express = require("express");
-const controllers = require("../controllers");
+const rootRoutes = require("./root");
+const stdRoutes = require("./student");
 const router = express.Router();
 
-router.route("student").get(controllers.getAllStudents).post(controllers.insertStd);
+router.use("/",rootRoutes);
+router.use("/student",stdRoutes);
+// router.route("student").get(controllers.getAllStudents)
+// // .post(controllers.insertStd);
 
-router
-    .route("student:id")
-    .get(controllers.filterStdByID)
-    .put(controllers.updateStdByID)
-    .delete(controllers.deleteStdByID);
+// router
+//     .route("/student:id")
+//     .get(controllers.filterStdByID)
+//     .put(controllers.updateStdByID)
+//     .delete(controllers.deleteStdByID);
 
 module.exports = router;
 

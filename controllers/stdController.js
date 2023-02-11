@@ -1,17 +1,20 @@
 const AppError = require("../utils/appError");
 const conn = require("../services/db");
 
-exports.getAllStudents = (req, res, next) => {
+module.exports.getAllStudents = (req, res, next) => {
     conn.query("SELECT * FROM student", function (err, data, fields) {
         if (err)
             return next(new AppError(err));
-        res.status(200).json({
+
+        console.log(data);
+        res.status(201).json({
             status: "success",
             length: data?.length,
             data: data,
         });
-        print(res);
+        console.log("dataaaaaaaaaaaaaaaaaaaaaaaaa");
     });
+    
 };
 
 //not needed
