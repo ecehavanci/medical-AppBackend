@@ -1,19 +1,21 @@
 const AppError = require("../utils/appError");
 const conn = require("../services/db");
 
-exports.getAllStudents = (err, req, res, next) => {
+/*exports.getAllStudents = (err, req, res, next) => {
     conn.query("SELECT * FROM student", function (err, data, fields) {
         if (err)
             return next(new AppError(err));
 
+        console.log(data);
         res.status(201).json({
             status: "success",
             length: data?.length,
             data: data,
         });
+        res.send(data);
     });
 
-};
+};*/
 
 //Post data can be referenced through req.body
 
@@ -48,6 +50,21 @@ exports.filterStdByID = (req, res, next) => {
     }
     conn.query(
         "SELECT * FROM student WHERE ID = ?",
+        [req.params.ID],
+        function (err, data, fields) {
+            if (err) return next(new AppError(err, 500));
+            res.status(200).json({
+                status: "success",
+                length: data?.length,
+                data: data,
+            });
+        }
+    );
+};
+
+exports.getAllStudents = (req, res, next) => {
+    conn.query(
+        "SELECT * FROM student",
         [req.params.ID],
         function (err, data, fields) {
             if (err) return next(new AppError(err, 500));
