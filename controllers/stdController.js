@@ -2,7 +2,7 @@ const AppError = require("../utils/appError");
 const conn = require("../services/db");
 
 exports.getAllStudents = (err, req, res, next) => {
-    console.log("data");
+    console.log("eheheh");
     conn.query("SELECT * FROM student", function (err, data, fields) {
         if (err)
             return next(new AppError(err));

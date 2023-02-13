@@ -4,7 +4,7 @@ const stdRoutes = require("./student");
 const router = express.Router();
 
 
-router.use("/",rootRoutes);
+router.use("/root",rootRoutes);
 router.use("/student",stdRoutes);
 // router.route("student").get(controllers.getAllStudents)
 // // .post(controllers.insertStd);
