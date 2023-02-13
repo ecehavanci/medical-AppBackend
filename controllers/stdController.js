@@ -1,7 +1,8 @@
 const AppError = require("../utils/appError");
 const conn = require("../services/db");
 
-module.exports.getAllStudents = (req, res, next) => {
+exports.getAllStudents = (err, req, res, next) => {
+    console.log("data");
     conn.query("SELECT * FROM student", function (err, data, fields) {
         if (err)
             return next(new AppError(err));
@@ -14,12 +15,12 @@ module.exports.getAllStudents = (req, res, next) => {
         });
         console.log("dataaaaaaaaaaaaaaaaaaaaaaaaa");
     });
-    
+
 };
 
 //not needed
 exports.insertStd = (req, res, next) => {
-    //we check if the client is sending an empty form and return a 404 error message.
+    //we check if the client is sending an empty form "and return a 404 error message.
     if (!req.body)
         return next(new AppError("No form data found", 404));
 

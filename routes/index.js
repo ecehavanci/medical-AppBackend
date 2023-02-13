@@ -3,6 +3,7 @@ const rootRoutes = require("./root");
 const stdRoutes = require("./student");
 const router = express.Router();
 
+
 router.use("/",rootRoutes);
 router.use("/student",stdRoutes);
 // router.route("student").get(controllers.getAllStudents)
