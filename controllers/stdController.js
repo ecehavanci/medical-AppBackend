@@ -2,29 +2,30 @@ const AppError = require("../utils/appError");
 const conn = require("../services/db");
 
 exports.getAllStudents = (err, req, res, next) => {
-    console.log("eheheh");
     conn.query("SELECT * FROM student", function (err, data, fields) {
         if (err)
             return next(new AppError(err));
 
-        console.log(data);
         res.status(201).json({
             status: "success",
             length: data?.length,
             data: data,
         });
-        console.log("dataaaaaaaaaaaaaaaaaaaaaaaaa");
     });
 
 };
 
-//not needed
+//Post data can be referenced through req.body
+
 exports.insertStd = (req, res, next) => {
     //we check if the client is sending an empty form "and return a 404 error message.
     if (!req.body)
         return next(new AppError("No form data found", 404));
 
-    const values = [req.body.name, "pending"];
+    const values = [req.body.ID, req.body.name, req.body.surname,
+    req.body.courses, req.body.rotationNo, req.body.previousRotationNo];
+
+    console.log(req.body);
 
     conn.query(
         "INSERT INTO student (ID,name, surname, courses, rotationNo, previousRotationNo) VALUES(?)",
@@ -34,7 +35,7 @@ exports.insertStd = (req, res, next) => {
                 return next(new AppError(err, 500));
             res.status(201).json({
                 status: "success",
-                message: "student added!",
+                message: "New student added!",
             });
         }
     );
@@ -42,12 +43,12 @@ exports.insertStd = (req, res, next) => {
 
 exports.filterStdByID = (req, res, next) => {
     //check if the id is specified in the request parameter, 
-    if (!req.params.id) {
-        return next(new AppError("No todo id found", 404));
+    if (!req.params.ID) {
+        return next(new AppError("No student with this ID found", 404));
     }
     conn.query(
         "SELECT * FROM student WHERE ID = ?",
-        [req.params.id],
+        [req.params.ID],
         function (err, data, fields) {
             if (err) return next(new AppError(err, 500));
             res.status(200).json({
@@ -60,12 +61,13 @@ exports.filterStdByID = (req, res, next) => {
 };
 
 exports.updateStdByID = (req, res, next) => {
-    if (!req.params.id) {
+    if (!req.params.ID) {
         return next(new AppError("No todo id found", 404));
     }
+
     conn.query(
         "UPDATE student SET rotationNo=? WHERE ID=?",
-        [req.params.rotationNo, req.params.id],
+        [req.params.rotationNo, req.params.ID],
         function (err, data, fields) {
             if (err) return next(new AppError(err, 500));
             res.status(201).json({
@@ -77,12 +79,12 @@ exports.updateStdByID = (req, res, next) => {
 };
 
 exports.deleteStdByID = (req, res, next) => {
-    if (!req.params.id) {
+    if (!req.params.ID) {
         return next(new AppError("No todo id found", 404));
     }
     conn.query(
         "DELETE FROM student WHERE ID=?",
-        [req.params.id],
+        [req.params.ID],
         function (err, fields) {
             if (err) return next(new AppError(err, 500));
             res.status(201).json({

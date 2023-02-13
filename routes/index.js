@@ -1,7 +1,8 @@
 const express = require("express");
 const rootRoutes = require("./root");
 const stdRoutes = require("./student");
-const router = express.Router();
+// const router = express.Router();
+const router = express();
 
 
 router.use("/root",rootRoutes);

@@ -4,17 +4,23 @@ const routes = require("./routes");
 const AppError = require("./utils/appError");
 const errorHandler = require("./utils/errorHandler");
 var connect = require('connect');
-const app = connect();
+const app = express();
 const api = "/";
+var bodyParser = require('body-parser');
 
 
-app.use(api, routes);
 // console.log(routes);
 // app.all("*", (req, res, next) => {
 //  next(new AppError(`The URL ${req.originalUrl} does not exists`, 404));
 // });
 
 app.use(errorHandler);
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(api, routes);
+app.get("/", (req, res) => {
+    res.send("hello bitch");
+});
 
 const PORT = 3000;
 
