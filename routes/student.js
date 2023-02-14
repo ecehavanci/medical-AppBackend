@@ -2,17 +2,15 @@ const express = require("express");
 const stdController = require("../controllers/stdController");
 const router = express.Router();
 
-//router.route('/all').get(stdController.getAllStudents).post(stdController.insertStd);
 router
     .route("/all")
-    .get(stdController.getAllStudents);
+    .get(stdController.getAllStudents).post(stdController.insertStd);;
 
 router
     .route("/:ID")
-    .get(stdController.filterStdByID) 
-    .put(stdController.updateStdByID) //!!!need to think a bit
+    .get(stdController.filterStdByID)
     .delete(stdController.deleteStdByID);
 
-
+router.route("/:ID/:colName/:value").put(stdController.updateStdByID);
 
 module.exports = router;

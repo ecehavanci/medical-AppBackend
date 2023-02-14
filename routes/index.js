@@ -2,13 +2,15 @@ const express = require("express");
 const rootRoutes = require("./root");
 const stdRoutes = require("./student");
 const patientFormRoutes = require("./patientForm");
+const physicianRoutes = require("./physician");
 // const router = express.Router();
 const router = express();
 
 
-router.use("/root",rootRoutes);
-router.use("/student",stdRoutes);
-router.use("/patientForm",patientFormRoutes);
+router.use("/root", rootRoutes);
+router.use("/student", stdRoutes);
+router.use("/patientForm", patientFormRoutes);
+router.use("/attendingphysician", physicianRoutes);
 // router.route("student").get(controllers.getAllStudents)
 // // .post(controllers.insertStd);
 

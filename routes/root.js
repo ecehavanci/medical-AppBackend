@@ -1,14 +1,15 @@
 const express = require("express");
-const stdController = require("../controllers/stdController");
+const rootController = require("../controllers/rootController");
 const router = express.Router();
 
 //temp functions----
-router.route("/login").get(stdController.getAllStudents).post(stdController.insertStd);
+router.route("/login").get(rootController.login)
+// .post(stdController.insertStd);
 
-router
-    .route("/student:id")
-    .get(stdController.filterStdByID)
-    .put(stdController.updateStdByID)
-    .delete(stdController.deleteStdByID);
+// router
+//     .route("/student:id")
+//     .get(stdController.filterStdByID)
+//     .put(stdController.updateStdByID)
+//     .delete(stdController.deleteStdByID);
 
 module.exports = router;
