@@ -2,18 +2,32 @@ const express = require("express");
 const patientFormController = require("../controllers/formControllers/patientFormController");
 const router = express.Router();
 
-//router.route('/all').get(stdController.getAllStudents).post(stdController.insertStd);
-router.route("/insert").put(patientFormController.insertPatientForm);
+//router.route('/all').get(stdController.getAllStudents).post(stdController.++tStd);
+router.route("/insert").post(patientFormController.insertPatientForm);
+
+router.route("/update/:localStorageID").put(patientFormController.updatePatientForm);
 
 router
     .route("/get/all")
     .get(patientFormController.getAllPatientForms);
 
 router
+    .route("/get/all/:studentID/:searchInput/:isSent/:isApproved")
+    .get(patientFormController.searchPatientReportsByAcceptance);
+
+router
+    .route("/get/all/:studentID/:searchInput/:isSent/:isApproved1/:isApproved2")
+    .get(patientFormController.searchPatientReportsByMultipleAcceptance);
+
+router
+    .route("/get/all/:studentID")
+    .get(patientFormController.getAllPatientFormsWithStudentID);
+
+router
     .route("/get/:ID")
     .get(patientFormController.getPatientFormWithID);
 
-router
+/*router
     .route("/update/:ID" +
         "/sID/:studentID?" +
         "/sName/:studentName?" +
@@ -29,8 +43,14 @@ router
         "/ks/:keySymptoms?" +
         "/s/:signs?" +
         "/d/:data?" +
-        "/tr/:traineesRole?" +
-        "/loc/:levelOfCare?" +
+        "/isO/:isObserved?" +
+        "/isA/:isAssisted?" +
+        "/isP/:isPerformed?" +
+        "/isS/:isSimulated?" +
+        "/isH/:isHistory?" +
+        "/isT/:isTreatment?" +
+        "/isPE/:isPhysicalExamination?" +
+        "/isDD/:isDifferentialDiagnosis?" +
         "/setting/:setting?" +
         "/t1ID/:tier1ID?" +
         "/t1/:tier1?" +
@@ -48,7 +68,7 @@ router
         "/isapproved/:isApproved?" +
         "/comment/:comment?" +
         "/lsid/:localStorageID?")
-    .put(patientFormController.updatePatientFormWithID)
+    .put(patientFormController.updatePatientFormWithID)*/
 
 router
     .route("/delete/:ID")

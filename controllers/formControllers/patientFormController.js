@@ -22,8 +22,14 @@ exports.insertPatientForm = (req, res, next) => {
         req.body.keySymptoms,
         req.body.signs,
         req.body.data,
-        req.body.traineesRole,
-        req.body.levelOfCare,
+        req.body.isObserved,
+        req.body.isAssisted,
+        req.body.isPerformed,
+        req.body.isSimulated,
+        req.body.isHistory,
+        req.body.isTreatment,
+        req.body.isPhysicalExamination,
+        req.body.isDifferentialDiagnosis,
         req.body.setting,
         req.body.tier1ID,
         req.body.tier1,
@@ -61,8 +67,14 @@ exports.insertPatientForm = (req, res, next) => {
         "keySymptoms," +
         "signs," +
         "data," +
-        "traineesRole," +
-        "levelOfCare," +
+        "isObserved," +
+        "isAssisted," +
+        "isPerformed," +
+        "isSimulated," +
+        "isHistory," +
+        "isTreatment," +
+        "isPhysicalExamination," +
+        "isDifferentialDiagnosis," +
         "setting," +
         "tier1ID," +
         "tier1," +
@@ -93,9 +105,175 @@ exports.insertPatientForm = (req, res, next) => {
     );
 };
 
+exports.updatePatientForm = (req, res, next) => {
+    console.log("updating started");
+    //we check if the client is sending an empty form "and return a 404 error message.
+    if (!req.body)
+        return next(new AppError("No form data found", 404));
+
+    console.log("req body found: student ID: " + req.body.studentID);
+
+    let values = [];
+    if (req.body.studentID !== undefined) values.unshift(req.body.studentID);
+    if (req.body.studentName !== undefined) values.unshift(req.body.studentName);
+    if (req.body.rotationID !== undefined) values.unshift(req.body.rotationID);
+    if (req.body.specialtyID !== undefined) values.unshift(req.body.specialtyID);
+    if (req.body.attendingPhysicianID !== undefined) values.unshift(req.body.attendingPhysicianID);
+    if (req.body.diagnosisID !== undefined) values.unshift(req.body.diagnosisID);
+    if (req.body.diagnosis !== undefined) values.unshift(req.body.diagnosis);
+    if (req.body.patientHospitalID !== undefined) values.unshift(req.body.patientHospitalID);
+    if (req.body.patientName !== undefined) values.unshift(req.body.patientName);
+    if (req.body.patientGender !== undefined) values.unshift(req.body.patientGender);
+    if (req.body.patientAge !== undefined) values.unshift(req.body.patientAge);
+    if (req.body.relevants !== undefined) values.unshift(req.body.relevants);
+    if (req.body.keySymptoms !== undefined) values.unshift(req.body.keySymptoms);
+    if (req.body.signs !== undefined) values.unshift(req.body.signs);
+    if (req.body.data !== undefined) values.unshift(req.body.data);
+    if (req.body.isObserved !== undefined) values.unshift(req.body.isObserved);
+    if (req.body.isAssisted !== undefined) values.unshift(req.body.isAssisted);
+    if (req.body.isPerformed !== undefined) values.unshift(req.body.isPerformed);
+    if (req.body.isSimulated !== undefined) values.unshift(req.body.isSimulated);
+    if (req.body.isHistory !== undefined) values.unshift(req.body.isHistory);
+    if (req.body.isTreatment !== undefined) values.unshift(req.body.isTreatment);
+    if (req.body.isPhysicalExamination !== undefined) values.unshift(req.body.isPhysicalExamination);
+    if (req.body.isDifferentialDiagnosis !== undefined) values.unshift(req.body.isDifferentialDiagnosis);
+    if (req.body.setting !== undefined) values.unshift(req.body.setting);
+    if (req.body.tier1ID !== undefined) values.unshift(req.body.tier1ID);
+    if (req.body.tier1 !== undefined) values.unshift(req.body.tier1);
+    if (req.body.tier2ID !== undefined) values.unshift(req.body.tier2ID);
+    if (req.body.tier2 !== undefined) values.unshift(req.body.tier2);
+    if (req.body.tier3ID !== undefined) values.unshift(req.body.tier3ID);
+    if (req.body.tier3 !== undefined) values.unshift(req.body.tier3);
+    if (req.body.tier4ID !== undefined) values.unshift(req.body.tier4ID);
+    if (req.body.tier4 !== undefined) values.unshift(req.body.tier4);
+    if (req.body.lastSaveDate !== undefined) values.unshift(req.body.lastSaveDate);
+    if (req.body.lastSaveTime !== undefined) values.unshift(req.body.lastSaveTime);
+    if (req.body.approveDate !== undefined) values.unshift(req.body.approveDate);
+    if (req.body.approveTime !== undefined) values.unshift(req.body.approveTime);
+    if (req.body.isSent !== undefined) values.unshift(req.body.isSent);
+    if (req.body.isApproved !== undefined) values.unshift(req.body.isApproved);
+    if (req.body.comment !== undefined) values.unshift(req.body.comment);
+    console.log("values: " + values.reverse().toString());
+
+
+    console.log(req.body);
+
+    var str = "UPDATE patientreports SET " +
+        (req.body.studentID !== undefined ? "studentID = ?, " : "") +
+        (req.body.studentName !== undefined ? "studentName = ?, " : "") +
+        (req.body.rotationID !== undefined ? "rotationID = ?, " : "") +
+        (req.body.specialtyID !== undefined ? "specialtyID = ?, " : "") +
+        (req.body.attendingPhysicianID !== undefined ? "attendingPhysicianID = ?, " : "") +
+        (req.body.diagnosisID !== undefined ? "diagnosisID = ?, " : "") +
+        (req.body.diagnosis !== undefined ? "diagnosis = ?, " : "") +
+        (req.body.patientHospitalID !== undefined ? "patientHospitalID = ?, " : "") +
+        (req.body.patientName !== undefined ? "patientName = ?, " : "") +
+        (req.body.patientGender !== undefined ? "patientGender = ?, " : "") +
+        (req.body.patientAge !== undefined ? "patientAge = ?, " : "") +
+        (req.body.relevants !== undefined ? "relevants = ?, " : "") +
+        (req.body.keySymptoms !== undefined ? "keySymptoms = ?, " : "") +
+        (req.body.signs !== undefined ? "signs = ?, " : "") +
+        (req.body.data !== undefined ? "data = ?, " : "") +
+        (req.body.isObserved !== undefined ? "isObserved = ?, " : "") +
+        (req.body.isAssisted !== undefined ? "isAssisted = ?, " : "") +
+        (req.body.isPerformed !== undefined ? "isPerformed = ?, " : "") +
+        (req.body.isSimulated !== undefined ? "isSimulated = ?, " : "") +
+        (req.body.isHistory !== undefined ? "isHistory = ?, " : "") +
+        (req.body.isTreatment !== undefined ? "isTreatment = ?, " : "") +
+        (req.body.isPhysicalExamination !== undefined ? "isPhysicalExamination = ?, " : "") +
+        (req.body.isDifferentialDiagnosis !== undefined ? "isDifferentialDiagnosis = ?, " : "") +
+        (req.body.setting !== undefined ? "setting = ?, " : "") +
+        (req.body.tier1ID !== undefined ? "tier1ID = ?, " : "") +
+        (req.body.tier1 !== undefined ? "tier1 = ?, " : "") +
+        (req.body.tier2ID !== undefined ? "tier2ID = ?, " : "") +
+        (req.body.tier2 !== undefined ? "tier2 = ?, " : "") +
+        (req.body.tier3ID !== undefined ? "tier3ID = ?, " : "") +
+        (req.body.tier3 !== undefined ? "tier3 = ?, " : "") +
+        (req.body.tier4ID !== undefined ? "tier4ID = ?, " : "") +
+        (req.body.tier4 !== undefined ? "tier4 = ?, " : "") +
+        (req.body.lastSaveDate !== undefined ? "lastSaveDate = ?, " : "") +
+        (req.body.lastSaveTime !== undefined ? "lastSaveTime = ?, " : "") +
+        (req.body.approveDate !== undefined ? "approveDate = ?, " : "") +
+        (req.body.approveTime !== undefined ? "approveTime = ?, " : "") +
+        (req.body.isSent !== undefined ? "isSent = ?, " : "") +
+        (req.body.isApproved !== undefined ? "isApproved = ?, " : "") +
+        (req.body.comment !== undefined ? "comment = ?, " : "");
+
+    var pos = str.lastIndexOf(",");
+    str = str.substring(0,pos) + str.substring(pos+1);
+
+    str = str + " WHERE localStorageID = " + req.params.localStorageID + ";";
+
+    console.log("QUERY: " + str);
+
+    conn.query(
+        str,
+        values,
+        function (err, data, fields) {
+            if (err)
+                return next(new AppError(err, 500));
+            res.status(201).json({
+                status: "success",
+                message: "Student data successfully altered",
+            });
+        }
+    );
+};
+
 exports.getAllPatientForms = (req, res, next) => {
     conn.query(
         "SELECT * FROM patientreports",
+        function (err, data, fields) {
+            if (err) return next(new AppError(err, 500));
+            res.status(200).json({
+                status: "success",
+                length: data?.length,
+                data: data,
+            });
+        }
+    );
+};
+
+exports.searchPatientReportsByAcceptance = (req, res, next) => {
+    var input = req.params.searchInput === "|" ? "" : req.params.searchInput;
+    conn.query(
+        "select * from patientReports WHERE studentID = ? and isSent = ? AND isApproved = ? " +
+        "AND UPPER(patientName) LIKE '%" + input + "%' order by lastSaveDate DESC, lastSaveTime DESC",
+        [req.params.studentID, req.params.isSent, req.params.isApproved],
+        function (err, data, fields) {
+            if (err) return next(new AppError(err, 500));
+            res.status(200).json({
+                status: "success",
+                length: data?.length,
+                data: data,
+            });
+        }
+    )
+    ;
+};
+
+exports.searchPatientReportsByMultipleAcceptance = (req, res, next) => {
+    var input = req.params.searchInput === "|" ? "" : req.params.searchInput;
+    conn.query(
+        "select * from patientReports WHERE studentID = ? and isSent = ? " +
+        "AND (isApproved = ? OR isApproved = ?) " +
+        "AND UPPER(patientName) LIKE '%" + input + "%' order by lastSaveDate DESC, lastSaveTime DESC",
+        [req.params.studentID, req.params.isSent, req.params.isApproved1, req.params.isApproved2],
+        function (err, data, fields) {
+            if (err) return next(new AppError(err, 500));
+            res.status(200).json({
+                status: "success",
+                length: data?.length,
+                data: data,
+            });
+        }
+    )
+    ;
+};
+
+exports.getAllPatientFormsWithStudentID = (req, res, next) => {
+    conn.query(
+        "SELECT * FROM patientreports WHERE studentID = ?", [req.params.studentID],
         function (err, data, fields) {
             if (err) return next(new AppError(err, 500));
             res.status(200).json({
