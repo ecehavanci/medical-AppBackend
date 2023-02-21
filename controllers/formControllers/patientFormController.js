@@ -12,7 +12,7 @@ exports.insertPatientForm = (req, res, next) => {
         req.body.rotationID,
         req.body.specialtyID,
         req.body.attendingPhysicianID,
-        req.body.diagnosisIDi,
+        req.body.diagnosisID,
         req.body.diagnosis,
         req.body.patientHospitalID,
         req.body.patientName,
@@ -204,11 +204,8 @@ exports.updatePatientForm = (req, res, next) => {
 
     str = str + " WHERE localStorageID = " + req.params.localStorageID + ";";
 
-    console.log("QUERY: " + str);
-
     conn.query(
-        str,
-        values,
+        str, values,
         function (err, data, fields) {
             if (err)
                 return next(new AppError(err, 500));
@@ -220,9 +217,23 @@ exports.updatePatientForm = (req, res, next) => {
     );
 };
 
+exports.getAllPatientFormsForStudent = (req, res, next) => {
+    conn.query(
+        "SELECT * FROM patientreports WHERE studentID = ?",[req.params.studentID],
+        function (err, data, fields) {
+            if (err) return next(new AppError(err, 500));
+            res.status(200).json({
+                status: "success",
+                length: data?.length,
+                data: data,
+            });
+        }
+    );
+};
+
 exports.getAllPatientForms = (req, res, next) => {
     conn.query(
-        "SELECT * FROM patientreports",
+        "SELECT * FROM patientreports where isSent = 1",
         function (err, data, fields) {
             if (err) return next(new AppError(err, 500));
             res.status(200).json({
@@ -271,9 +282,9 @@ exports.searchPatientReportsByMultipleAcceptance = (req, res, next) => {
     ;
 };
 
-exports.getAllPatientFormsWithStudentID = (req, res, next) => {
+exports.getPatientFormsWithStudentID = (req, res, next) => {
     conn.query(
-        "SELECT * FROM patientreports WHERE studentID = ?", [req.params.studentID],
+        "SELECT * FROM patientreports WHERE studentID = ? AND isSent = ?", [req.params.studentID, req.params.isSent],
         function (err, data, fields) {
             if (err) return next(new AppError(err, 500));
             res.status(200).json({

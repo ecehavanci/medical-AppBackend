@@ -8,8 +8,12 @@ router.route("/insert").post(patientFormController.insertPatientForm);
 router.route("/update/:localStorageID").put(patientFormController.updatePatientForm);
 
 router
-    .route("/get/all")
+    .route("/get/all/:studentID")
     .get(patientFormController.getAllPatientForms);
+
+router
+    .route("/get/all/:studentID/:isSent")
+    .get(patientFormController.getPatientFormsWithStudentID);
 
 router
     .route("/get/all/:studentID/:searchInput/:isSent/:isApproved")
@@ -19,9 +23,9 @@ router
     .route("/get/all/:studentID/:searchInput/:isSent/:isApproved1/:isApproved2")
     .get(patientFormController.searchPatientReportsByMultipleAcceptance);
 
-router
+/*router
     .route("/get/all/:studentID")
-    .get(patientFormController.getAllPatientFormsWithStudentID);
+    .get(patientFormController.getAllPatientFormsWithStudentID);*/
 
 router
     .route("/get/:ID")
