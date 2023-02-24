@@ -43,12 +43,26 @@ router
     .route("/get/all/:studentID/:searchInput/:isSent/:isApproved1/:isApproved2")
     .get(procedureFormController.searchProcedureReportsByMultipleAcceptance);
 
+
+router
+    .route("/get/count")
+    .get(procedureFormController.getCount);
+
 router
     .route("/get/:ID")
     .get(procedureFormController.getProcedureFormWithID);
 
 router
+    .route("/get/local_storage_id/:ID")
+    .get(procedureFormController.getLocalStorageIDofProcedureFormWithID);
+
+router
+    .route("/get/ID/:studentID/:localStorageID")
+    .get(procedureFormController.getIDofProcedureForm);
+
+router
     .route("/delete/:ID")
     .delete(procedureFormController.deleteProcedureFormWithID);
+
 
 module.exports = router;

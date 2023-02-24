@@ -2,7 +2,6 @@ const AppError = require("../utils/appError");
 const conn = require("../services/db");
 
 exports.getAllPhysicians = (req, res, next) => {
-
     conn.query(
         "SELECT * FROM attendingphysicians",
         function (err, data, fields) {

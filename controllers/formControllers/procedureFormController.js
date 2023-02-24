@@ -349,3 +349,57 @@ exports.deleteProcedureFormWithID = (req, res, next) => {
         }
     );
 }
+
+exports.getCount = (req, res, next) => {
+    conn.query(
+        "select count(ID) from procedurereports",
+        function (err, data, fields) {
+            if (err) return next(new AppError(err, 500));
+            res.status(200).json({
+                status: "success",
+                length: data?.length,
+                data: data,
+            });
+        }
+    );
+};
+
+
+exports.getLocalStorageIDofProcedureFormWithID = (req, res, next) => {
+    if (!req.params.ID) {
+        return next(new AppError("No procedure with this ID found", 404));
+    }
+    conn.query(
+        "SELECT localStorageID FROM procedurereports WHERE ID = ?  order by ID ASC LIMIT 1",
+        [req.params.ID],
+        function (err, data, fields) {
+            if (err) return next(new AppError(err, 500));
+            res.status(200).json({
+                status: "success",
+                length: data?.length,
+                data: data,
+            });
+        }
+    );
+};
+
+exports.getIDofProcedureForm = (req, res, next) => {
+    if (!req.params.studentID) {
+        return next(new AppError("No procedure with this student ID found", 404));
+    }
+    if (!req.params.localStorageID) {
+        return next(new AppError("No procedure with this local storage ID found", 404));
+    }
+    conn.query(
+        "select * from procedurereports WHERE studentID =  ? AND localStorageID = ? order by ID ASC LIMIT 1",
+        [req.params.studentID, req.params.localStorageID],
+        function (err, data, fields) {
+            if (err) return next(new AppError(err, 500));
+            res.status(200).json({
+                status: "success",
+                length: data?.length,
+                data: data,
+            });
+        }
+    );
+}
