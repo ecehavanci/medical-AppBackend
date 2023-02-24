@@ -3,7 +3,7 @@ const rootController = require("../controllers/rootController");
 const router = express.Router();
 
 //temp functions----
-router.route("/login").get(rootController.login)
+router.route("/login/:phoneOrID").get(rootController.login)
 // .post(stdController.insertStd);
 
 // router

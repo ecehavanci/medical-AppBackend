@@ -4,6 +4,7 @@ const stdRoutes = require("./student");
 const patientFormRoutes = require("./patientForm");
 const procedureFormRoutes = require("./procedureForm");
 const physicianRoutes = require("./physician");
+const diagnosis = require("./diagnosis");
 // const router = express.Router();
 const router = express();
 
@@ -13,6 +14,7 @@ router.use("/student", stdRoutes);
 router.use("/patientForm", patientFormRoutes);
 router.use("/procedureForm", procedureFormRoutes);
 router.use("/attendingphysician", physicianRoutes);
+router.use("/diagnosis", diagnosis);
 // router.route("student").get(controllers.getAllStudents)
 // // .post(controllers.insertStd);
 

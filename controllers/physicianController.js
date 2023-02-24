@@ -3,7 +3,7 @@ const conn = require("../services/db");
 
 exports.getAllPhysicians = (req, res, next) => {
     conn.query(
-        "SELECT * FROM attendingphysicians",
+        "SELECT * FROM attendingphysicians order by ID ASC",
         function (err, data, fields) {
             if (err) return next(new AppError(err, 500));
             res.status(200).json({
