@@ -46,6 +46,20 @@ router
     .get(patientFormController.getIDofPatientForm);
 
 router
+    .route("/patientform/searchBySent/:studentID/:isSent/:searchInput")
+    .get(patientFormController.listPatientReport);
+//////////// For att physc.
+
+router
+    .route("/patientform/attphysc/all/listBySentDate/:attphyscID/:searchInput/:isApproved")
+    .get(patientFormController.listAllPatientReportsAccSentDateForDoc);
+
+///patientform/attphysc/all/listByApproveDate/?attphyscID=:attphyscID/?searchInput=:searchInput/isApproved=:isApproved try?
+router
+    .route("/patientform/attphysc/all/listByApproveDate/:attphyscID/:searchInput/:isApproved")
+    .get(patientFormController.listAllPatientReportsAccApproveDateForDoc);
+
+router
     .route("/delete/:ID")
     .delete(patientFormController.deletePatientFormWithID);
 

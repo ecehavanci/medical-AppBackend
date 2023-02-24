@@ -200,7 +200,7 @@ exports.updatePatientForm = (req, res, next) => {
         (req.body.comment !== undefined ? "comment = ?, " : "");
 
     var pos = str.lastIndexOf(",");
-    str = str.substring(0,pos) + str.substring(pos+1);
+    str = str.substring(0, pos) + str.substring(pos + 1);
 
     str = str + " WHERE localStorageID = " + req.params.localStorageID + ";";
 
@@ -219,7 +219,7 @@ exports.updatePatientForm = (req, res, next) => {
 
 exports.getAllPatientFormsForStudent = (req, res, next) => {
     conn.query(
-        "SELECT * FROM patientreports WHERE studentID = ?",[req.params.studentID],
+        "SELECT * FROM patientreports WHERE studentID = ?", [req.params.studentID],
         function (err, data, fields) {
             if (err) return next(new AppError(err, 500));
             res.status(200).json({
@@ -260,7 +260,7 @@ exports.searchPatientReportsByAcceptance = (req, res, next) => {
             });
         }
     )
-    ;
+        ;
 };
 
 exports.searchPatientReportsByMultipleAcceptance = (req, res, next) => {
@@ -279,7 +279,7 @@ exports.searchPatientReportsByMultipleAcceptance = (req, res, next) => {
             });
         }
     )
-    ;
+        ;
 };
 
 exports.getPatientFormsWithStudentID = (req, res, next) => {
@@ -611,6 +611,57 @@ exports.updatePatientFormWithID = (req, res, next) => {
         }
     );
 
+
+};
+
+exports.listAllPatientReportsAccSentDateForDoc = (req, res, next) => {
+
+    conn.query("select * from patientReports WHERE attendingPhysicianID= ? AND isSent = 1 AND isApproved = ? AND " +
+        "UPPER(studentName) LIKE '%?%' order by lastSaveDate DESC, lastSaveTime DESC",
+        [req.params.attphyscID, req.params.isApproved, req.params.searchInput],
+        function (err, data, fields) {
+            if (err) return next(new AppError(err, 500));
+            res.status(200).json({
+                status: "success",
+                length: data?.length,
+                data: data,
+            });
+        }
+    );
+
+};
+
+exports.listAllPatientReportsAccApproveDateForDoc = (req, res, next) => {
+
+    conn.query("select * from patientReports WHERE attendingPhysicianID= ? AND isSent = 1 AND isApproved = ? AND " +
+        "UPPER(studentName) LIKE '%?%' order by approveDate DESC, approveTime DESC",
+        [req.params.attphyscID, req.params.isApproved, req.params.searchInput],
+        function (err, data, fields) {
+            if (err) return next(new AppError(err, 500));
+            res.status(200).json({
+                status: "success",
+                length: data?.length,
+                data: data,
+            });
+        }
+    );
+
+};
+
+exports.listAllPatientReportsAccApproveDateForDoc = (req, res, next) => {
+
+    conn.query("select * from patientReports WHERE studentID = ? AND isSent = ? AND " +
+        "UPPER(patientName) LIKE '%?%' order by lastSaveDate DESC, lastSaveTime DESC",
+        [req.params.studentID, req.params.isSent, req.params.searchInput],
+        function (err, data, fields) {
+            if (err) return next(new AppError(err, 500));
+            res.status(200).json({
+                status: "success",
+                length: data?.length,
+                data: data,
+            });
+        }
+    );
 
 };
 
