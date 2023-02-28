@@ -245,7 +245,24 @@ exports.getAllPatientForms = (req, res, next) => {
     );
 };
 
-exports.searchPatientReportsByAcceptance = (req, res, next) => {
+exports.searchPatientForms = (req, res, next) => {
+    var input = req.params.searchInput === "|" ? "" : req.params.searchInput;
+    conn.query(
+        "select * from patientReports WHERE studentID = ? and isSent = ? " +
+        "AND UPPER(patientName) LIKE '%" + input + "%' order by lastSaveDate DESC, lastSaveTime DESC",
+        [req.params.studentID, req.params.isSent, req.params.isApproved],
+        function (err, data, fields) {
+            if (err) return next(new AppError(err, 500));
+            res.status(200).json({
+                status: "success",
+                length: data?.length,
+                data: data,
+            });
+        }
+    );
+};
+
+exports.searchPatientFormsByAcceptance = (req, res, next) => {
     var input = req.params.searchInput === "|" ? "" : req.params.searchInput;
     conn.query(
         "select * from patientReports WHERE studentID = ? and isSent = ? AND isApproved = ? " +
@@ -259,11 +276,10 @@ exports.searchPatientReportsByAcceptance = (req, res, next) => {
                 data: data,
             });
         }
-    )
-        ;
+    );
 };
 
-exports.searchPatientReportsByMultipleAcceptance = (req, res, next) => {
+exports.searchPatientFormsByMultipleAcceptance = (req, res, next) => {
     var input = req.params.searchInput === "|" ? "" : req.params.searchInput;
     conn.query(
         "select * from patientReports WHERE studentID = ? and isSent = ? " +

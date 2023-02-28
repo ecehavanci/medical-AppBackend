@@ -5,7 +5,7 @@ const router = express.Router();
 
 router
     .route("/all/:studentID")
-    .get(specialtyController.getSpecialtiesOfCurrentRotation);
+    .get(specialtyController.getAllSpecialties);
 
 router
     .route("/previous/all/:studentID")

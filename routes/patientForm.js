@@ -16,13 +16,18 @@ router
     .route("/get/all/:studentID/:isSent")
     .get(patientFormController.getPatientFormsWithStudentID);
 
+
+router
+    .route("/get/all/:studentID/:isSent/:searchInput")
+    .get(patientFormController.searchPatientForms);
+
 router
     .route("/get/all/:studentID/:searchInput/:isSent/:isApproved")
-    .get(patientFormController.searchPatientReportsByAcceptance);
+    .get(patientFormController.searchPatientFormsByAcceptance);
 
 router
     .route("/get/all/:studentID/:searchInput/:isSent/:isApproved1/:isApproved2")
-    .get(patientFormController.searchPatientReportsByMultipleAcceptance);
+    .get(patientFormController.searchPatientFormsByMultipleAcceptance);
 
 /*router
     .route("/get/all/:studentID")
@@ -45,9 +50,6 @@ router
     .route("/get/ID/:studentID/:localStorageID")
     .get(patientFormController.getIDofPatientForm);
 
-router
-    .route("/patientform/searchBySent/:studentID/:isSent/:searchInput")
-    .get(patientFormController.listPatientReport);
 //////////// For att physc.
 
 router

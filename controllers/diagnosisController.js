@@ -19,10 +19,10 @@ exports.getAllDiagnosis = (req, res, next) => {
 exports.filterDiagnosisByID = (req, res, next) => {
     //check if the id is specified in the request parameter, 
     if (!req.params.ID) {
-        return next(new AppError("No attending physician with this ID found", 404));
+        return next(new AppError("No diagnosis with this ID found", 404));
     }
     conn.query(
-        "SELECT * FROM attendingphysicians WHERE ID = ?",
+        "SELECT * FROM diagnosis WHERE ID = ?",
         [req.params.ID],
         function (err, data, fields) {
             if (err) return next(new AppError(err, 500));
