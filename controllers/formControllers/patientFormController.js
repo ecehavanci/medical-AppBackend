@@ -10,6 +10,7 @@ exports.insertPatientForm = (req, res, next) => {
         req.body.studentID,
         req.body.studentName,
         req.body.rotationID,
+        req.body.courseID,
         req.body.specialtyID,
         req.body.attendingPhysicianID,
         req.body.diagnosisID,
@@ -55,6 +56,7 @@ exports.insertPatientForm = (req, res, next) => {
         "INSERT INTO patientreports (studentID," +
         "studentName," +
         "rotationID," +
+        "courseID," +
         "specialtyID," +
         "attendingPhysicianID," +
         "diagnosisID," +
@@ -117,6 +119,7 @@ exports.updatePatientForm = (req, res, next) => {
     if (req.body.studentID !== undefined) values.unshift(req.body.studentID);
     if (req.body.studentName !== undefined) values.unshift(req.body.studentName);
     if (req.body.rotationID !== undefined) values.unshift(req.body.rotationID);
+    if (req.body.courseID !== undefined) values.unshift(req.body.courseID);
     if (req.body.specialtyID !== undefined) values.unshift(req.body.specialtyID);
     if (req.body.attendingPhysicianID !== undefined) values.unshift(req.body.attendingPhysicianID);
     if (req.body.diagnosisID !== undefined) values.unshift(req.body.diagnosisID);
@@ -162,6 +165,7 @@ exports.updatePatientForm = (req, res, next) => {
         (req.body.studentID !== undefined ? "studentID = ?, " : "") +
         (req.body.studentName !== undefined ? "studentName = ?, " : "") +
         (req.body.rotationID !== undefined ? "rotationID = ?, " : "") +
+        (req.body.courseID !== undefined ? "courseID = ?, " : "") +
         (req.body.specialtyID !== undefined ? "specialtyID = ?, " : "") +
         (req.body.attendingPhysicianID !== undefined ? "attendingPhysicianID = ?, " : "") +
         (req.body.diagnosisID !== undefined ? "diagnosisID = ?, " : "") +
