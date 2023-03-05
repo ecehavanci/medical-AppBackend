@@ -249,6 +249,51 @@ exports.getAllPatientForms = (req, res, next) => {
     );
 };
 
+exports.getAllCountPatientFormsForDashboard = (req, res, next) => {
+    conn.query(
+        "select count(ID) from patientreports where studentID = ? && rotationID = ? && isSent = 1;",
+        [req.params.studentID, req.params.rotationID],
+        function (err, data, fields) {
+            if (err) return next(new AppError(err, 500));
+            res.status(200).json({
+                status: "success",
+                length: data?.length,
+                data: data,
+            });
+        }
+    );
+};
+
+exports.getApprovedCountPatientFormsForDashboard = (req, res, next) => {
+    conn.query(
+        "select count(ID) from patientreports where studentID =? && rotationID = ? && isApproved = 1;",
+        [req.params.studentID, req.params.rotationID],
+        function (err, data, fields) {
+            if (err) return next(new AppError(err, 500));
+            res.status(200).json({
+                status: "success",
+                length: data?.length,
+                data: data,
+            });
+        }
+    );
+};
+
+exports.getRotationCountPatientFormsForDashboard = (req, res, next) => {
+    conn.query(
+        "select distinct rotationID from patientreports where studentID = ?;",
+        [req.params.studentID],
+        function (err, data, fields) {
+            if (err) return next(new AppError(err, 500));
+            res.status(200).json({
+                status: "success",
+                length: data?.length,
+                data: data,
+            });
+        }
+    );
+};
+
 exports.searchPatientForms = (req, res, next) => {
     var input = req.params.searchInput === "|" ? "" : req.params.searchInput;
     conn.query(

@@ -9,6 +9,18 @@ router.route("/insert").post(patientFormController.insertPatientForm);
 router.route("/update/:localStorageID").put(patientFormController.updatePatientForm);
 
 router
+    .route("/get/count/dashboard/all/:studentID/:rotationID")
+    .get(patientFormController.getAllCountPatientFormsForDashboard);
+
+router
+    .route("/get/count/dashboard/approved/:studentID/:rotationID")
+    .get(patientFormController.getApprovedCountPatientFormsForDashboard);
+
+router
+    .route("/get/count/dashboard/rotations/:studentID")
+    .get(patientFormController.getRotationCountPatientFormsForDashboard);
+
+router
     .route("/get/all/:studentID")
     .get(patientFormController.getAllPatientForms);
 
