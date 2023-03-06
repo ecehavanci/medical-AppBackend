@@ -9,6 +9,10 @@ router.route("/insert").post(patientFormController.insertPatientForm);
 router.route("/update/:localStorageID").put(patientFormController.updatePatientForm);
 
 router
+    .route("/get/count/dashboard/required/:rotationID")
+    .get(patientFormController.getRequiredCountPatientFormsForDashboard);
+
+router
     .route("/get/count/dashboard/all/:studentID/:rotationID")
     .get(patientFormController.getAllCountPatientFormsForDashboard);
 
@@ -51,7 +55,7 @@ router
 
 
 router
-    .route("/get/count")
+    .route("/get/count/:studentID")
     .get(patientFormController.getCount);
 
 router

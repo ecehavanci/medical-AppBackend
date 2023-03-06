@@ -249,6 +249,21 @@ exports.getAllPatientForms = (req, res, next) => {
     );
 };
 
+exports.getRequiredCountPatientFormsForDashboard = (req, res, next) => {
+    conn.query(
+        "select patientReportCount from rotations where ID = ?;",
+        [req.params.rotationID],
+        function (err, data, fields) {
+            if (err) return next(new AppError(err, 500));
+            res.status(200).json({
+                status: "success",
+                length: data?.length,
+                data: data,
+            });
+        }
+    );
+};
+
 exports.getAllCountPatientFormsForDashboard = (req, res, next) => {
     conn.query(
         "select count(ID) from patientreports where studentID = ? && rotationID = ? && isSent = 1;",
@@ -750,7 +765,8 @@ exports.deletePatientFormWithID = (req, res, next) => {
 
 exports.getCount = (req, res, next) => {
     conn.query(
-        "select count(ID) from patientreports",
+        "select count(ID) from patientreports Where studentID = ?;",
+        [req.params.studentID],
         function (err, data, fields) {
             if (err) return next(new AppError(err, 500));
             res.status(200).json({
@@ -789,7 +805,7 @@ exports.getIDofPatientForm = (req, res, next) => {
         return next(new AppError("No patient with this local storage ID found", 404));
     }
     conn.query(
-        "select * from patientreports WHERE studentID =  ? AND localStorageID = ? order by ID ASC LIMIT 1",
+        "select ID from patientreports WHERE studentID =  ? AND localStorageID = ? order by ID ASC LIMIT 1",
         [req.params.studentID, req.params.localStorageID],
         function (err, data, fields) {
             if (err) return next(new AppError(err, 500));
