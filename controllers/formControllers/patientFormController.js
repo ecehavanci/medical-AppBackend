@@ -312,7 +312,7 @@ exports.getRotationCountPatientFormsForDashboard = (req, res, next) => {
 exports.searchPatientForms = (req, res, next) => {
     var input = req.params.searchInput === "|" ? "" : req.params.searchInput;
     conn.query(
-        "select * from patientReports WHERE studentID = ? and isSent = ? " +
+        "select * from patientreports WHERE studentID = ? and isSent = ? " +
         "AND UPPER(patientName) LIKE '%" + input + "%' order by lastSaveDate DESC, lastSaveTime DESC",
         [req.params.studentID, req.params.isSent, req.params.isApproved],
         function (err, data, fields) {
@@ -329,7 +329,7 @@ exports.searchPatientForms = (req, res, next) => {
 exports.searchPatientFormsByAcceptance = (req, res, next) => {
     var input = req.params.searchInput === "|" ? "" : req.params.searchInput;
     conn.query(
-        "select * from patientReports WHERE studentID = ? and isSent = ? AND isApproved = ? " +
+        "select * from patientreports WHERE studentID = ? and isSent = ? AND isApproved = ? " +
         "AND UPPER(patientName) LIKE '%" + input + "%' order by lastSaveDate DESC, lastSaveTime DESC",
         [req.params.studentID, req.params.isSent, req.params.isApproved],
         function (err, data, fields) {
@@ -346,7 +346,7 @@ exports.searchPatientFormsByAcceptance = (req, res, next) => {
 exports.searchPatientFormsByMultipleAcceptance = (req, res, next) => {
     var input = req.params.searchInput === "|" ? "" : req.params.searchInput;
     conn.query(
-        "select * from patientReports WHERE studentID = ? and isSent = ? " +
+        "select * from patientreports WHERE studentID = ? and isSent = ? " +
         "AND (isApproved = ? OR isApproved = ?) " +
         "AND UPPER(patientName) LIKE '%" + input + "%' order by lastSaveDate DESC, lastSaveTime DESC",
         [req.params.studentID, req.params.isSent, req.params.isApproved1, req.params.isApproved2],
@@ -696,7 +696,7 @@ exports.updatePatientFormWithID = (req, res, next) => {
 
 exports.listAllPatientReportsAccSentDateForDoc = (req, res, next) => {
 
-    conn.query("select * from patientReports WHERE attendingPhysicianID= ? AND isSent = 1 AND isApproved = ? AND " +
+    conn.query("select * from patientreports WHERE attendingPhysicianID= ? AND isSent = 1 AND isApproved = ? AND " +
         "UPPER(studentName) LIKE '%?%' order by lastSaveDate DESC, lastSaveTime DESC",
         [req.params.attphyscID, req.params.isApproved, req.params.searchInput],
         function (err, data, fields) {
@@ -713,7 +713,7 @@ exports.listAllPatientReportsAccSentDateForDoc = (req, res, next) => {
 
 exports.listAllPatientReportsAccApproveDateForDoc = (req, res, next) => {
 
-    conn.query("select * from patientReports WHERE attendingPhysicianID= ? AND isSent = 1 AND isApproved = ? AND " +
+    conn.query("select * from patientreports WHERE attendingPhysicianID= ? AND isSent = 1 AND isApproved = ? AND " +
         "UPPER(studentName) LIKE '%?%' order by approveDate DESC, approveTime DESC",
         [req.params.attphyscID, req.params.isApproved, req.params.searchInput],
         function (err, data, fields) {
@@ -730,7 +730,7 @@ exports.listAllPatientReportsAccApproveDateForDoc = (req, res, next) => {
 
 exports.listAllPatientReportsAccApproveDateForDoc = (req, res, next) => {
 
-    conn.query("select * from patientReports WHERE studentID = ? AND isSent = ? AND " +
+    conn.query("select * from patientreports WHERE studentID = ? AND isSent = ? AND " +
         "UPPER(patientName) LIKE '%?%' order by lastSaveDate DESC, lastSaveTime DESC",
         [req.params.studentID, req.params.isSent, req.params.searchInput],
         function (err, data, fields) {
@@ -829,7 +829,7 @@ exports.updatePatientFormApproveInfo = (req, res, next) => {
         return next(new AppError("Wrong approve Date & Time", 404));
     }
     conn.query(
-        "UPDATE patientReports SET isApproved = ? ,approveDate = '?' ,approveTime = '?'  WHERE ID = ?",
+        "UPDATE patientreports SET isApproved = ? ,approveDate = '?' ,approveTime = '?'  WHERE ID = ?",
         [req.params.updateChoice, req.params.approveDate, req.params.approveTime, req.params.reportID],
         function (err, data, fields) {
             if (err) return next(new AppError(err, 500));

@@ -179,7 +179,7 @@ exports.getAllSentProcedureForms = (req, res, next) => {
 exports.searchProcedureReportsByAcceptance = (req, res, next) => {
     var input = req.params.searchInput === "|" ? "" : req.params.searchInput;
     conn.query(
-        "select * from procedureReports WHERE studentID = ? and isSent = ? AND isApproved = ? " +
+        "select * from procedurereports WHERE studentID = ? and isSent = ? AND isApproved = ? " +
         "AND UPPER(procedureText) LIKE '%" + input + "%' order by lastSaveDate DESC, lastSaveTime DESC",
         [req.params.studentID, req.params.isSent, req.params.isApproved],
         function (err, data, fields) {
@@ -281,7 +281,7 @@ exports.searchSentProcedureFormsWithDocIDAccordingToApproveDate = (req, res, nex
 exports.searchProcedureFormsForStudent = (req, res, next) => {
     var input = req.params.searchInput === "|" ? "" : req.params.searchInput;
     conn.query(
-        "select * from procedureReports WHERE studentID= ? AND " +
+        "select * from procedurereports WHERE studentID= ? AND " +
         " isSent = ? AND UPPER(procedureText) " +
         "LIKE '%" + input + "%' order by lastSaveDate DESC, " +
         "lastSaveTime DESC", [req.params.studentID, req.params.isSent],

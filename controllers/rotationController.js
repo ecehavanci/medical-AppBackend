@@ -3,7 +3,7 @@ const conn = require("../services/db");
 
 exports.requiredReportCountsOfRotation = (req, res, next) => {
       //check if the id is specified in the request parameter, 
-      if (!req.params.ID) {
+      if (!req.params.stdID) {
         return next(new AppError("No student with this ID found", 404));
     }
     conn.query(
