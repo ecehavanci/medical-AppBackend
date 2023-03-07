@@ -69,13 +69,17 @@ router
 //////////// For att physc.
 
 router
-    .route("/patientform/attphysc/all/listBySentDate/:attphyscID/:searchInput/:isApproved")
+    .route("/attphysc/all/listBySentDate/:attphyscID/:searchInput/:isApproved")
     .get(patientFormController.listAllPatientReportsAccSentDateForDoc);
 
 ///patientform/attphysc/all/listByApproveDate/?attphyscID=:attphyscID/?searchInput=:searchInput/isApproved=:isApproved try?
 router
-    .route("/patientform/attphysc/all/listByApproveDate/:attphyscID/:searchInput/:isApproved")
+    .route("/attphysc/all/listByApproveDate/:attphyscID/:searchInput/:isApproved")
     .get(patientFormController.listAllPatientReportsAccApproveDateForDoc);
+
+router
+    .route("/update/:updateChoice/:approveDate/:approveTime/:reportID")
+    .put(patientFormController.updatePatientFormApproveInfo);
 
 router
     .route("/delete/:ID")

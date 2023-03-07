@@ -34,7 +34,7 @@ exports.filterStdByID = (req, res, next) => {
         "SELECT * FROM student WHERE ID = ?",
         [req.params.ID],
         function (err, data, fields) {
-            if (err) return next(new AppError(err, 500));
+            if (err) return next(new AppError(err, 500)); 
             res.status(200).json({
                 status: "success",
                 length: data?.length,

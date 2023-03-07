@@ -64,5 +64,9 @@ router
     .route("/delete/:ID")
     .delete(procedureFormController.deleteProcedureFormWithID);
 
+router
+    .route("/update/:updateChoice/:approveDate/:approveTime/:reportID")
+    .put(procedureFormController.updateProcedureFormApproveInfo);
+
 
 module.exports = router;

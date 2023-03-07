@@ -33,3 +33,21 @@ exports.filterCourseByID = (req, res, next) => {
         }
     );
 };
+
+exports.getCourseName = (req, res, next) => {
+    if (!req.params.ID) {
+        return next(new AppError("No object with this ID found", 404));
+    }
+    conn.query(
+        "Select course from studentgroups where ID = (Select groupNo from rotations where ID = (Select rotationNo from student where ID = ? ));",
+        [req.params.ID],
+        function (err, data, fields) {
+            if (err) return next(new AppError(err, 500));
+            res.status(200).json({
+                status: "success",
+                length: data?.length,
+                data: data,
+            });
+        }
+    );
+};

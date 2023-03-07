@@ -403,3 +403,27 @@ exports.getIDofProcedureForm = (req, res, next) => {
         }
     );
 }
+
+exports.updateProcedureFormApproveInfo = (req, res, next) => {
+    if (!req.params.reportID) {
+        return next(new AppError("No report with this ID found", 404));
+    }
+    if (!req.params.updateChoice) {
+        return next(new AppError("Wrong update choice index", 404));
+    }
+    if (!req.params.approveDate || !req.params.approveTime) {
+        return next(new AppError("Wrong approve Date & Time", 404));
+    }
+    conn.query(
+        "UPDATE procedureReports SET isApproved = ? ,approveDate = '?' ,approveTime = '?'  WHERE ID = ?",
+        [req.params.updateChoice, req.params.approveDate, req.params.approveTime, req.params.reportID],
+        function (err, data, fields) {
+            if (err) return next(new AppError(err, 500));
+            res.status(200).json({
+                status: "success",
+                length: data?.length,
+                data: data,
+            });
+        }
+    );
+}

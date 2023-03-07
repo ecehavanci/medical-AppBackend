@@ -12,6 +12,10 @@ router
     .route("/get/:ID")
     .get(courseController.filterCourseByID)
 
+router
+    .route("/get/stdID=:ID")
+    .get(courseController.getCourseName)
+
 // router.route("/:ID/:colName/:value")
 //     .put(physicianController.updatePhysicianByID) //!!!need to think a bit
 

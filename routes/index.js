@@ -8,6 +8,7 @@ const diagnosis = require("./diagnosis");
 const differentialdiagnoses = require("./differentialdiagnoses");
 const specialties = require("./specialties");
 const course = require("./course");
+const rotations = require("./rotations");
 // const router = express.Router();
 const router = express();
 
@@ -21,6 +22,7 @@ router.use("/diagnosis", diagnosis);
 router.use("/differentialdiagnoses", differentialdiagnoses);
 router.use("/specialties", specialties);
 router.use("/courses", course);
+router.use("/rotations", rotations);
 // router.route("student").get(controllers.getAllStudents)
 // // .post(controllers.insertStd);
 
