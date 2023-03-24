@@ -18,7 +18,7 @@ exports.insertPatientForm = (req, res, next) => {
         req.body.patientHospitalID,
         req.body.patientName,
         req.body.patientGender,
-        req.body.patientAge,
+        req.body.patientBirthDate,
         req.body.relevants,
         req.body.keySymptoms,
         req.body.signs,
@@ -64,7 +64,7 @@ exports.insertPatientForm = (req, res, next) => {
         "patientHospitalID," +
         "patientName," +
         "patientGender," +
-        "patientAge," +
+        "patientBirthDate," +
         "relevants," +
         "keySymptoms," +
         "signs," +
@@ -127,7 +127,7 @@ exports.updatePatientForm = (req, res, next) => {
     if (req.body.patientHospitalID !== undefined) values.unshift(req.body.patientHospitalID);
     if (req.body.patientName !== undefined) values.unshift(req.body.patientName);
     if (req.body.patientGender !== undefined) values.unshift(req.body.patientGender);
-    if (req.body.patientAge !== undefined) values.unshift(req.body.patientAge);
+    if (req.body.patientBirthDate !== undefined) values.unshift(req.body.patientBirthDate);
     if (req.body.relevants !== undefined) values.unshift(req.body.relevants);
     if (req.body.keySymptoms !== undefined) values.unshift(req.body.keySymptoms);
     if (req.body.signs !== undefined) values.unshift(req.body.signs);
@@ -173,7 +173,7 @@ exports.updatePatientForm = (req, res, next) => {
         (req.body.patientHospitalID !== undefined ? "patientHospitalID = ?, " : "") +
         (req.body.patientName !== undefined ? "patientName = ?, " : "") +
         (req.body.patientGender !== undefined ? "patientGender = ?, " : "") +
-        (req.body.patientAge !== undefined ? "patientAge = ?, " : "") +
+        (req.body.patientBirthDate !== undefined ? "patientBirthDate = ?, " : "") +
         (req.body.relevants !== undefined ? "relevants = ?, " : "") +
         (req.body.keySymptoms !== undefined ? "keySymptoms = ?, " : "") +
         (req.body.signs !== undefined ? "signs = ?, " : "") +
@@ -485,11 +485,11 @@ exports.updatePatientFormWithID = (req, res, next) => {
         firstArgumentEntered = true;
     }
 
-    if (req.params.patientAge !== undefined) {
+    if (req.params.patientBirthDate !== undefined) {
         if (firstArgumentEntered) {
             queryString += ", ";
         }
-        queryString += "patientAge= '" + req.params.patientAge + "'";
+        queryString += "patientBirthDate= '" + req.params.patientBirthDate + "'";
         firstArgumentEntered = true;
     }
 
@@ -711,11 +711,12 @@ exports.listAllPatientReportsAccSentDateForDoc = (req, res, next) => {
 
 };
 
+//TODO 
 exports.listAllPatientReportsAccApproveDateForDoc = (req, res, next) => {
 
     conn.query("select * from patientreports WHERE attendingPhysicianID= ? AND isSent = 1 AND isApproved = ? AND " +
-        "UPPER(studentName) LIKE '%?%' order by approveDate DESC, approveTime DESC",
-        [req.params.attphyscID, req.params.isApproved, req.params.searchInput],
+        "UPPER(studentName) LIKE '%"+req.params.searchInput+"%' order by approveDate DESC, approveTime DESC",
+        [req.params.attphyscID, req.params.isApproved],
         function (err, data, fields) {
             if (err) return next(new AppError(err, 500));
             res.status(200).json({
