@@ -713,11 +713,10 @@ exports.listAllPatientReportsAccSentDateForDoc = (req, res, next) => {
 
 //TODO 
 exports.listAllPatientReportsAccApproveDateForDoc = (req, res, next) => {
-    var input = req.params.searchInput === "|" ? "" : req.params.searchInput;
-
+    const input = req.params.searchInput === "|" ? "" : req.params.searchInput;
 
     conn.query("select * from patientreports WHERE attendingPhysicianID= ? AND isSent = 1 AND isApproved = ? AND " +
-        "UPPER(studentName) LIKE '%"+input+"%' order by approveDate DESC, approveTime DESC",
+        "UPPER(studentName) LIKE '%"+ input +"%' order by approveDate DESC, approveTime DESC",
         [req.params.attphyscID, req.params.isApproved],
         function (err, data, fields) {
             if (err) return next(new AppError(err, 500));
@@ -731,7 +730,7 @@ exports.listAllPatientReportsAccApproveDateForDoc = (req, res, next) => {
 
 };
 
-exports.listAllPatientReportsAccApproveDateForDoc = (req, res, next) => {
+/*exports.listAllPatientReportsAccApproveDateForDoc = (req, res, next) => {
     var input = req.params.searchInput === "|" ? "" : req.params.searchInput;
 
     conn.query("select * from patientreports WHERE studentID = ? AND isSent = ? AND " +
@@ -747,7 +746,7 @@ exports.listAllPatientReportsAccApproveDateForDoc = (req, res, next) => {
         }
     );
 
-};
+};*/
 
 exports.deletePatientFormWithID = (req, res, next) => {
     if (!req.params.ID) {

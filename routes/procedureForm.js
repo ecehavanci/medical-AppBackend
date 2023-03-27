@@ -45,7 +45,7 @@ router
 
 
 router
-    .route("/get/count")
+    .route("/get/count/:studentID")
     .get(procedureFormController.getCount);
 
 router

@@ -352,7 +352,8 @@ exports.deleteProcedureFormWithID = (req, res, next) => {
 
 exports.getCount = (req, res, next) => {
     conn.query(
-        "select count(ID) from procedurereports",
+        "select count(ID) from procedurereports where studentID  = ?",
+        [req.params.studentID],
         function (err, data, fields) {
             if (err) return next(new AppError(err, 500));
             res.status(200).json({
