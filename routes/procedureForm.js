@@ -32,7 +32,7 @@ router
     .get(procedureFormController.searchSentProcedureFormsWithDocIDAccordingToSendDate);
 
 router
-    .route("/get/allSent/approveDate/:docID/:searchInput/:isApproved")
+    .route("/get/all/approveDate/:docID/:searchInput/:isApproved")
     .get(procedureFormController.searchSentProcedureFormsWithDocIDAccordingToApproveDate);
 
 router

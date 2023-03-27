@@ -695,10 +695,10 @@ exports.updatePatientFormWithID = (req, res, next) => {
 };
 
 exports.listAllPatientReportsAccSentDateForDoc = (req, res, next) => {
-
+    var input = req.params.searchInput === "|" ? "" : req.params.searchInput;
     conn.query("select * from patientreports WHERE attendingPhysicianID= ? AND isSent = 1 AND isApproved = ? AND " +
-        "UPPER(studentName) LIKE '%?%' order by lastSaveDate DESC, lastSaveTime DESC",
-        [req.params.attphyscID, req.params.isApproved, req.params.searchInput],
+        "UPPER(studentName) LIKE '%"+input+"%' order by lastSaveDate DESC, lastSaveTime DESC",
+        [req.params.attphyscID, req.params.isApproved],
         function (err, data, fields) {
             if (err) return next(new AppError(err, 500));
             res.status(200).json({
@@ -713,9 +713,11 @@ exports.listAllPatientReportsAccSentDateForDoc = (req, res, next) => {
 
 //TODO 
 exports.listAllPatientReportsAccApproveDateForDoc = (req, res, next) => {
+    var input = req.params.searchInput === "|" ? "" : req.params.searchInput;
+
 
     conn.query("select * from patientreports WHERE attendingPhysicianID= ? AND isSent = 1 AND isApproved = ? AND " +
-        "UPPER(studentName) LIKE '%"+req.params.searchInput+"%' order by approveDate DESC, approveTime DESC",
+        "UPPER(studentName) LIKE '%"+input+"%' order by approveDate DESC, approveTime DESC",
         [req.params.attphyscID, req.params.isApproved],
         function (err, data, fields) {
             if (err) return next(new AppError(err, 500));
@@ -730,10 +732,11 @@ exports.listAllPatientReportsAccApproveDateForDoc = (req, res, next) => {
 };
 
 exports.listAllPatientReportsAccApproveDateForDoc = (req, res, next) => {
+    var input = req.params.searchInput === "|" ? "" : req.params.searchInput;
 
     conn.query("select * from patientreports WHERE studentID = ? AND isSent = ? AND " +
-        "UPPER(patientName) LIKE '%?%' order by lastSaveDate DESC, lastSaveTime DESC",
-        [req.params.studentID, req.params.isSent, req.params.searchInput],
+        "UPPER(patientName) LIKE '%"+input+"%' order by lastSaveDate DESC, lastSaveTime DESC",
+        [req.params.studentID, req.params.isSent],
         function (err, data, fields) {
             if (err) return next(new AppError(err, 500));
             res.status(200).json({
