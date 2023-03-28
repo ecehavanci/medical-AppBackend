@@ -197,7 +197,7 @@ exports.searchProcedureReportsByAcceptance = (req, res, next) => {
 exports.searchProcedureReportsByMultipleAcceptance = (req, res, next) => {
     var input = req.params.searchInput === "|" ? "" : req.params.searchInput;
     conn.query(
-        "select * from procedureReports WHERE studentID = ? and isSent = ? " +
+        "select * from procedurereports WHERE studentID = ? and isSent = ? " +
         "AND (isApproved = ? OR isApproved = ?) " +
         "AND UPPER(procedureText) LIKE '%" + input + "%' order by lastSaveDate DESC, lastSaveTime DESC",
         [req.params.studentID, req.params.isSent, req.params.isApproved1, req.params.isApproved2],
@@ -245,7 +245,7 @@ exports.getSentProcedureFormsWithStudentID = (req, res, next) => {
 exports.searchSentProcedureFormsWithDocIDAccordingToSendDate = (req, res, next) => {
     var input = req.params.searchInput === "|" ? "" : req.params.searchInput;
     conn.query(
-        "select * from procedureReports WHERE attendingPhysicianID= ? AND " +
+        "select * from procedurereports WHERE attendingPhysicianID= ? AND " +
         "isSent = 1 AND isApproved = ? AND UPPER(procedureText) " +
         "LIKE '%" + input + "%' order by lastSaveDate DESC, " +
         "lastSaveTime DESC", [req.params.attendingPhysicianID, req.params.isApproved],
@@ -260,13 +260,13 @@ exports.searchSentProcedureFormsWithDocIDAccordingToSendDate = (req, res, next) 
     );
 };
 
+//The query here works, however the api does not return the right result
 exports.searchSentProcedureFormsWithDocIDAccordingToApproveDate = (req, res, next) => {
     var input = req.params.searchInput === "|" ? "" : req.params.searchInput;
     conn.query(
-        "select * from procedureReports WHERE attendingPhysicianID= ? AND " +
-        "isSent = 1 AND isApproved = ? AND UPPER(procedureText) " +
-        "LIKE '%" + input + "%' order by lastSaveDate DESC, " +
-        "lastSaveTime DESC", [req.params.attendingPhysicianID, req.params.isApproved],
+        "select * from procedurereports WHERE attendingPhysicianID= ? AND isSent = 1 AND isApproved = ? AND " +
+        "UPPER(procedureText) LIKE '%" + input + "%' order by lastSaveDate DESC;"
+        , [req.params.attendingPhysicianID, req.params.isApproved],
         function (err, data, fields) {
             if (err) return next(new AppError(err, 500));
             res.status(200).json({
@@ -300,7 +300,7 @@ exports.searchProcedureFormsForStudentByAcceptance = (req, res, next) => {
     var input = req.params.searchInput === "|" ? "" : req.params.searchInput;
     console.log("PARAMS: " + req.params.searchInput + " " + req.params.studentID + " " + req.params.isSent + " " + req.params.isApproved);
     conn.query(
-        "select * from procedureReports WHERE studentID= ? AND " +
+        "select * from procedurereports WHERE studentID= ? AND " +
         "isSent = ? AND isApproved = ? AND UPPER(procedureText) " +
         "LIKE '%" + input + "%' order by lastSaveDate DESC, " +
         "lastSaveTime DESC", [req.params.studentID, req.params.isSent, req.params.isApproved],
@@ -416,7 +416,7 @@ exports.updateProcedureFormApproveInfo = (req, res, next) => {
         return next(new AppError("Wrong approve Date & Time", 404));
     }
     conn.query(
-        "UPDATE procedureReports SET isApproved = ? ,approveDate = '?' ,approveTime = '?'  WHERE ID = ?",
+        "UPDATE procedurereports SET isApproved = ? ,approveDate = '?' ,approveTime = '?'  WHERE ID = ?",
         [req.params.updateChoice, req.params.approveDate, req.params.approveTime, req.params.reportID],
         function (err, data, fields) {
             if (err) return next(new AppError(err, 500));
