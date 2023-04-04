@@ -416,7 +416,7 @@ exports.updateProcedureFormApproveInfo = (req, res, next) => {
         return next(new AppError("Wrong approve Date & Time", 404));
     }
     conn.query(
-        "UPDATE procedurereports SET isApproved = ? ,approveDate = '?' ,approveTime = '?'  WHERE ID = ?",
+        "UPDATE procedurereports SET isApproved = ? ,approveDate = ? ,approveTime = ?  WHERE ID = ?",
         [req.params.updateChoice, req.params.approveDate, req.params.approveTime, req.params.reportID],
         function (err, data, fields) {
             if (err) return next(new AppError(err, 500));
