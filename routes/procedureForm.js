@@ -28,11 +28,11 @@ router
     .get(procedureFormController.searchProcedureFormsForStudentByAcceptance);
 
 router
-    .route("/get/all/sendDate/:docID/:searchInput/:isApproved")
+    .route("/get/all/by/sendDate/:attendingPhysicianID/:searchInput/:isApproved")
     .get(procedureFormController.searchSentProcedureFormsWithDocIDAccordingToSendDate);
 
 router
-    .route("/get/all/approveDate/:docID/:searchInput/:isApproved")
+    .route("/get/all/by/approveDate/:attendingPhysicianID/:searchInput/:isApproved")
     .get(procedureFormController.searchSentProcedureFormsWithDocIDAccordingToApproveDate);
 
 router
