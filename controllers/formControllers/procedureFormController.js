@@ -428,3 +428,18 @@ exports.updateProcedureFormApproveInfo = (req, res, next) => {
         }
     );
 }
+
+exports.getCountProcedureFormsForDashboardAccordingToApproval = (req, res, next) => {
+    conn.query(
+        "select count(ID) from procedurereports where studentID =? && rotationID = ? && isApproved = ?;",
+        [req.params.studentID, req.params.rotationID, req.params.approvalCode],
+        function (err, data, fields) {
+            if (err) return next(new AppError(err, 500));
+            res.status(200).json({
+                status: "success",
+                length: data?.length,
+                data: data,
+            });
+        }
+    );
+};

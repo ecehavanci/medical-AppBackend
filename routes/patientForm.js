@@ -17,8 +17,8 @@ router
     .get(patientFormController.getAllCountPatientFormsForDashboard);
 
 router
-    .route("/get/count/dashboard/approved/:studentID/:rotationID")
-    .get(patientFormController.getApprovedCountPatientFormsForDashboard);
+    .route("/get/count/dashboard/approved/:studentID/:rotationID/:approvalCode")
+    .get(patientFormController.getCountPatientFormsForDashboardAccordingToApproval);
 
 router
     .route("/get/count/dashboard/rotations/:studentID")

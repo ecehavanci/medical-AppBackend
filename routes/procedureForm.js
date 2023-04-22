@@ -1,5 +1,6 @@
 const express = require("express");
 const procedureFormController = require("../controllers/formControllers/procedureFormController");
+const patientFormController = require("../controllers/formControllers/patientFormController");
 const router = express.Router();
 
 //router.route('/all').get(stdController.getAllStudents).post(stdController.++tStd);
@@ -68,5 +69,8 @@ router
     .route("/update/:updateChoice/:approveDate/:approveTime/:reportID")
     .put(procedureFormController.updateProcedureFormApproveInfo);
 
+router
+    .route("/get/count/dashboard/approved/:studentID/:rotationID/:approvalCode")
+    .get(procedureFormController.getCountProcedureFormsForDashboardAccordingToApproval);
 
 module.exports = router;
