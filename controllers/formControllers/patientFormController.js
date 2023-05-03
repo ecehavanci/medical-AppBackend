@@ -206,7 +206,7 @@ exports.updatePatientForm = (req, res, next) => {
     var pos = str.lastIndexOf(",");
     str = str.substring(0, pos) + str.substring(pos + 1);
 
-    str = str + " WHERE localStorageID = " + req.params.localStorageID + ";";
+    str = str + " WHERE ID = " + req.params.ID + ";";
 
     conn.query(
         str, values,

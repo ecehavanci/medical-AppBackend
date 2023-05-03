@@ -6,7 +6,7 @@ const router = express.Router();
 //router.route('/all').get(stdController.getAllStudents).post(stdController.++tStd);
 router.route("/insert").post(patientFormController.insertPatientForm);
 
-router.route("/update/:localStorageID").put(patientFormController.updatePatientForm);
+router.route("/update/:ID").put(patientFormController.updatePatientForm);
 
 router
     .route("/get/count/dashboard/required/:rotationID")
