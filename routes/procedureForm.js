@@ -1,6 +1,5 @@
 const express = require("express");
 const procedureFormController = require("../controllers/formControllers/procedureFormController");
-const patientFormController = require("../controllers/formControllers/patientFormController");
 const router = express.Router();
 
 //router.route('/all').get(stdController.getAllStudents).post(stdController.++tStd);
