@@ -206,7 +206,7 @@ exports.updatePatientForm = (req, res, next) => {
     var pos = str.lastIndexOf(",");
     str = str.substring(0, pos) + str.substring(pos + 1);
 
-    str = str + " WHERE localStorageID = " + req.params.localStorageID + ";";
+    str = str + " WHERE ID = " + req.params.ID + ";";
 
     conn.query(
         str, values,
@@ -279,10 +279,10 @@ exports.getAllCountPatientFormsForDashboard = (req, res, next) => {
     );
 };
 
-exports.getApprovedCountPatientFormsForDashboard = (req, res, next) => {
+exports.getCountPatientFormsForDashboardAccordingToApproval = (req, res, next) => {
     conn.query(
-        "select count(ID) from patientreports where studentID =? && rotationID = ? && isApproved = 1;",
-        [req.params.studentID, req.params.rotationID],
+        "select count(ID) from patientreports where studentID =? && rotationID = ? && isApproved = ?;",
+        [req.params.studentID, req.params.rotationID, req.params.approvalCode],
         function (err, data, fields) {
             if (err) return next(new AppError(err, 500));
             res.status(200).json({

@@ -28,18 +28,39 @@ exports.insertStd = (req, res, next) => {
 exports.filterStdByID = (req, res, next) => {
     //check if the id is specified in the request parameter, 
     if (!req.params.ID) {
-        return next(new AppError("No student with this ID found", 404));
+        return next(new AppError("No student found with the ID: " + req.params.ID, 404));
     }
     conn.query(
         "SELECT * FROM student WHERE ID = ?",
         [req.params.ID],
         function (err, data, fields) {
-            if (err) return next(new AppError(err, 500)); 
-            res.status(200).json({
-                status: "success",
-                length: data?.length,
-                data: data,
-            });
+            if (err) return next(new AppError(err, 500));
+
+            if(data?.length!==0){
+                res.status(200).json({
+                    status: "medical student",
+                    length: data?.length,
+                    data: data,
+                });
+
+                /*if(data[0]["branch"] === "medical" ){//"branch" and "medical" are placeholders
+                    //Code in the above
+                }
+                else{
+                    res.status(200).json({
+                        status: "not medical student",
+                    });
+                }*/
+
+            }
+            else{
+                res.status(200).json({
+                    status: "no student found",
+                    //length: data?.length,
+                    //data: data,
+                });
+            }
+
         }
     );
 };

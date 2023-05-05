@@ -22,7 +22,7 @@ exports.filterDiagnosisByID = (req, res, next) => {
         return next(new AppError("No diagnosis with this ID found", 404));
     }
     conn.query(
-        "SELECT * FROM diagnosis WHERE ID = ?",
+        "SELECT * FROM diagnostics WHERE ID = ?",
         [req.params.ID],
         function (err, data, fields) {
             if (err) return next(new AppError(err, 500));
