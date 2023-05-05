@@ -13,7 +13,7 @@ router
 
 router
     .route("/get/coordinators")
-    .get(courseController.getCoordinators)
+    .get(webController.getCoordinators)
 
 router
     .route("/post/coordinators")
@@ -21,7 +21,7 @@ router
 
 router
     .route("/get/diagnostics")
-    .get(courseController.getDiagnostics)
+    .get(webController.getDiagnostics)
 
 router
     .route("/post/diagnostics")
@@ -29,7 +29,7 @@ router
 
 router
     .route("/get/attendingphysicians")
-    .get(courseController.getAttPhysc)
+    .get(webController.getAttPhysc)
 
 router
     .route("/post/attendingphysicians")
