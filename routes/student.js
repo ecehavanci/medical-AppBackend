@@ -8,7 +8,7 @@ router
 
 router
     .route("/:ID")
-    .get(stdController.filterStdByID)
+    .post(stdController.filterStdByID)
     .delete(stdController.deleteStdByID);
 
 router.route("/:ID/:colName/:value").put(stdController.updateStdByID);

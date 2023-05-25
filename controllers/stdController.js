@@ -1,5 +1,8 @@
 const AppError = require("../utils/appError");
 const conn = require("../services/db");
+var axios = require('axios');
+var qs = require('qs');
+require('dotenv').config();
 
 exports.insertStd = (req, res, next) => {
     //we check if the client is sending an empty form "and return a 404 error message.
@@ -26,43 +29,81 @@ exports.insertStd = (req, res, next) => {
 };
 
 exports.filterStdByID = (req, res, next) => {
-    //check if the id is specified in the request parameter, 
+    //ID is the TC of student
     if (!req.params.ID) {
         return next(new AppError("No student found with the ID: " + req.params.ID, 404));
     }
-    conn.query(
+    var epoc = round(microtime(true) * 1000);
+    const apiKey = process.env.OASIS_APIKEY;
+    const secretKey = process.env.OASIS_SECRETKEY;
+    var signature = strtoupper(md5(apiKey + secretKey + epoc));
+
+    var data = qs.stringify({
+        'signature': signature,
+        'epoch': epoc,
+        'stu_id': req.params.ID
+    });
+
+    const token = `${process.env.OASIS_API_USER}:${process.env.OASIS_API_PASSWORD}`;
+    const encodedToken = Buffer.from(token).toString('base64');
+    const headers = { 'Authorization': 'Basic ' + encodedToken };
+    //body
+    var config = {
+        method: 'post',
+        maxBodyLength: Infinity,
+        url: 'https://oasis.izmirekonomi.edu.tr/oasis_api/mobil/mobil/get-stuinfo',
+        headers: headers,
+        data: data
+    };
+
+    axios(config)
+        .then(function (response) {
+            console.log(JSON.stringify(response.data));
+            var filteredData = JSON.stringify(response.data);
+            res.status(200).json({
+                status: "200",
+                length: data?.length,
+                data: filteredData,
+            });
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+
+
+    /*conn.query(
         "SELECT * FROM student WHERE ID = ?",
         [req.params.ID],
         function (err, data, fields) {
             if (err) return next(new AppError(err, 500));
 
-            if(data?.length!==0){
+            if (data?.length !== 0) {
                 res.status(200).json({
                     status: "medical student",
                     length: data?.length,
                     data: data,
                 });
-
-                /*if(data[0]["branch"] === "medical" ){//"branch" and "medical" are placeholders
-                    //Code in the above
+*/
+    /*if(data[0]["branch"] === "medical" ){//"branch" and "medical" are placeholders
+        //Code in the above
+    }
+    else{
+        res.status(200).json({
+            status: "not medical student",
+        });
+    }*/
+    /*
                 }
-                else{
+                else {
                     res.status(200).json({
-                        status: "not medical student",
+                        status: "no student found",
+                        //length: data?.length,
+                        //data: data,
                     });
-                }*/
-
+                }
+    
             }
-            else{
-                res.status(200).json({
-                    status: "no student found",
-                    //length: data?.length,
-                    //data: data,
-                });
-            }
-
-        }
-    );
+        );*/
 };
 
 exports.getAllStudents = (req, res, next) => {
