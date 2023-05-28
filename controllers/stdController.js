@@ -2,6 +2,7 @@ const AppError = require("../utils/appError");
 const conn = require("../services/db");
 var axios = require('axios');
 var qs = require('qs');
+const https = require('https');
 require('dotenv').config();
 
 exports.insertStd = (req, res, next) => {
@@ -10,7 +11,7 @@ exports.insertStd = (req, res, next) => {
         return next(new AppError("No form data found", 404));
 
     const values = [req.body.ID, req.body.name, req.body.surname,
-        req.body.courses, req.body.rotationNo, req.body.previousRotationNo];
+    req.body.courses, req.body.rotationNo, req.body.previousRotationNo];
 
     console.log(req.body);
 
@@ -126,7 +127,17 @@ exports.filterStdByID = (req, res, next) => {
 
     const token = `${process.env.OASIS_API_USER}:${process.env.OASIS_API_PASSWORD}`;
     const encodedToken = Buffer.from(token).toString('base64');
-    const headers = {'Authorization': 'Basic ' + encodedToken};
+    const headers = { 'Authorization': 'Basic ' + encodedToken };
+    var httpsAgent = null;
+
+    if (process.env.NODE_ENV === 'development') {
+        httpsAgent = new https.Agent({
+            rejectUnauthorized: false,
+        });
+        axios.defaults.httpsAgent = httpsAgent
+        // eslint-disable-next-line no-console
+        console.log(process.env.NODE_ENV, `RejectUnauthorized is disabled.`)
+    }
 
     //body
     var config = {
@@ -134,23 +145,23 @@ exports.filterStdByID = (req, res, next) => {
         maxBodyLength: Infinity,
         url: 'https://oasis.izmirekonomi.edu.tr/oasis_api/mobil/mobil/get-stuinfo',
         headers: headers,
-        data: data
+        data: data,
+        rejectUnauthorized: httpsAgent
     };
 
     axios(config)
         .then(function (response) {
             console.log(JSON.stringify(response.data));
-            /*var filteredData = JSON.stringify(response.data);
+            var filteredData = JSON.stringify(response.data);
             res.status(200).json({
                 status: "200",
                 length: data?.length,
                 data: filteredData,
-            });*/
+            });
         })
         .catch(function (error) {
             console.log(error);
         });
-    console.log("axios end")
 
 
     /*conn.query(
