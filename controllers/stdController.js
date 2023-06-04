@@ -151,13 +151,29 @@ exports.filterStdByID = (req, res, next) => {
 
     axios(config)
         .then(function (response) {
-            console.log(JSON.stringify(response.data));
             var filteredData = JSON.stringify(response.data);
-            res.status(200).json({
-                status: "200",
-                length: data?.length,
-                data: filteredData,
-            });
+            var studentMap = JSON.parse(filteredData.replace("\\","").replace("[","").replace("]",""));
+            console.log();
+
+            var sendingData = [{name : studentMap["Adi"], surname : studentMap["Soyadi"], course_id : JSON.parse(JSON.stringify(studentMap["Dersler"]))["course_id"]}];
+            console.log(sendingData);
+
+            if(studentMap["BolumId"] === 350){
+                res.status(200).json({
+                    status: "200",
+                    length: data?.length,
+                    message: "medical-student",
+                    data: sendingData,
+                });
+            }
+            else {
+                res.status(201).json({
+                    status: "201",
+                    length: data?.length,
+                    message: "non-medical-student",
+                });
+            }
+
         })
         .catch(function (error) {
             console.log(error);
