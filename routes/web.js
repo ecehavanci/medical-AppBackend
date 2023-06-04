@@ -39,5 +39,12 @@ router
     .route("/post/attendingphysicians")
     .put(webController.updateAttPhysc)
 
+router
+    .route("/get/specialties")
+    .get(webController.getSpecialties)
+router
+    .route("/post/specialties")
+    .post(webController.insertSpecialties)
+
 
 module.exports = router;
