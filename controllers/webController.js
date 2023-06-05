@@ -111,7 +111,7 @@ exports.updateAttPhysc = (req, res, next) => {
         res.write('Updated..')
         res.end();
     });
-
+}
  exports.getSpecialties = (req, res, next) => {
         res.writeHead(200, { 'Content-Type': 'text/json' });
         conn.query('Select * from specialties', (err, result) => {
@@ -136,4 +136,3 @@ exports.insertSpecialties = (req, res, next) => {
         });
     }
 
-}
