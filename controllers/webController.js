@@ -112,3 +112,27 @@ exports.updateAttPhysc = (req, res, next) => {
         res.end();
     });
 }
+ exports.getSpecialties = (req, res, next) => {
+        res.writeHead(200, { 'Content-Type': 'text/json' });
+        conn.query('Select * from specialties', (err, result) => {
+            if (err) throw err;
+    
+            res.write(JSON.stringify(result));
+            res.end();
+        });
+    }
+    
+exports.insertSpecialties = (req, res, next) => {
+        res.writeHead(200, { 'Content-Type': 'text/html' });
+        let ID = req.body.ID;
+        let description = req.body.description;
+        let course = req.body.course;
+        let sql = 'INSERT INTO specialties(ID, description, course) VALUES(?, ?, ?)';
+        conn.query(sql, [ID, description, course], (err, result) => {
+            if (err) throw err;
+    
+            res.write('Inserted');
+            res.end();
+        });
+    }
+
