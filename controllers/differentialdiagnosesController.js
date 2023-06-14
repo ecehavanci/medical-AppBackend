@@ -15,3 +15,18 @@ exports.getApprovedDiffDiagnoses = (req, res, next) => {
         }
     );
 }
+exports.getDiffDiagnosesByDiagnoseID = (req, res, next) => {
+
+    conn.query(
+        "select * from differentialdiagnoses WHERE ID = ?",
+        [req.params.diagnoseID],
+        function (err, data, fields) {
+            if (err) return next(new AppError(err, 500));
+            res.status(200).json({
+                status: "success",
+                length: data?.length,
+                data: data,
+            });
+        }
+    );
+}

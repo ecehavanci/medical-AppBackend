@@ -37,3 +37,18 @@ exports.getSpecialtiesOfPreviousRotation = (req, res, next) => {
         }
     );
 }
+
+exports.getSpecialtyName = (req, res, next) => {
+
+    conn.query("SELECT * from specialties where ID = ?;",
+        [req.params.specialtyID],
+        function (err, data, fields) {
+            if (err) return next(new AppError(err, 500));
+            res.status(200).json({
+                status: "success",
+                length: data?.length,
+                data: data,
+            });
+        }
+    );
+}
