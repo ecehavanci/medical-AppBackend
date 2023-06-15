@@ -7,9 +7,12 @@ const router = express.Router();
 router
     .route("/approved")
     .get(differentialdiagnosesController.getApprovedDiffDiagnoses)
-    // .post(physicianController.insertPhyscian);
+router
+    .route("/:diagnoseID")
+    .get(differentialdiagnosesController.getDiffDiagnosesByDiagnoseID)
+// .post(physicianController.insertPhyscian);
 
-    // .delete(physicianController.deletePhysicianByID);
+// .delete(physicianController.deletePhysicianByID);
 
 // router.route("/:ID/:colName/:value")
 //     .put(physicianController.updatePhysicianByID) //!!!need to think a bit
