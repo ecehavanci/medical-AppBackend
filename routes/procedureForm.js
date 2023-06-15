@@ -1,11 +1,25 @@
 const express = require("express");
 const procedureFormController = require("../controllers/formControllers/procedureFormController");
+const patientFormController = require("../controllers/formControllers/patientFormController");
 const router = express.Router();
 
 //router.route('/all').get(stdController.getAllStudents).post(stdController.++tStd);
 router.route("/insert").post(procedureFormController.insertProcedureForm);
 
 router.route("/update/:ID").put(procedureFormController.updateProcedureForm);
+
+
+router
+    .route("/get/count/dashboard/required/:rotationID")
+    .get(patientFormController.getRequiredCountProcedureFormsForDashboard);
+
+router
+    .route("/get/count/dashboard/all/:studentID/:rotationID")
+    .get(patientFormController.getAllCountProcedureFormsForDashboard);
+
+router
+    .route("/get/count/dashboard/approved/:studentID/:rotationID/:approvalCode")
+    .get(patientFormController.getCountProcedureFormsForDashboardAccordingToApproval);
 
 router
     .route("/get/all/:studentID")

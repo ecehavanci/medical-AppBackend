@@ -443,3 +443,48 @@ exports.getCountProcedureFormsForDashboardAccordingToApproval = (req, res, next)
         }
     );
 };
+
+exports.getRequiredCountProcedureFormsForDashboard = (req, res, next) => {
+    conn.query(
+        "select procedurereports from rotations where ID = ?;",
+        [req.params.rotationID],
+        function (err, data, fields) {
+            if (err) return next(new AppError(err, 500));
+            res.status(200).json({
+                status: "success",
+                length: data?.length,
+                data: data,
+            });
+        }
+    );
+};
+
+exports.getAllCountProcedureFormsForDashboard = (req, res, next) => {
+    conn.query(
+        "select count(ID) from procedurereports where studentID = ? && rotationID = ? && isSent = 1;",
+        [req.params.studentID, req.params.rotationID],
+        function (err, data, fields) {
+            if (err) return next(new AppError(err, 500));
+            res.status(200).json({
+                status: "success",
+                length: data?.length,
+                data: data,
+            });
+        }
+    );
+};
+
+exports.getCountProcedureFormsForDashboardAccordingToApproval = (req, res, next) => {
+    conn.query(
+        "select count(ID) from procedurereports where studentID =? && rotationID = ? && isApproved = ?;",
+        [req.params.studentID, req.params.rotationID, req.params.approvalCode],
+        function (err, data, fields) {
+            if (err) return next(new AppError(err, 500));
+            res.status(200).json({
+                status: "success",
+                length: data?.length,
+                data: data,
+            });
+        }
+    );
+};
