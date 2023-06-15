@@ -11,15 +11,15 @@ router.route("/update/:ID").put(procedureFormController.updateProcedureForm);
 
 router
     .route("/get/count/dashboard/required/:rotationID")
-    .get(patientFormController.getRequiredCountProcedureFormsForDashboard);
+    .get(procedureFormController.getRequiredCountProcedureFormsForDashboard);
 
 router
     .route("/get/count/dashboard/all/:studentID/:rotationID")
-    .get(patientFormController.getAllCountProcedureFormsForDashboard);
+    .get(procedureFormController.getAllCountProcedureFormsForDashboard);
 
 router
     .route("/get/count/dashboard/approved/:studentID/:rotationID/:approvalCode")
-    .get(patientFormController.getCountProcedureFormsForDashboardAccordingToApproval);
+    .get(procedureFormController.getCountProcedureFormsForDashboardAccordingToApproval);
 
 router
     .route("/get/all/:studentID")
