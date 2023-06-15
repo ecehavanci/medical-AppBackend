@@ -74,7 +74,7 @@ router
     .route("/get/ID/:studentID/:localStorageID")
     .get(procedureFormController.getIDofProcedureForm);
 
-router
+/*router
     .route("/delete/:ID")
     .delete(procedureFormController.deleteProcedureFormWithID);
 
@@ -84,6 +84,6 @@ router
 
 router
     .route("/get/count/dashboard/approved/:studentID/:rotationID/:approvalCode")
-    .get(procedureFormController.getCountProcedureFormsForDashboardAccordingToApproval);
+    .get(procedureFormController.getCountProcedureFormsForDashboardAccordingToApproval);*/
 
 module.exports = router;
