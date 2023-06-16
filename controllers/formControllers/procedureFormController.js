@@ -392,7 +392,7 @@ exports.getIDofProcedureForm = (req, res, next) => {
         return next(new AppError("No procedure with this local storage ID found", 404));
     }
     conn.query(
-        "select * from procedurereports WHERE studentID =  ? AND localStorageID = ? order by ID ASC LIMIT 1",
+        "select ID from procedurereports WHERE studentID =  ? AND localStorageID = ? order by ID ASC LIMIT 1",
         [req.params.studentID, req.params.localStorageID],
         function (err, data, fields) {
             if (err) return next(new AppError(err, 500));
