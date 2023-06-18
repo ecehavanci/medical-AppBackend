@@ -474,7 +474,7 @@ exports.getAllCountProcedureFormsForDashboard = (req, res, next) => {
     );
 };
 
-exports.getCountProcedureFormsForDashboardAccordingToApproval = (req, res, next) => {
+/*exports.getCountProcedureFormsForDashboardAccordingToApproval = (req, res, next) => {
     conn.query(
         "select count(ID) from procedurereports where studentID =? && rotationID = ? && isApproved = ?;",
         [req.params.studentID, req.params.rotationID, req.params.approvalCode],
@@ -487,4 +487,4 @@ exports.getCountProcedureFormsForDashboardAccordingToApproval = (req, res, next)
             });
         }
     );
-};
+};*/
