@@ -781,6 +781,21 @@ exports.getCount = (req, res, next) => {
     );
 };
 
+exports.getCountForRotation = (req, res, next) => {
+    conn.query(
+        "select count(ID) from patientreports Where studentID = ? rotationID = ?;",
+        [req.params.studentID, req.params.rotationID],
+        function (err, data, fields) {
+            if (err) return next(new AppError(err, 500));
+            res.status(200).json({
+                status: "success",
+                length: data?.length,
+                data: data,
+            });
+        }
+    );
+};
+
 
 exports.getLocalStorageIDofPatientFormWithID = (req, res, next) => {
     if (!req.params.ID) {

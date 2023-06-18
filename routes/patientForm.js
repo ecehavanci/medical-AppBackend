@@ -59,6 +59,10 @@ router
     .get(patientFormController.getCount);
 
 router
+    .route("/get/count/rotation/:studentID/:rotationID")
+    .get(patientFormController.getCount);
+
+router
     .route("/get/local_storage_id/:ID")
     .get(patientFormController.getLocalStorageIDofPatientFormWithID);
 
