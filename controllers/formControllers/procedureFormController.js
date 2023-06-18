@@ -446,7 +446,7 @@ exports.getCountProcedureFormsForDashboardAccordingToApproval = (req, res, next)
 
 exports.getRequiredCountProcedureFormsForDashboard = (req, res, next) => {
     conn.query(
-        "select proceduretReportCount from rotations where ID = ?;",
+        "select procedureReportCount from rotations where ID = ?;",
         [req.params.rotationID],
         function (err, data, fields) {
             if (err) return next(new AppError(err, 500));
