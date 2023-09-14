@@ -13,16 +13,7 @@ exports.insertPatientForm = (req, res, next) => {
         req.body.courseID,
         req.body.specialtyID,
         req.body.attendingPhysicianID,
-        req.body.diagnosisID,
-        req.body.diagnosis,
         req.body.patientHospitalID,
-        req.body.patientName,
-        req.body.patientGender,
-        req.body.patientBirthDate,
-        req.body.relevants,
-        req.body.keySymptoms,
-        req.body.signs,
-        req.body.data,
         req.body.isObserved,
         req.body.isAssisted,
         req.body.isPerformed,
@@ -32,6 +23,7 @@ exports.insertPatientForm = (req, res, next) => {
         req.body.isPhysicalExamination,
         req.body.isDifferentialDiagnosis,
         req.body.setting,
+        req.body.illnessScript,
         req.body.tier1ID,
         req.body.tier1,
         req.body.tier2ID,
@@ -40,10 +32,8 @@ exports.insertPatientForm = (req, res, next) => {
         req.body.tier3,
         req.body.tier4ID,
         req.body.tier4,
-        req.body.lastSaveDate,
-        req.body.lastSaveTime,
-        req.body.approveDate,
-        req.body.approveTime,
+        req.body.saveEpoch,
+        req.body.sentEpoch,
         req.body.isSent,
         req.body.isApproved,
         req.body.comment,
@@ -59,16 +49,7 @@ exports.insertPatientForm = (req, res, next) => {
         "courseID," +
         "specialtyID," +
         "attendingPhysicianID," +
-        "diagnosisID," +
-        "diagnosis," +
         "patientHospitalID," +
-        "patientName," +
-        "patientGender," +
-        "patientBirthDate," +
-        "relevants," +
-        "keySymptoms," +
-        "signs," +
-        "data," +
         "isObserved," +
         "isAssisted," +
         "isPerformed," +
@@ -78,6 +59,7 @@ exports.insertPatientForm = (req, res, next) => {
         "isPhysicalExamination," +
         "isDifferentialDiagnosis," +
         "setting," +
+        "illnessScript," +
         "tier1ID," +
         "tier1," +
         "tier2ID," +
@@ -86,10 +68,8 @@ exports.insertPatientForm = (req, res, next) => {
         "tier3," +
         "tier4ID," +
         "tier4," +
-        "lastSaveDate," +
-        "lastSaveTime," +
-        "approveDate," +
-        "approveTime," +
+        "saveEpoch," +
+        "sentEpoch," +
         "isSent," +
         "isApproved," +
         "comment," +
@@ -122,16 +102,7 @@ exports.updatePatientForm = (req, res, next) => {
     if (req.body.courseID !== undefined) values.unshift(req.body.courseID);
     if (req.body.specialtyID !== undefined) values.unshift(req.body.specialtyID);
     if (req.body.attendingPhysicianID !== undefined) values.unshift(req.body.attendingPhysicianID);
-    if (req.body.diagnosisID !== undefined) values.unshift(req.body.diagnosisID);
-    if (req.body.diagnosis !== undefined) values.unshift(req.body.diagnosis);
     if (req.body.patientHospitalID !== undefined) values.unshift(req.body.patientHospitalID);
-    if (req.body.patientName !== undefined) values.unshift(req.body.patientName);
-    if (req.body.patientGender !== undefined) values.unshift(req.body.patientGender);
-    if (req.body.patientBirthDate !== undefined) values.unshift(req.body.patientBirthDate);
-    if (req.body.relevants !== undefined) values.unshift(req.body.relevants);
-    if (req.body.keySymptoms !== undefined) values.unshift(req.body.keySymptoms);
-    if (req.body.signs !== undefined) values.unshift(req.body.signs);
-    if (req.body.data !== undefined) values.unshift(req.body.data);
     if (req.body.isObserved !== undefined) values.unshift(req.body.isObserved);
     if (req.body.isAssisted !== undefined) values.unshift(req.body.isAssisted);
     if (req.body.isPerformed !== undefined) values.unshift(req.body.isPerformed);
@@ -141,6 +112,7 @@ exports.updatePatientForm = (req, res, next) => {
     if (req.body.isPhysicalExamination !== undefined) values.unshift(req.body.isPhysicalExamination);
     if (req.body.isDifferentialDiagnosis !== undefined) values.unshift(req.body.isDifferentialDiagnosis);
     if (req.body.setting !== undefined) values.unshift(req.body.setting);
+    if (req.body.illnessScript !== undefined) values.unshift(req.body.illnessScript);
     if (req.body.tier1ID !== undefined) values.unshift(req.body.tier1ID);
     if (req.body.tier1 !== undefined) values.unshift(req.body.tier1);
     if (req.body.tier2ID !== undefined) values.unshift(req.body.tier2ID);
@@ -149,10 +121,8 @@ exports.updatePatientForm = (req, res, next) => {
     if (req.body.tier3 !== undefined) values.unshift(req.body.tier3);
     if (req.body.tier4ID !== undefined) values.unshift(req.body.tier4ID);
     if (req.body.tier4 !== undefined) values.unshift(req.body.tier4);
-    if (req.body.lastSaveDate !== undefined) values.unshift(req.body.lastSaveDate);
-    if (req.body.lastSaveTime !== undefined) values.unshift(req.body.lastSaveTime);
-    if (req.body.approveDate !== undefined) values.unshift(req.body.approveDate);
-    if (req.body.approveTime !== undefined) values.unshift(req.body.approveTime);
+    if (req.body.saveEpoch !== undefined) values.unshift(req.body.saveEpoch);
+    if (req.body.sentEpoch !== undefined) values.unshift(req.body.sentEpoch);
     if (req.body.isSent !== undefined) values.unshift(req.body.isSent);
     if (req.body.isApproved !== undefined) values.unshift(req.body.isApproved);
     if (req.body.comment !== undefined) values.unshift(req.body.comment);
@@ -168,16 +138,7 @@ exports.updatePatientForm = (req, res, next) => {
         (req.body.courseID !== undefined ? "courseID = ?, " : "") +
         (req.body.specialtyID !== undefined ? "specialtyID = ?, " : "") +
         (req.body.attendingPhysicianID !== undefined ? "attendingPhysicianID = ?, " : "") +
-        (req.body.diagnosisID !== undefined ? "diagnosisID = ?, " : "") +
-        (req.body.diagnosis !== undefined ? "diagnosis = ?, " : "") +
         (req.body.patientHospitalID !== undefined ? "patientHospitalID = ?, " : "") +
-        (req.body.patientName !== undefined ? "patientName = ?, " : "") +
-        (req.body.patientGender !== undefined ? "patientGender = ?, " : "") +
-        (req.body.patientBirthDate !== undefined ? "patientBirthDate = ?, " : "") +
-        (req.body.relevants !== undefined ? "relevants = ?, " : "") +
-        (req.body.keySymptoms !== undefined ? "keySymptoms = ?, " : "") +
-        (req.body.signs !== undefined ? "signs = ?, " : "") +
-        (req.body.data !== undefined ? "data = ?, " : "") +
         (req.body.isObserved !== undefined ? "isObserved = ?, " : "") +
         (req.body.isAssisted !== undefined ? "isAssisted = ?, " : "") +
         (req.body.isPerformed !== undefined ? "isPerformed = ?, " : "") +
@@ -187,6 +148,7 @@ exports.updatePatientForm = (req, res, next) => {
         (req.body.isPhysicalExamination !== undefined ? "isPhysicalExamination = ?, " : "") +
         (req.body.isDifferentialDiagnosis !== undefined ? "isDifferentialDiagnosis = ?, " : "") +
         (req.body.setting !== undefined ? "setting = ?, " : "") +
+        (req.body.illnessScript !== undefined ? "illnessScript = ?, " : "") +
         (req.body.tier1ID !== undefined ? "tier1ID = ?, " : "") +
         (req.body.tier1 !== undefined ? "tier1 = ?, " : "") +
         (req.body.tier2ID !== undefined ? "tier2ID = ?, " : "") +
@@ -195,10 +157,8 @@ exports.updatePatientForm = (req, res, next) => {
         (req.body.tier3 !== undefined ? "tier3 = ?, " : "") +
         (req.body.tier4ID !== undefined ? "tier4ID = ?, " : "") +
         (req.body.tier4 !== undefined ? "tier4 = ?, " : "") +
-        (req.body.lastSaveDate !== undefined ? "lastSaveDate = ?, " : "") +
-        (req.body.lastSaveTime !== undefined ? "lastSaveTime = ?, " : "") +
-        (req.body.approveDate !== undefined ? "approveDate = ?, " : "") +
-        (req.body.approveTime !== undefined ? "approveTime = ?, " : "") +
+        (req.body.saveEpoch !== undefined ? "saveEpoch = ?, " : "") +
+        (req.body.sentEpoch !== undefined ? "sentEpoch = ?, " : "") +
         (req.body.isSent !== undefined ? "isSent = ?, " : "") +
         (req.body.isApproved !== undefined ? "isApproved = ?, " : "") +
         (req.body.comment !== undefined ? "comment = ?, " : "");
@@ -313,7 +273,7 @@ exports.searchPatientForms = (req, res, next) => {
     var input = req.params.searchInput === "|" ? "" : req.params.searchInput;
     conn.query(
         "select * from patientreports WHERE studentID = ? and isSent = ? " +
-        "AND UPPER(patientName) LIKE '%" + input + "%' order by lastSaveDate DESC, lastSaveTime DESC",
+        "AND UPPER(illnessScript) LIKE '%" + input + "%' order by saveEpoch DESC", 
         [req.params.studentID, req.params.isSent, req.params.isApproved],
         function (err, data, fields) {
             if (err) return next(new AppError(err, 500));
@@ -330,7 +290,7 @@ exports.searchPatientFormsByAcceptance = (req, res, next) => {
     var input = req.params.searchInput === "|" ? "" : req.params.searchInput;
     conn.query(
         "select * from patientreports WHERE studentID = ? and isSent = ? AND isApproved = ? " +
-        "AND UPPER(patientName) LIKE '%" + input + "%' order by lastSaveDate DESC, lastSaveTime DESC",
+        "AND UPPER(illnessScript) LIKE '%" + input + "%' order by saveEpoch DESC",
         [req.params.studentID, req.params.isSent, req.params.isApproved],
         function (err, data, fields) {
             if (err) return next(new AppError(err, 500));
@@ -348,7 +308,7 @@ exports.searchPatientFormsByMultipleAcceptance = (req, res, next) => {
     conn.query(
         "select * from patientreports WHERE studentID = ? and isSent = ? " +
         "AND (isApproved = ? OR isApproved = ?) " +
-        "AND UPPER(patientName) LIKE '%" + input + "%' order by lastSaveDate DESC, lastSaveTime DESC",
+        "AND UPPER(illnessScript) LIKE '%" + input + "%' order by saveEpoch DESC",
         [req.params.studentID, req.params.isSent, req.params.isApproved1, req.params.isApproved2],
         function (err, data, fields) {
             if (err) return next(new AppError(err, 500));
@@ -445,83 +405,11 @@ exports.updatePatientFormWithID = (req, res, next) => {
         firstArgumentEntered = true;
     }
 
-    if (req.params.diagnosisID !== undefined) {
-        if (firstArgumentEntered) {
-            queryString += ", ";
-        }
-        queryString += "diagnosisID= '" + req.params.diagnosisID + "'";
-        firstArgumentEntered = true;
-    }
-
-    if (req.params.diagnosis !== undefined) {
-        if (firstArgumentEntered) {
-            queryString += ", ";
-        }
-        queryString += "diagnosis= '" + req.params.diagnosis + "'";
-        firstArgumentEntered = true;
-    }
-
     if (req.params.patientHospitalID !== undefined) {
         if (firstArgumentEntered) {
             queryString += ", ";
         }
         queryString += "patientHospitalID= '" + req.params.patientHospitalID + "'";
-        firstArgumentEntered = true;
-    }
-
-    if (req.params.patientName !== undefined) {
-        if (firstArgumentEntered) {
-            queryString += ", ";
-        }
-        queryString += "patientName= '" + req.params.patientName + "'";
-        firstArgumentEntered = true;
-    }
-
-    if (req.params.patientGender !== undefined) {
-        if (firstArgumentEntered) {
-            queryString += ", ";
-        }
-        queryString += "patientGender= '" + req.params.patientGender + "'";
-        firstArgumentEntered = true;
-    }
-
-    if (req.params.patientBirthDate !== undefined) {
-        if (firstArgumentEntered) {
-            queryString += ", ";
-        }
-        queryString += "patientBirthDate= '" + req.params.patientBirthDate + "'";
-        firstArgumentEntered = true;
-    }
-
-    if (req.params.relevants !== undefined) {
-        if (firstArgumentEntered) {
-            queryString += ", ";
-        }
-        queryString += "relevants= '" + req.params.relevants + "'";
-        firstArgumentEntered = true;
-    }
-
-    if (req.params.keySymptoms !== undefined) {
-        if (firstArgumentEntered) {
-            queryString += ", ";
-        }
-        queryString += "keySymptoms= '" + req.params.keySymptoms + "'";
-        firstArgumentEntered = true;
-    }
-
-    if (req.params.signs !== undefined) {
-        if (firstArgumentEntered) {
-            queryString += ", ";
-        }
-        queryString += "signs= '" + req.params.signs + "'";
-        firstArgumentEntered = true;
-    }
-
-    if (req.params.data !== undefined) {
-        if (firstArgumentEntered) {
-            queryString += ", ";
-        }
-        queryString += "data= '" + req.params.data + "'";
         firstArgumentEntered = true;
     }
 
@@ -546,6 +434,14 @@ exports.updatePatientFormWithID = (req, res, next) => {
             queryString += ", ";
         }
         queryString += "setting= '" + req.params.setting + "'";
+        firstArgumentEntered = true;
+    }
+
+    if (req.params.illnessScript !== undefined) {
+        if (firstArgumentEntered) {
+            queryString += ", ";
+        }
+        queryString += "illnessScript= '" + req.params.illnessScript + "'";
         firstArgumentEntered = true;
     }
 
@@ -613,35 +509,19 @@ exports.updatePatientFormWithID = (req, res, next) => {
         firstArgumentEntered = true;
     }
 
-    if (req.params.lastSaveDate !== undefined) {
+    if (req.params.saveEpoch !== undefined) {
         if (firstArgumentEntered) {
             queryString += ", ";
         }
-        queryString += "lastSaveDate= '" + req.params.lastSaveDate + "'";
+        queryString += "saveEpoch= '" + req.params.saveEpoch + "'";
         firstArgumentEntered = true;
     }
 
-    if (req.params.lastSaveTime !== undefined) {
+    if (req.params.sentEpoch !== undefined) {
         if (firstArgumentEntered) {
             queryString += ", ";
         }
-        queryString += "lastSaveTime= '" + req.params.lastSaveTime + "'";
-        firstArgumentEntered = true;
-    }
-
-    if (req.params.approveDate !== undefined) {
-        if (firstArgumentEntered) {
-            queryString += ", ";
-        }
-        queryString += "approveDate= '" + req.params.approveDate + "'";
-        firstArgumentEntered = true;
-    }
-
-    if (req.params.approveTime !== undefined) {
-        if (firstArgumentEntered) {
-            queryString += ", ";
-        }
-        queryString += "approveTime= '" + req.params.approveTime + "'";
+        queryString += "sentEpoch= '" + req.params.sentEpoch + "'";
         firstArgumentEntered = true;
     }
 
@@ -697,7 +577,7 @@ exports.updatePatientFormWithID = (req, res, next) => {
 exports.listAllPatientReportsAccSentDateForDoc = (req, res, next) => {
     var input = req.params.searchInput === "|" ? "" : req.params.searchInput;
     conn.query("select * from patientreports WHERE attendingPhysicianID= ? AND isSent = 1 AND isApproved = ? AND " +
-        "UPPER(studentName) LIKE '%"+input+"%' order by lastSaveDate DESC, lastSaveTime DESC",
+        "UPPER(studentName) LIKE '%"+input+"%' order by saveEpoch DESC",
         [req.params.attphyscID, req.params.isApproved],
         function (err, data, fields) {
             if (err) return next(new AppError(err, 500));
@@ -716,7 +596,7 @@ exports.listAllPatientReportsAccApproveDateForDoc = (req, res, next) => {
     const input = req.params.searchInput === "|" ? "" : req.params.searchInput;
 
     conn.query("select * from patientreports WHERE attendingPhysicianID= ? AND isSent = 1 AND isApproved = ? AND " +
-        "UPPER(studentName) LIKE '%"+ input +"%' order by approveDate DESC, approveTime DESC",
+        "UPPER(studentName) LIKE '%"+ input +"%' order by sentEpoch DESC",
         [req.params.attphyscID, req.params.isApproved],
         function (err, data, fields) {
             if (err) return next(new AppError(err, 500));
@@ -730,23 +610,6 @@ exports.listAllPatientReportsAccApproveDateForDoc = (req, res, next) => {
 
 };
 
-/*exports.listAllPatientReportsAccApproveDateForDoc = (req, res, next) => {
-    var input = req.params.searchInput === "|" ? "" : req.params.searchInput;
-
-    conn.query("select * from patientreports WHERE studentID = ? AND isSent = ? AND " +
-        "UPPER(patientName) LIKE '%"+input+"%' order by lastSaveDate DESC, lastSaveTime DESC",
-        [req.params.studentID, req.params.isSent],
-        function (err, data, fields) {
-            if (err) return next(new AppError(err, 500));
-            res.status(200).json({
-                status: "success",
-                length: data?.length,
-                data: data,
-            });
-        }
-    );
-
-};*/
 
 exports.deletePatientFormWithID = (req, res, next) => {
     if (!req.params.ID) {
@@ -836,7 +699,7 @@ exports.getIDofPatientForm = (req, res, next) => {
     );
 }
 
-exports.updatePatientFormApproveInfo = (req, res, next) => {
+exports.updatePatientFormApproveInfo = (req, res, next) => { //todoooooooooooo change it for also in app endpoint
     if (!req.params.reportID) {
         return next(new AppError("No report with this ID found", 404));
     }
@@ -847,8 +710,8 @@ exports.updatePatientFormApproveInfo = (req, res, next) => {
         return next(new AppError("Wrong approve Date & Time", 404));
     }
     conn.query(
-        "UPDATE patientreports SET isApproved = ? ,approveDate = '?' ,approveTime = '?'  WHERE ID = ?",
-        [req.params.updateChoice, req.params.approveDate, req.params.approveTime, req.params.reportID],
+        "UPDATE patientreports SET isApproved = ? ,sentEpoch = '?'  WHERE ID = ?",
+        [req.params.updateChoice,sentEpoch, req.params.reportID],
         function (err, data, fields) {
             if (err) return next(new AppError(err, 500));
             res.status(200).json({

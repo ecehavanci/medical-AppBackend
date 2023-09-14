@@ -82,7 +82,7 @@ router
     .get(patientFormController.listAllPatientReportsAccApproveDateForDoc);
 
 router
-    .route("/update/:updateChoice/:approveDate/:approveTime/:reportID")
+    .route("/update/:updateChoice/:sentEpoch/:reportID")
     .put(patientFormController.updatePatientFormApproveInfo);
 
 router
