@@ -94,6 +94,7 @@ exports.updatePatientForm = (req, res, next) => {
         return next(new AppError("No form data found", 404));
 
     console.log("req body found: student ID: " + req.body.studentID);
+    console.log("req body found: isSent: " + req.body.isSent);
 
     let values = [];
     if (req.body.studentID !== undefined) values.unshift(req.body.studentID);
@@ -167,6 +168,9 @@ exports.updatePatientForm = (req, res, next) => {
     str = str.substring(0, pos) + str.substring(pos + 1);
 
     str = str + " WHERE ID = " + req.params.ID + ";";
+
+    console.log("str\n"+ str);
+    console.log("values\n"+ values);
 
     conn.query(
         str, values,
@@ -273,7 +277,7 @@ exports.searchPatientForms = (req, res, next) => {
     var input = req.params.searchInput === "|" ? "" : req.params.searchInput;
     conn.query(
         "select * from patientreports WHERE studentID = ? and isSent = ? " +
-        "AND UPPER(illnessScript) LIKE '%" + input + "%' order by saveEpoch DESC", 
+        "AND UPPER(illnessScript) LIKE '%" + input + "%' order by saveEpoch DESC",
         [req.params.studentID, req.params.isSent, req.params.isApproved],
         function (err, data, fields) {
             if (err) return next(new AppError(err, 500));
@@ -577,7 +581,7 @@ exports.updatePatientFormWithID = (req, res, next) => {
 exports.listAllPatientReportsAccSentDateForDoc = (req, res, next) => {
     var input = req.params.searchInput === "|" ? "" : req.params.searchInput;
     conn.query("select * from patientreports WHERE attendingPhysicianID= ? AND isSent = 1 AND isApproved = ? AND " +
-        "UPPER(studentName) LIKE '%"+input+"%' order by saveEpoch DESC",
+        "UPPER(studentName) LIKE '%" + input + "%' order by saveEpoch DESC",
         [req.params.attphyscID, req.params.isApproved],
         function (err, data, fields) {
             if (err) return next(new AppError(err, 500));
@@ -596,7 +600,7 @@ exports.listAllPatientReportsAccApproveDateForDoc = (req, res, next) => {
     const input = req.params.searchInput === "|" ? "" : req.params.searchInput;
 
     conn.query("select * from patientreports WHERE attendingPhysicianID= ? AND isSent = 1 AND isApproved = ? AND " +
-        "UPPER(studentName) LIKE '%"+ input +"%' order by sentEpoch DESC",
+        "UPPER(studentName) LIKE '%" + input + "%' order by sentEpoch DESC",
         [req.params.attphyscID, req.params.isApproved],
         function (err, data, fields) {
             if (err) return next(new AppError(err, 500));
@@ -711,7 +715,7 @@ exports.updatePatientFormApproveInfo = (req, res, next) => { //todoooooooooooo c
     }
     conn.query(
         "UPDATE patientreports SET isApproved = ? ,sentEpoch = '?'  WHERE ID = ?",
-        [req.params.updateChoice,sentEpoch, req.params.reportID],
+        [req.params.updateChoice, sentEpoch, req.params.reportID],
         function (err, data, fields) {
             if (err) return next(new AppError(err, 500));
             res.status(200).json({

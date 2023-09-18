@@ -24,8 +24,11 @@ app.get("/", (req, res) => {
 
 const PORT = 3000;
 
-app.listen(PORT, () => {
-    console.log(`server running on port ${PORT}`);
-});
+killPort(PORT).then(() => {
+    // Start your server here  
+    app.listen(PORT, () => {
+      console.log(`Server is listening on port ${PORT}`);
+    });
+  });
 
 module.exports = app;
