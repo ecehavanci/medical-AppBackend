@@ -23,14 +23,8 @@ app.get("/", (req, res) => {
 });
 
 const PORT = 3000;
-
-killPort(PORT).then(() => {
-    app.listen(PORT, () => {
-      console.log(`Server is listening on port ${PORT}`);
-    });
-  }) .catch((err) => {
-    // Handle the error when no process is running on the specified port
-    console.error(`Error stopping process on port ${PORT}: ${err.message}`);
+app.listen(PORT, () => {
+    console.log(`Server is listening on port ${PORT}`);
   });
 
 module.exports = app;
