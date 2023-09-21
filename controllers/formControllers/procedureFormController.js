@@ -235,6 +235,29 @@ exports.searchProcedureReportsByAcceptance = (req, res, next) => {
     )
 };
 
+exports.searchProcedureReportsByMultipleAcceptance = (req, res, next) => {
+    var input = req.params.searchInput === "|" ? "" : req.params.searchInput;
+    
+    conn.query(
+        "SELECT pr.*, p.description AS procedureText " +
+        "FROM procedurereports pr " +
+        "INNER JOIN procedures p ON pr.procedureID = p.ID " +
+        "WHERE pr.studentID = ? AND pr.isSent = ? " +
+        "AND (pr.isApproved = ? OR pr.isApproved = ?) " +
+        "AND UPPER(p.description) LIKE '%" + input + "%' " +
+        "ORDER BY pr.saveEpoch DESC;",
+        [req.params.studentID, req.params.isSent, req.params.isApproved1, req.params.isApproved2],
+        function (err, data, fields) {
+            if (err) return next(new AppError(err, 500));
+            res.status(200).json({
+                status: "success",
+                length: data?.length,
+                data: data,
+            });
+        }
+    );
+};
+
 
 exports.listProcedureFormsWithStudentID = (req, res, next) => {
     var str = "SELECT * FROM procedurereports WHERE studentID = ? AND isSent = ?";
