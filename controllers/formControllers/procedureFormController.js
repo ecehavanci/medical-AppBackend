@@ -1,5 +1,6 @@
 const AppError = require("../../utils/appError");
 const conn = require("../../services/db");
+const procedureController = require("../procedureController");
 
 exports.insertProcedureForm = (req, res, next) => {
     //we check if the client is sending an empty form "and return a 404 error message.
@@ -12,16 +13,15 @@ exports.insertProcedureForm = (req, res, next) => {
         req.body.rotationID,
         req.body.specialtyID,
         req.body.attendingPhysicianID,
+        req.body.procedureID,
         req.body.procedureText,
         req.body.isObserved,
         req.body.isAssisted,
         req.body.isPerformed,
         req.body.isSimulated,
         req.body.setting,
-        req.body.lastSaveDate,
-        req.body.lastSaveTime,
-        req.body.approveDate,
-        req.body.approveTime,
+        req.body.saveEpoch,
+        req.body.sentEpoch,
         req.body.isSent,
         req.body.isApproved,
         req.body.comment,
@@ -36,16 +36,15 @@ exports.insertProcedureForm = (req, res, next) => {
         "rotationID," +
         "specialtyID," +
         "attendingPhysicianID," +
+        "procedureID," +
         "procedureText," +
         "isObserved," +
         "isAssisted," +
         "isPerformed," +
         "isSimulated," +
         "setting," +
-        "lastSaveDate," +
-        "lastSaveTime," +
-        "approveDate," +
-        "approveTime," +
+        "saveEpoch," +
+        "sentEpoch," +
         "isSent," +
         "isApproved," +
         "comment," +
@@ -53,11 +52,19 @@ exports.insertProcedureForm = (req, res, next) => {
         "VALUES(?)",
         [values],
         function (err, data, fields) {
+
             if (err)
                 return next(new AppError(err, 500));
+
+
+            if (res.status && res.status() === 201) {
+                const insertedID = data.insertId;
+                checkAndUpdateDiagnosis(req.body.procedureID, req.body.procedureText, insertedID);
+            }
+
             res.status(201).json({
                 status: "success",
-                message: "New student added!",
+                message: "New form added!",
             });
         }
     );
@@ -74,16 +81,15 @@ exports.updateProcedureForm = (req, res, next) => {
     if (req.body.rotationID !== undefined) values.push(req.body.rotationID);
     if (req.body.specialtyID !== undefined) values.push(req.body.specialtyID);
     if (req.body.attendingPhysicianID !== undefined) values.push(req.body.attendingPhysicianID);
+    if (req.body.procedureID !== undefined) values.push(req.body.procedureID);
     if (req.body.procedureText !== undefined) values.push(req.body.procedureText);
     if (req.body.isObserved !== undefined) values.push(req.body.isObserved);
     if (req.body.isAssisted !== undefined) values.push(req.body.isAssisted);
     if (req.body.isPerformed !== undefined) values.push(req.body.isPerformed);
     if (req.body.isSimulated !== undefined) values.push(req.body.isSimulated);
     if (req.body.setting !== undefined) values.push(req.body.setting);
-    if (req.body.lastSaveDate !== undefined) values.push(req.body.lastSaveDate);
-    if (req.body.lastSaveTime !== undefined) values.push(req.body.lastSaveTime);
-    if (req.body.approveDate !== undefined) values.push(req.body.approveDate);
-    if (req.body.approveTime !== undefined) values.push(req.body.approveTime);
+    if (req.body.saveEpoch !== undefined) values.push(req.body.saveEpoch);
+    if (req.body.sentEpoch !== undefined) values.push(req.body.sentEpoch);
     if (req.body.isSent !== undefined) values.push(req.body.isSent);
     if (req.body.isApproved !== undefined) values.push(req.body.isApproved);
     if (req.body.comment !== undefined) values.push(req.body.comment);
@@ -99,16 +105,15 @@ exports.updateProcedureForm = (req, res, next) => {
         (req.body.rotationID !== undefined ? "rotationID = ?, " : "") +
         (req.body.specialtyID !== undefined ? "specialtyID = ?, " : "") +
         (req.body.attendingPhysicianID !== undefined ? "attendingPhysicianID = ?, " : "") +
+        (req.body.procedureID !== undefined ? "procedureID = ?, " : "") +
         (req.body.procedureText !== undefined ? "procedureText = ?, " : "") +
         (req.body.isObserved !== undefined ? "isObserved = ?, " : "") +
         (req.body.isAssisted !== undefined ? "isAssisted = ?, " : "") +
         (req.body.isPerformed !== undefined ? "isPerformed = ?, " : "") +
         (req.body.isSimulated !== undefined ? "isSimulated = ?, " : "") +
         (req.body.setting !== undefined ? "setting = ?, " : "") +
-        (req.body.lastSaveDate !== undefined ? "lastSaveDate = ?, " : "") +
-        (req.body.lastSaveTime !== undefined ? "lastSaveTime = ?, " : "") +
-        (req.body.approveDate !== undefined ? "approveDate = ?, " : "") +
-        (req.body.approveTime !== undefined ? "approveTime = ?, " : "") +
+        (req.body.saveEpoch !== undefined ? "saveEpoch = ?, " : "") +
+        (req.body.sentEpoch !== undefined ? "sentEpoch = ?, " : "") +
         (req.body.isSent !== undefined ? "isSent = ?, " : "") +
         (req.body.isApproved !== undefined ? "isApproved = ?, " : "") +
         (req.body.comment !== undefined ? "comment = ?, " : "");
@@ -125,12 +130,45 @@ exports.updateProcedureForm = (req, res, next) => {
         function (err, data, fields) {
             if (err)
                 return next(new AppError(err, 500));
+
+            if (res.status && res.status() === 201) {
+                const insertedID = data.insertId;
+                checkAndUpdateDiagnosis(req.body.procedureID, req.body.procedureText, insertedID);
+            }
+
             res.status(201).json({
                 status: "success",
                 message: "Student data successfully altered",
             });
         }
     );
+};
+
+const checkAndUpdateDiagnosis = (procedureID, procedureText, relatedReport) => {
+    // Check if isSent is 1 and procedureID is -1
+    if (isSent === 1 && procedureID === -1) {
+        // Search for a similar string in the procedures table
+        const similarProcedureQuery = `SELECT * FROM procedures WHERE MATCH(procedureText) AGAINST (? IN NATURAL LANGUAGE MODE)`;
+
+        conn.query(similarProcedureQuery, [procedureText], (err, results) => {
+            if (err) {
+                console.error('Error searching for similar procedure:', err);
+                return;
+            }
+
+            // If no similar procedure is found, insert a new row in the diagnosis table
+            if (results.length === 0) {
+                const req = {
+                    body: {
+                        description: procedureText,
+                        relatedReport: relatedReport,
+                    },
+                };
+
+                procedureController.insertProcedure(req);
+            }
+        });
+    }
 };
 
 exports.getAllProcedureFormsWithStudentID = (req, res, next) => {
@@ -150,7 +188,7 @@ exports.getAllProcedureFormsWithStudentID = (req, res, next) => {
 exports.getAllProcedureFormsForLocalStorage = (req, res, next) => {
     conn.query(
         "select * from procedurereports WHERE studentID = $ID AND isSent = 0 ORDER BY " +
-        "lastSaveDate DESC, lastSaveTime DESC",
+        "saveEpoch DESC, sentEpoch DESC",
         function (err, data, fields) {
             if (err) return next(new AppError(err, 500));
             res.status(200).json({
@@ -176,7 +214,7 @@ exports.getAllSentProcedureForms = (req, res, next) => {
     );
 };
 
-exports.searchProcedureReportsByAcceptance = (req, res, next) => {
+exports.searchProcedureReportsByAcceptance = (req, res, next) => {           //look
     var input = req.params.searchInput === "|" ? "" : req.params.searchInput;
     conn.query(
         "select * from procedurereports WHERE studentID = ? and isSent = ? AND isApproved = ? " +
@@ -191,10 +229,10 @@ exports.searchProcedureReportsByAcceptance = (req, res, next) => {
             });
         }
     )
-    ;
+        ;
 };
 
-exports.searchProcedureReportsByMultipleAcceptance = (req, res, next) => {
+exports.searchProcedureReportsByMultipleAcceptance = (req, res, next) => { //look
     var input = req.params.searchInput === "|" ? "" : req.params.searchInput;
     conn.query(
         "select * from procedurereports WHERE studentID = ? and isSent = ? " +
@@ -210,7 +248,7 @@ exports.searchProcedureReportsByMultipleAcceptance = (req, res, next) => {
             });
         }
     )
-    ;
+        ;
 };
 
 exports.listProcedureFormsWithStudentID = (req, res, next) => {
@@ -242,7 +280,7 @@ exports.getSentProcedureFormsWithStudentID = (req, res, next) => {
     );
 };
 
-exports.searchSentProcedureFormsWithDocIDAccordingToSendDate = (req, res, next) => {
+exports.searchSentProcedureFormsWithDocIDAccordingToSendDate = (req, res, next) => { ///look
     var input = req.params.searchInput === "|" ? "" : req.params.searchInput;
     conn.query(
         "select * from procedurereports WHERE attendingPhysicianID= ? AND " +
@@ -261,7 +299,7 @@ exports.searchSentProcedureFormsWithDocIDAccordingToSendDate = (req, res, next) 
 };
 
 //The query here works, however the api does not return the right result
-exports.searchSentProcedureFormsWithDocIDAccordingToApproveDate = (req, res, next) => {
+exports.searchSentProcedureFormsWithDocIDAccordingToApproveDate = (req, res, next) => {   ///look
     var input = req.params.searchInput === "|" ? "" : req.params.searchInput;
     conn.query(
         "select * from procedurereports WHERE attendingPhysicianID= ? AND isSent = 1 AND isApproved = ? AND " +
@@ -278,7 +316,7 @@ exports.searchSentProcedureFormsWithDocIDAccordingToApproveDate = (req, res, nex
     );
 };
 
-exports.searchProcedureFormsForStudent = (req, res, next) => {
+exports.searchProcedureFormsForStudent = (req, res, next) => {   ///look
     var input = req.params.searchInput === "|" ? "" : req.params.searchInput;
     conn.query(
         "select * from procedurereports WHERE studentID= ? AND " +
@@ -296,7 +334,7 @@ exports.searchProcedureFormsForStudent = (req, res, next) => {
     );
 };
 
-exports.searchProcedureFormsForStudentByAcceptance = (req, res, next) => {
+exports.searchProcedureFormsForStudentByAcceptance = (req, res, next) => {   ///look
     var input = req.params.searchInput === "|" ? "" : req.params.searchInput;
     console.log("PARAMS: " + req.params.searchInput + " " + req.params.studentID + " " + req.params.isSent + " " + req.params.isApproved);
     conn.query(
