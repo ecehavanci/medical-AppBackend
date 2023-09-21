@@ -214,11 +214,15 @@ exports.getAllSentProcedureForms = (req, res, next) => {
     );
 };
 
-exports.searchProcedureReportsByAcceptance = (req, res, next) => {           //look
+exports.searchProcedureReportsByAcceptance = (req, res, next) => {
     var input = req.params.searchInput === "|" ? "" : req.params.searchInput;
     conn.query(
-        "select * from procedurereports WHERE studentID = ? and isSent = ? AND isApproved = ? " +
-        "AND UPPER(procedureText) LIKE '%" + input + "%' order by lastSaveDate DESC, lastSaveTime DESC",
+        "SELECT pr.*, p.description AS procedureText " +
+        "FROM procedurereports pr " +
+        "INNER JOIN procedures p ON pr.procedureID = p.ID " +
+        "WHERE pr.studentID = ? AND pr.isSent = ? AND pr.isApproved = ? " +
+        "AND UPPER(p.description) LIKE '%" + input + "%' " +
+        "ORDER BY pr.saveEpoch DESC",
         [req.params.studentID, req.params.isSent, req.params.isApproved],
         function (err, data, fields) {
             if (err) return next(new AppError(err, 500));
@@ -229,27 +233,8 @@ exports.searchProcedureReportsByAcceptance = (req, res, next) => {           //l
             });
         }
     )
-        ;
 };
 
-exports.searchProcedureReportsByMultipleAcceptance = (req, res, next) => { //look
-    var input = req.params.searchInput === "|" ? "" : req.params.searchInput;
-    conn.query(
-        "select * from procedurereports WHERE studentID = ? and isSent = ? " +
-        "AND (isApproved = ? OR isApproved = ?) " +
-        "AND UPPER(procedureText) LIKE '%" + input + "%' order by lastSaveDate DESC, lastSaveTime DESC",
-        [req.params.studentID, req.params.isSent, req.params.isApproved1, req.params.isApproved2],
-        function (err, data, fields) {
-            if (err) return next(new AppError(err, 500));
-            res.status(200).json({
-                status: "success",
-                length: data?.length,
-                data: data,
-            });
-        }
-    )
-        ;
-};
 
 exports.listProcedureFormsWithStudentID = (req, res, next) => {
     var str = "SELECT * FROM procedurereports WHERE studentID = ? AND isSent = ?";
@@ -280,13 +265,18 @@ exports.getSentProcedureFormsWithStudentID = (req, res, next) => {
     );
 };
 
-exports.searchSentProcedureFormsWithDocIDAccordingToSendDate = (req, res, next) => { ///look
+exports.searchSentProcedureFormsWithDocIDAccordingToSendDate = (req, res, next) => {
     var input = req.params.searchInput === "|" ? "" : req.params.searchInput;
+    
     conn.query(
-        "select * from procedurereports WHERE attendingPhysicianID= ? AND " +
-        "isSent = 1 AND isApproved = ? AND UPPER(procedureText) " +
-        "LIKE '%" + input + "%' order by lastSaveDate DESC, " +
-        "lastSaveTime DESC", [req.params.attendingPhysicianID, req.params.isApproved],
+        "SELECT pr.*, p.description AS procedureText " +
+        "FROM procedurereports pr " +
+        "INNER JOIN procedures p ON pr.procedureID = p.ID " +
+        "WHERE pr.attendingPhysicianID = ? AND " +
+        "pr.isSent = 1 AND pr.isApproved = ? " +
+        "AND UPPER(p.description) LIKE '%" + input + "%' " +
+        "ORDER BY pr.saveEpoch DESC;",
+        [req.params.attendingPhysicianID, req.params.isApproved],
         function (err, data, fields) {
             if (err) return next(new AppError(err, 500));
             res.status(200).json({
@@ -298,13 +288,19 @@ exports.searchSentProcedureFormsWithDocIDAccordingToSendDate = (req, res, next) 
     );
 };
 
-//The query here works, however the api does not return the right result
-exports.searchSentProcedureFormsWithDocIDAccordingToApproveDate = (req, res, next) => {   ///look
+
+exports.searchSentProcedureFormsWithDocIDAccordingToApproveDate = (req, res, next) => {
     var input = req.params.searchInput === "|" ? "" : req.params.searchInput;
+    
     conn.query(
-        "select * from procedurereports WHERE attendingPhysicianID= ? AND isSent = 1 AND isApproved = ? AND " +
-        "UPPER(procedureText) LIKE '%" + input + "%' order by lastSaveDate DESC;"
-        , [req.params.attendingPhysicianID, req.params.isApproved],
+        "SELECT pr.*, p.description AS procedureText " +
+        "FROM procedurereports pr " +
+        "INNER JOIN procedures p ON pr.procedureID = p.ID " +
+        "WHERE pr.attendingPhysicianID = ? AND " +
+        "pr.isSent = 1 AND pr.isApproved = ? " +
+        "AND UPPER(p.description) LIKE '%" + input + "%' " +
+        "ORDER BY pr.sentEpoch DESC;",
+        [req.params.attendingPhysicianID, req.params.isApproved],
         function (err, data, fields) {
             if (err) return next(new AppError(err, 500));
             res.status(200).json({
@@ -316,13 +312,19 @@ exports.searchSentProcedureFormsWithDocIDAccordingToApproveDate = (req, res, nex
     );
 };
 
-exports.searchProcedureFormsForStudent = (req, res, next) => {   ///look
+
+exports.searchProcedureFormsForStudent = (req, res, next) => {
     var input = req.params.searchInput === "|" ? "" : req.params.searchInput;
+    
     conn.query(
-        "select * from procedurereports WHERE studentID= ? AND " +
-        " isSent = ? AND UPPER(procedureText) " +
-        "LIKE '%" + input + "%' order by lastSaveDate DESC, " +
-        "lastSaveTime DESC", [req.params.studentID, req.params.isSent],
+        "SELECT pr.*, p.description AS procedureText " +
+        "FROM procedurereports pr " +
+        "INNER JOIN procedures p ON pr.procedureID = p.ID " +
+        "WHERE pr.studentID = ? AND " +
+        "pr.isSent = ? " +
+        "AND UPPER(p.description) LIKE '%" + input + "%' " +
+        "ORDER BY pr.saveEpoch DESC;",
+        [req.params.studentID, req.params.isSent],
         function (err, data, fields) {
             if (err) return next(new AppError(err, 500));
             res.status(200).json({
@@ -334,14 +336,19 @@ exports.searchProcedureFormsForStudent = (req, res, next) => {   ///look
     );
 };
 
-exports.searchProcedureFormsForStudentByAcceptance = (req, res, next) => {   ///look
+exports.searchProcedureFormsForStudentByAcceptance = (req, res, next) => {
     var input = req.params.searchInput === "|" ? "" : req.params.searchInput;
     console.log("PARAMS: " + req.params.searchInput + " " + req.params.studentID + " " + req.params.isSent + " " + req.params.isApproved);
+    
     conn.query(
-        "select * from procedurereports WHERE studentID= ? AND " +
-        "isSent = ? AND isApproved = ? AND UPPER(procedureText) " +
-        "LIKE '%" + input + "%' order by lastSaveDate DESC, " +
-        "lastSaveTime DESC", [req.params.studentID, req.params.isSent, req.params.isApproved],
+        "SELECT pr.*, p.description AS procedureText " +
+        "FROM procedurereports pr " +
+        "INNER JOIN procedures p ON pr.procedureID = p.ID " +
+        "WHERE pr.studentID = ? AND " +
+        "pr.isSent = ? AND pr.isApproved = ? " +
+        "AND UPPER(p.description) LIKE '%" + input + "%' " +
+        "ORDER BY pr.saveEpoch DESC;",
+        [req.params.studentID, req.params.isSent, req.params.isApproved],
         function (err, data, fields) {
             if (err) return next(new AppError(err, 500));
             res.status(200).json({
@@ -352,6 +359,7 @@ exports.searchProcedureFormsForStudentByAcceptance = (req, res, next) => {   ///
         }
     );
 };
+
 
 exports.getProcedureFormWithID = (req, res, next) => {
     if (!req.params.ID) {
@@ -443,19 +451,19 @@ exports.getIDofProcedureForm = (req, res, next) => {
     );
 }
 
-exports.updateProcedureFormApproveInfo = (req, res, next) => {
+exports.updateProcedureFormApproveInfo = (req, res, next) => { 
     if (!req.params.reportID) {
         return next(new AppError("No report with this ID found", 404));
     }
     if (!req.params.updateChoice) {
         return next(new AppError("Wrong update choice index", 404));
     }
-    if (!req.params.approveDate || !req.params.approveTime) {
-        return next(new AppError("Wrong approve Date & Time", 404));
+    if (!req.params.sentEpoch) {
+        return next(new AppError("Wrong sentEpoch", 404));
     }
     conn.query(
-        "UPDATE procedurereports SET isApproved = ? ,approveDate = ? ,approveTime = ?  WHERE ID = ?",
-        [req.params.updateChoice, req.params.approveDate, req.params.approveTime, req.params.reportID],
+        "UPDATE procedurereports SET isApproved = ? ,sentEpoch = ?  WHERE ID = ?",
+        [req.params.updateChoice, req.params.sentEpoch, req.params.reportID],
         function (err, data, fields) {
             if (err) return next(new AppError(err, 500));
             res.status(200).json({
