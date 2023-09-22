@@ -59,7 +59,7 @@ exports.insertProcedureForm = (req, res, next) => {
                 return next(new AppError(err, 500));
 
 
-            if (res.status && res.status() === 201) {
+            if (res.status && res.status() === 201 && req.body.isSent === 1) {
                 const insertedID = data.insertId;
                 checkAndUpdateProcedure(req.body.procedureID, req.body.procedureText, insertedID);
             }
@@ -135,7 +135,7 @@ exports.updateProcedureForm = (req, res, next) => {
             if (err)
                 return next(new AppError(err, 500));
 
-            if (res.status && res.status() === 201) {
+            if (res.status && res.status() === 201 && req.body.isSent === 1) {
                 const insertedID = data.insertId;
                 checkAndUpdateProcedure(req.body.procedureID, req.body.procedureText, insertedID);
             }
@@ -150,7 +150,7 @@ exports.updateProcedureForm = (req, res, next) => {
 
 const checkAndUpdateProcedure = (procedureID, procedureText, relatedReport) => {
     // Check if isSent is 1 and procedureID is -1
-    if (isSent === 1 && procedureID === -1) {
+    if (procedureID === -1) {
         // Search for a similar string in the procedures table
         const similarProcedureQuery = `
             SELECT
@@ -254,7 +254,7 @@ exports.searchProcedureReportsByAcceptance = (req, res, next) => {
 
 exports.searchProcedureReportsByMultipleAcceptance = (req, res, next) => {
     var input = req.params.searchInput === "|" ? "" : req.params.searchInput;
-    
+
     conn.query(
         "SELECT pr.*" +
         "FROM procedurereports pr " +
@@ -307,7 +307,7 @@ exports.getSentProcedureFormsWithStudentID = (req, res, next) => {
 
 exports.searchSentProcedureFormsWithDocIDAccordingToSendDate = (req, res, next) => {
     var input = req.params.searchInput === "|" ? "" : req.params.searchInput;
-    
+
     conn.query(
         "SELECT pr.*" +
         "FROM procedurereports pr " +
@@ -331,7 +331,7 @@ exports.searchSentProcedureFormsWithDocIDAccordingToSendDate = (req, res, next) 
 
 exports.searchSentProcedureFormsWithDocIDAccordingToApproveDate = (req, res, next) => {
     var input = req.params.searchInput === "|" ? "" : req.params.searchInput;
-    
+
     conn.query(
         "SELECT pr.*" +
         "FROM procedurereports pr " +
@@ -355,7 +355,7 @@ exports.searchSentProcedureFormsWithDocIDAccordingToApproveDate = (req, res, nex
 
 exports.searchProcedureFormsForStudent = (req, res, next) => {
     var input = req.params.searchInput === "|" ? "" : req.params.searchInput;
-    
+
     conn.query(
         "SELECT pr.*" +
         "FROM procedurereports pr " +
@@ -379,7 +379,7 @@ exports.searchProcedureFormsForStudent = (req, res, next) => {
 exports.searchProcedureFormsForStudentByAcceptance = (req, res, next) => {
     var input = req.params.searchInput === "|" ? "" : req.params.searchInput;
     console.log("PARAMS: " + req.params.searchInput + " " + req.params.studentID + " " + req.params.isSent + " " + req.params.isApproved);
-    
+
     conn.query(
         "SELECT pr.*" +
         "FROM procedurereports pr " +
@@ -491,7 +491,7 @@ exports.getIDofProcedureForm = (req, res, next) => {
     );
 }
 
-exports.updateProcedureFormApproveInfo = (req, res, next) => { 
+exports.updateProcedureFormApproveInfo = (req, res, next) => {
     if (!req.params.reportID) {
         return next(new AppError("No report with this ID found", 404));
     }
