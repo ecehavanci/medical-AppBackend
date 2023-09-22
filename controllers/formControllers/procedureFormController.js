@@ -11,6 +11,7 @@ exports.insertProcedureForm = (req, res, next) => {
         req.body.studentID,
         req.body.studentName,
         req.body.rotationID,
+        req.body.courseID,
         req.body.specialtyID,
         req.body.attendingPhysicianID,
         req.body.procedureID,
@@ -34,6 +35,7 @@ exports.insertProcedureForm = (req, res, next) => {
         "INSERT INTO procedurereports (studentID," +
         "studentName," +
         "rotationID," +
+        "courseID," +
         "specialtyID," +
         "attendingPhysicianID," +
         "procedureID," +
@@ -79,6 +81,7 @@ exports.updateProcedureForm = (req, res, next) => {
     if (req.body.studentID !== undefined) values.push(req.body.studentID);
     if (req.body.studentName !== undefined) values.push(req.body.studentName);
     if (req.body.rotationID !== undefined) values.push(req.body.rotationID);
+    if (req.body.courseID !== undefined) values.push(req.body.courseID);
     if (req.body.specialtyID !== undefined) values.push(req.body.specialtyID);
     if (req.body.attendingPhysicianID !== undefined) values.push(req.body.attendingPhysicianID);
     if (req.body.procedureID !== undefined) values.push(req.body.procedureID);
@@ -103,6 +106,7 @@ exports.updateProcedureForm = (req, res, next) => {
         (req.body.studentID !== undefined ? "studentID = ?, " : "") +
         (req.body.studentName !== undefined ? "studentName = ?, " : "") +
         (req.body.rotationID !== undefined ? "rotationID = ?, " : "") +
+        (req.body.courseID !== undefined ? "courseID = ?, " : "") +
         (req.body.specialtyID !== undefined ? "specialtyID = ?, " : "") +
         (req.body.attendingPhysicianID !== undefined ? "attendingPhysicianID = ?, " : "") +
         (req.body.procedureID !== undefined ? "procedureID = ?, " : "") +
