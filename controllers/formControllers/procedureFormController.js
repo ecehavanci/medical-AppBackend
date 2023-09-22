@@ -150,6 +150,8 @@ exports.updateProcedureForm = (req, res, next) => {
 
 const checkAndUpdateProcedure = (procedureID, procedureText, relatedReport) => {
     // Check if isSent is 1 and procedureID is -1
+
+    print("aaaaa");
     if (procedureID === -1) {
         // Search for a similar string in the procedures table
         const similarProcedureQuery = `
@@ -170,8 +172,10 @@ const checkAndUpdateProcedure = (procedureID, procedureText, relatedReport) => {
                 return;
             }
 
+            print("result "+results[0].description);
+
             // If a similar procedure is found with a similarity percentage <20 , insert it
-            if (results.length > 0) {
+            if (results.results[0].similarity > 0) {
                 const similarProcedure = results[0];
                 console.log('Found similar procedure:', similarProcedure.description);
                 const req = {
