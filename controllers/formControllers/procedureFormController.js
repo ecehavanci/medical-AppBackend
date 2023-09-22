@@ -217,7 +217,7 @@ exports.getAllSentProcedureForms = (req, res, next) => {
 exports.searchProcedureReportsByAcceptance = (req, res, next) => {
     var input = req.params.searchInput === "|" ? "" : req.params.searchInput;
     conn.query(
-        "SELECT pr.*, p.description AS procedureText " +
+        "SELECT pr.*" +
         "FROM procedurereports pr " +
         "INNER JOIN procedures p ON pr.procedureID = p.ID " +
         "WHERE pr.studentID = ? AND pr.isSent = ? AND pr.isApproved = ? " +
@@ -239,7 +239,7 @@ exports.searchProcedureReportsByMultipleAcceptance = (req, res, next) => {
     var input = req.params.searchInput === "|" ? "" : req.params.searchInput;
     
     conn.query(
-        "SELECT pr.*, p.description AS procedureText " +
+        "SELECT pr.*" +
         "FROM procedurereports pr " +
         "INNER JOIN procedures p ON pr.procedureID = p.ID " +
         "WHERE pr.studentID = ? AND pr.isSent = ? " +
@@ -292,7 +292,7 @@ exports.searchSentProcedureFormsWithDocIDAccordingToSendDate = (req, res, next) 
     var input = req.params.searchInput === "|" ? "" : req.params.searchInput;
     
     conn.query(
-        "SELECT pr.*, p.description AS procedureText " +
+        "SELECT pr.*" +
         "FROM procedurereports pr " +
         "INNER JOIN procedures p ON pr.procedureID = p.ID " +
         "WHERE pr.attendingPhysicianID = ? AND " +
@@ -316,7 +316,7 @@ exports.searchSentProcedureFormsWithDocIDAccordingToApproveDate = (req, res, nex
     var input = req.params.searchInput === "|" ? "" : req.params.searchInput;
     
     conn.query(
-        "SELECT pr.*, p.description AS procedureText " +
+        "SELECT pr.*" +
         "FROM procedurereports pr " +
         "INNER JOIN procedures p ON pr.procedureID = p.ID " +
         "WHERE pr.attendingPhysicianID = ? AND " +
@@ -340,7 +340,7 @@ exports.searchProcedureFormsForStudent = (req, res, next) => {
     var input = req.params.searchInput === "|" ? "" : req.params.searchInput;
     
     conn.query(
-        "SELECT pr.*, p.description AS procedureText " +
+        "SELECT pr.*" +
         "FROM procedurereports pr " +
         "INNER JOIN procedures p ON pr.procedureID = p.ID " +
         "WHERE pr.studentID = ? AND " +
@@ -364,7 +364,7 @@ exports.searchProcedureFormsForStudentByAcceptance = (req, res, next) => {
     console.log("PARAMS: " + req.params.searchInput + " " + req.params.studentID + " " + req.params.isSent + " " + req.params.isApproved);
     
     conn.query(
-        "SELECT pr.*, p.description AS procedureText " +
+        "SELECT pr.*" +
         "FROM procedurereports pr " +
         "INNER JOIN procedures p ON pr.procedureID = p.ID " +
         "WHERE pr.studentID = ? AND " +
@@ -542,18 +542,3 @@ exports.getAllCountProcedureFormsForDashboard = (req, res, next) => {
         }
     );
 };
-
-/*exports.getCountProcedureFormsForDashboardAccordingToApproval = (req, res, next) => {
-    conn.query(
-        "select count(ID) from procedurereports where studentID =? && rotationID = ? && isApproved = ?;",
-        [req.params.studentID, req.params.rotationID, req.params.approvalCode],
-        function (err, data, fields) {
-            if (err) return next(new AppError(err, 500));
-            res.status(200).json({
-                status: "success",
-                length: data?.length,
-                data: data,
-            });
-        }
-    );
-};*/
