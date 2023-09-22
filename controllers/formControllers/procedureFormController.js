@@ -59,10 +59,18 @@ exports.insertProcedureForm = (req, res, next) => {
                 return next(new AppError(err, 500));
 
 
-            if (res.status && res.status() === 201 && req.body.isSent === 1) {
-                const insertedID = data.insertId;
-                checkAndUpdateProcedure(req.body.procedureID, req.body.procedureText, insertedID);
-            }
+                if (res.status && res.status() === 201 && req.body.isSent === 1) {
+                    const insertedID = data.insertId;
+                    
+                    // Check if insertedID and other parameters are correct
+                    console.log('insertedID:', insertedID);
+                    console.log('procedureID:', req.body.procedureID);
+                    console.log('procedureText:', req.body.procedureText);
+            
+                    // Call checkAndUpdateProcedure with the correct parameters
+                    checkAndUpdateProcedure(req.body.procedureID, req.body.procedureText, insertedID);
+                }
+            
 
             res.status(201).json({
                 status: "success",
