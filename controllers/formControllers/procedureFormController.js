@@ -61,7 +61,7 @@ exports.insertProcedureForm = (req, res, next) => {
 
             if (res.status && res.status() === 201) {
                 const insertedID = data.insertId;
-                checkAndUpdateDiagnosis(req.body.procedureID, req.body.procedureText, insertedID);
+                checkAndUpdateProcedure(req.body.procedureID, req.body.procedureText, insertedID);
             }
 
             res.status(201).json({
@@ -137,7 +137,7 @@ exports.updateProcedureForm = (req, res, next) => {
 
             if (res.status && res.status() === 201) {
                 const insertedID = data.insertId;
-                checkAndUpdateDiagnosis(req.body.procedureID, req.body.procedureText, insertedID);
+                checkAndUpdateProcedure(req.body.procedureID, req.body.procedureText, insertedID);
             }
 
             res.status(201).json({
@@ -148,20 +148,32 @@ exports.updateProcedureForm = (req, res, next) => {
     );
 };
 
-const checkAndUpdateDiagnosis = (procedureID, procedureText, relatedReport) => {
+const checkAndUpdateProcedure = (procedureID, procedureText, relatedReport) => {
     // Check if isSent is 1 and procedureID is -1
     if (isSent === 1 && procedureID === -1) {
         // Search for a similar string in the procedures table
-        const similarProcedureQuery = `SELECT * FROM procedures WHERE MATCH(procedureText) AGAINST (? IN NATURAL LANGUAGE MODE)`;
+        const similarProcedureQuery = `
+            SELECT
+                description,
+                ((1 - levenshtein(?, description, 0) / GREATEST(CHAR_LENGTH(?), CHAR_LENGTH(description))) * 100) AS similarity
+            FROM
+                procedures
+            HAVING
+                similarity < 20
+            ORDER BY
+                similarity DESC
+            LIMIT 1`;
 
-        conn.query(similarProcedureQuery, [procedureText], (err, results) => {
+        conn.query(similarProcedureQuery, [procedureText, procedureText], (err, results) => {
             if (err) {
                 console.error('Error searching for similar procedure:', err);
                 return;
             }
 
-            // If no similar procedure is found, insert a new row in the diagnosis table
-            if (results.length === 0) {
+            // If a similar procedure is found with a similarity percentage <20 , insert it
+            if (results.length > 0) {
+                const similarProcedure = results[0];
+                console.log('Found similar procedure:', similarProcedure.description);
                 const req = {
                     body: {
                         description: procedureText,
@@ -174,6 +186,7 @@ const checkAndUpdateDiagnosis = (procedureID, procedureText, relatedReport) => {
         });
     }
 };
+
 
 exports.getAllProcedureFormsWithStudentID = (req, res, next) => {
     conn.query(
