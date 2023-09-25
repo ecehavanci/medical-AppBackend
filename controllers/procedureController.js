@@ -92,7 +92,7 @@ exports.insertProcedure = (req, res, next) => {
     console.log(values);
 
     conn.query(
-        "INSERT INTO patientreports (description, relatedReport, isApproved) VALUES (?, ?, ?)",
+        "INSERT INTO procedures (description, relatedReport, isApproved) VALUES (?, ?, ?)",
         values, // Pass the array of values directly
         function (err, data, fields) {
             if (err) {
