@@ -80,32 +80,30 @@ exports.updateProcedure = (req, res, next) => {
 }
 
 exports.insertProcedure = (req, res, next) => {
-
     if (!req.body)
         return next(new AppError("No data found", 404));
 
-        const values = [
-            req.body.description,
-            req.body.relatedReport,
-            0,
-        ];
+    const values = [
+        req.body.description,
+        req.body.relatedReport,
+        0, // Assuming this is a default value for isApproved
+    ];
 
-        console.log(values);
-        
-        conn.query(
-            "INSERT INTO patientreports (" +
-            "description," +
-            "relatedReport," +
-            "isApproved)" +
-            "VALUES(?)",
-            [values],
-            function (err, data, fields) {
-                if (err)
-                    return next(new AppError(err, 500));
-                res.status(201).json({
-                    status: "success",
-                    message: "New procedure added!",
-                });
+    console.log(values);
+
+    conn.query(
+        "INSERT INTO patientreports (description, relatedReport, isApproved) VALUES (?, ?, ?)",
+        values, // Pass the array of values directly
+        function (err, data, fields) {
+            if (err) {
+                console.error(err); // Log the error for debugging
+                return next(new AppError(err.message, 500)); // Handle the error with a 500 status response and provide the error message
             }
-        );
+            res.status(201).json({
+                status: "success",
+                message: "New procedure added!",
+            });
+        }
+    );
 }
+
