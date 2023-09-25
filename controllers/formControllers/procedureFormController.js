@@ -143,10 +143,7 @@ exports.updateProcedureForm = (req, res, next) => {
             if (err)
                 return next(new AppError(err, 500));
 
-            if (res.status && res.status() === 201 && req.body.isSent === 1) {
-                const insertedID = data.insertId;
-                checkAndUpdateProcedure(req.body.procedureID, req.body.procedureText, insertedID);
-            }
+            checkAndUpdateProcedure(req.body.procedureID, req.body.procedureText, data.insertId);
 
             res.status(201).json({
                 status: "success",
