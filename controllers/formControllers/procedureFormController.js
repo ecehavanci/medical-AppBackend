@@ -58,19 +58,7 @@ exports.insertProcedureForm = (req, res, next) => {
             if (err)
                 return next(new AppError(err, 500));
 
-
-            if (req.body.isSent === 1) {
-                const insertedID = data.insertId;
-
-                // Check if insertedID and other parameters are correct
-                console.log('insertedID:', insertedID);
-                console.log('procedureID:', req.body.procedureID);
-                console.log('procedureText:', req.body.procedureText);
-
-                // Call checkAndUpdateProcedure with the correct parameters
-                checkAndUpdateProcedure(req.body.procedureID, req.body.procedureText, insertedID);
-            }
-
+            checkAndUpdateProcedure(req.body.procedureID, req.body.procedureText, insertedID);
 
             res.status(201).json({
                 status: "success",
@@ -178,9 +166,10 @@ const checkAndUpdateProcedure = (procedureID, procedureText, relatedReport) => {
             console.log("result " + results[0].description);
 
             // If a similar procedure is found with a similarity percentage <20 , insert it
-            if (results[0].similarity > 0) {
+            if (results[0].similarity < 80) {
                 const similarProcedure = results[0];
-                console.log('Found similar procedure:', similarProcedure.description);
+                console.log('most similar procedure', similarProcedure.procedureText);
+                
                 const req = {
                     body: {
                         description: procedureText,
@@ -189,6 +178,11 @@ const checkAndUpdateProcedure = (procedureID, procedureText, relatedReport) => {
                 };
 
                 procedureController.insertProcedure(req);
+                console.log('new added procedure', similarProcedure.procedureText);
+
+            }else{
+                const similarProcedure = results[0];
+                console.log('Found similar procedure:', similarProcedure.description);
             }
         });
     }

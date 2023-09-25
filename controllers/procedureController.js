@@ -89,6 +89,9 @@ exports.insertProcedure = (req, res, next) => {
             req.body.relatedReport,
             0,
         ];
+
+        console.log(values);
+        
         conn.query(
             "INSERT INTO patientreports (" +
             "description," +
