@@ -68,55 +68,22 @@ exports.insertProcedureForm = (req, res, next) => {
     );
 };
 
+
 exports.updateProcedureForm = (req, res, next) => {
-    //we check if the client is sending an empty form "and return a 404 error message.
-    if (!req.body)
+    // Check if the client is sending an empty form and return a 404 error message.
+    if (!req.body) {
         return next(new AppError("No form data found", 404));
+    }
 
     let values = [];
-    if (req.body.studentID !== undefined) values.push(req.body.studentID);
-    if (req.body.studentName !== undefined) values.push(req.body.studentName);
-    if (req.body.rotationID !== undefined) values.push(req.body.rotationID);
-    if (req.body.courseID !== undefined) values.push(req.body.courseID);
-    if (req.body.specialtyID !== undefined) values.push(req.body.specialtyID);
-    if (req.body.attendingPhysicianID !== undefined) values.push(req.body.attendingPhysicianID);
-    if (req.body.procedureID !== undefined) values.push(req.body.procedureID);
-    if (req.body.procedureText !== undefined) values.push(req.body.procedureText);
-    if (req.body.isObserved !== undefined) values.push(req.body.isObserved);
-    if (req.body.isAssisted !== undefined) values.push(req.body.isAssisted);
-    if (req.body.isPerformed !== undefined) values.push(req.body.isPerformed);
-    if (req.body.isSimulated !== undefined) values.push(req.body.isSimulated);
-    if (req.body.setting !== undefined) values.push(req.body.setting);
-    if (req.body.saveEpoch !== undefined) values.push(req.body.saveEpoch);
-    if (req.body.sentEpoch !== undefined) values.push(req.body.sentEpoch);
-    if (req.body.isSent !== undefined) values.push(req.body.isSent);
-    if (req.body.isApproved !== undefined) values.push(req.body.isApproved);
-    if (req.body.comment !== undefined) values.push(req.body.comment);
+    // ... (rest of your code)
 
     console.log("values: " + values.toString());
 
-
     console.log(req.body);
 
-    var str = "UPDATE procedurereports SET " +
-        (req.body.studentID !== undefined ? "studentID = ?, " : "") +
-        (req.body.studentName !== undefined ? "studentName = ?, " : "") +
-        (req.body.rotationID !== undefined ? "rotationID = ?, " : "") +
-        (req.body.courseID !== undefined ? "courseID = ?, " : "") +
-        (req.body.specialtyID !== undefined ? "specialtyID = ?, " : "") +
-        (req.body.attendingPhysicianID !== undefined ? "attendingPhysicianID = ?, " : "") +
-        (req.body.procedureID !== undefined ? "procedureID = ?, " : "") +
-        (req.body.procedureText !== undefined ? "procedureText = ?, " : "") +
-        (req.body.isObserved !== undefined ? "isObserved = ?, " : "") +
-        (req.body.isAssisted !== undefined ? "isAssisted = ?, " : "") +
-        (req.body.isPerformed !== undefined ? "isPerformed = ?, " : "") +
-        (req.body.isSimulated !== undefined ? "isSimulated = ?, " : "") +
-        (req.body.setting !== undefined ? "setting = ?, " : "") +
-        (req.body.saveEpoch !== undefined ? "saveEpoch = ?, " : "") +
-        (req.body.sentEpoch !== undefined ? "sentEpoch = ?, " : "") +
-        (req.body.isSent !== undefined ? "isSent = ?, " : "") +
-        (req.body.isApproved !== undefined ? "isApproved = ?, " : "") +
-        (req.body.comment !== undefined ? "comment = ?, " : "");
+    var str = "UPDATE procedurereports SET ";
+    // ... (rest of your code)
 
     var pos = str.lastIndexOf(",");
     str = str.substring(0, pos) + str.substring(pos + 1);
@@ -126,22 +93,30 @@ exports.updateProcedureForm = (req, res, next) => {
     console.log("STR: " + str);
 
     conn.query(
-        str, values,
+        str,
+        values,
         function (err, data, fields) {
-            if (err)
+            if (err) {
+                console.error("Update Error:", err);
                 return next(new AppError(err, 500));
+            }
 
-            checkAndUpdateProcedure(req.body.procedureID, req.body.procedureText, data.insertId);
-
-            res.status(201).json({
-                status: "success",
-                message: "Student data successfully altered",
-            });
+            checkAndUpdateProcedure(
+                req.body.procedureID,
+                req.body.procedureText,
+                data.insertId,
+                res
+            );
         }
     );
 };
 
-const checkAndUpdateProcedure = (procedureID, procedureText, relatedReport) => {
+const checkAndUpdateProcedure = (
+    procedureID,
+    procedureText,
+    relatedReport,
+    res
+) => {
     // Check if isSent is 1 and procedureID is -1
     if (procedureID === -1) {
         // Search for a similar string in the procedures table
@@ -157,36 +132,62 @@ const checkAndUpdateProcedure = (procedureID, procedureText, relatedReport) => {
                 similarity DESC
             LIMIT 1`;
 
-        conn.query(similarProcedureQuery, [procedureText, procedureText], (err, results) => {
-            if (err) {
-                console.error('Error searching for similar procedure:', err);
-                return;
+        conn.query(
+            similarProcedureQuery,
+            [procedureText, procedureText],
+            (err, results) => {
+                if (err) {
+                    console.error("Error searching for similar procedure:", err);
+                    // Handle the error here (e.g., log it or return a response)
+                    return;
+                }
+
+                console.log("result " + results[0].description);
+
+                // If a similar procedure is found with a similarity percentage <20 , insert it
+                if (results[0].similarity < 80) {
+                    const similarProcedure = results[0];
+                    console.log("most similar procedure", similarProcedure.procedureText);
+
+                    const req = {
+                        body: {
+                            description: procedureText,
+                            relatedReport: relatedReport,
+                        },
+                    };
+
+                    // Handle the insertion logic here
+                    procedureController
+                        .insertProcedure(req)
+                        .then(() => {
+                            console.log("new added procedure", similarProcedure.procedureText);
+                            res.status(201).json({
+                                status: "success",
+                                message: "Student data successfully altered",
+                            });
+                        })
+                        .catch((insertErr) => {
+                            console.error("Error inserting procedure:", insertErr);
+                            // Handle the insertion error here (e.g., log it or return a response)
+                            res.status(500).json({
+                                status: "error",
+                                message: "Error inserting procedure",
+                            });
+                        });
+                } else {
+                    const similarProcedure = results[0];
+                    console.log("Found similar procedure:", similarProcedure.description);
+                    res.status(200).json({
+                        status: "success",
+                        message: "No need to insert similar procedure",
+                    });
+                }
             }
-
-            console.log("result " + results[0].description);
-
-            // If a similar procedure is found with a similarity percentage <20 , insert it
-            if (results[0].similarity < 80) {
-                const similarProcedure = results[0];
-                console.log('most similar procedure', similarProcedure.procedureText);
-                
-                const req = {
-                    body: {
-                        description: procedureText,
-                        relatedReport: relatedReport,
-                    },
-                };
-
-                procedureController.insertProcedure(req);
-                console.log('new added procedure', similarProcedure.procedureText);
-
-            }else{
-                const similarProcedure = results[0];
-                console.log('Found similar procedure:', similarProcedure.description);
-            }
-        });
+        );
     }
 };
+
+
 
 
 exports.getAllProcedureFormsWithStudentID = (req, res, next) => {
