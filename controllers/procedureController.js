@@ -84,8 +84,10 @@ exports.insertProcedure = (req, res, next) => {
         return next(new AppError("No data found", 404));
 
     const values = [
+        111,
         req.body.description,
         req.body.relatedReport,
+        0
     ];
 
     console.log(req.body);
