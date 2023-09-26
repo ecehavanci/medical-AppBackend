@@ -68,9 +68,8 @@ exports.insertProcedureForm = (req, res, next) => {
     );
 };
 
-
 exports.updateProcedureForm = (req, res, next) => {
-    // Check if the client is sending an empty form and return a 404 error message.
+    //we check if the client is sending an empty form "and return a 404 error message.
     if (!req.body)
         return next(new AppError("No form data found", 404));
 
@@ -127,20 +126,17 @@ exports.updateProcedureForm = (req, res, next) => {
     console.log("STR: " + str);
 
     conn.query(
-        str,
-        values,
+        str, values,
         function (err, data, fields) {
-            if (err) {
-                console.error("Update Error:", err);
+            if (err)
                 return next(new AppError(err, 500));
-            }
 
-            checkAndUpdateProcedure(
-                req.body.procedureID,
-                req.body.procedureText,
-                data.insertId,
-                res
-            );
+            checkAndUpdateProcedure(req.body.procedureID, req.body.procedureText, data.insertId, res);
+
+            res.status(201).json({
+                status: "success",
+                message: "Student data successfully altered",
+            });
         }
     );
 };
