@@ -174,10 +174,10 @@ const checkAndUpdateProcedure = (
 
                 console.log("result " + results[0].description);
 
-                // If a similar procedure is found with a similarity percentage <20 , insert it
+                // If a similar procedure is found with a similarity percentage <80 , insert it
                 if (results[0].similarity < 80) {
                     const similarProcedure = results[0];
-                    console.log("most similar procedure", similarProcedure.procedureText);
+                    console.log("most similar procedure", similarProcedure.description);
 
                     const req = {
                         body: {
@@ -187,23 +187,32 @@ const checkAndUpdateProcedure = (
                     };
 
                     // Handle the insertion logic here
-                    procedureController
-                        .insertProcedure(req)
-                        .then((insertedProcedure) => {
-                            console.log("new added procedure", insertedProcedure.description);
+                    if (!req.body || !req.body.description || !req.body.relatedReport) {
+                        return next(new AppError("Invalid data provided", 400));
+                    }
+                
+                    const { description, relatedReport } = req.body;
+                
+                    const values = [description, relatedReport];
+                
+                    conn.query(
+                        "INSERT INTO procedures (description, relatedReport) VALUES (?, ?)",
+                        values,
+                        function (err, data, fields) {
+                            if (err) {
+                                console.error("INSERT Error:", err);
+                                return next(new AppError(err.message, 500));
+                            }
+                
+                            console.log("Inserted Data:", data);
+                
                             res.status(201).json({
                                 status: "success",
-                                message: "Student data successfully altered",
-                                insertedProcedure: insertedProcedure,
+                                message: "New procedure added!",
+                                insertedId: data.insertId,
                             });
-                        })
-                        .catch((insertErr) => {
-                            console.error("Error inserting procedure:", insertErr);
-                            res.status(500).json({
-                                status: "error",
-                                message: "Error inserting procedure",
-                            });
-                        });
+                        }
+                    );
 
                 } else {
                     const similarProcedure = results[0];
