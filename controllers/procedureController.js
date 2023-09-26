@@ -92,17 +92,20 @@ exports.insertProcedure = (req, res, next) => {
 
     conn.query(
         "INSERT INTO procedures (description, relatedReport) VALUES (?, ?)",
-        values, // Pass the array of values directly
+        values,
         function (err, data, fields) {
             if (err) {
-                console.error(err); // Log the error for debugging
-                return next(new AppError(err.message, 500)); // Handle the error with a 500 status response and provide the error message
+                console.error(err);
+                return next(new AppError(err.message, 500));
             }
+
             res.status(201).json({
                 status: "success",
                 message: "New procedure added!",
+                insertedId: data.insertId, // Include the ID of the newly inserted record
             });
         }
     );
 }
+
 
