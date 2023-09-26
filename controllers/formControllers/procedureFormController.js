@@ -189,21 +189,22 @@ const checkAndUpdateProcedure = (
                     // Handle the insertion logic here
                     procedureController
                         .insertProcedure(req)
-                        .then(() => {
-                            console.log("new added procedure", similarProcedure.procedureText);
+                        .then((insertedProcedure) => {
+                            console.log("new added procedure", insertedProcedure.description);
                             res.status(201).json({
                                 status: "success",
                                 message: "Student data successfully altered",
+                                insertedProcedure: insertedProcedure,
                             });
                         })
                         .catch((insertErr) => {
                             console.error("Error inserting procedure:", insertErr);
-                            // Handle the insertion error here (e.g., log it or return a response)
                             res.status(500).json({
                                 status: "error",
                                 message: "Error inserting procedure",
                             });
                         });
+
                 } else {
                     const similarProcedure = results[0];
                     console.log("Found similar procedure:", similarProcedure.description);
