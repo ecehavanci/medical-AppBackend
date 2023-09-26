@@ -71,19 +71,53 @@ exports.insertProcedureForm = (req, res, next) => {
 
 exports.updateProcedureForm = (req, res, next) => {
     // Check if the client is sending an empty form and return a 404 error message.
-    if (!req.body) {
+    if (!req.body)
         return next(new AppError("No form data found", 404));
-    }
 
     let values = [];
-    // ... (rest of your code)
+    if (req.body.studentID !== undefined) values.push(req.body.studentID);
+    if (req.body.studentName !== undefined) values.push(req.body.studentName);
+    if (req.body.rotationID !== undefined) values.push(req.body.rotationID);
+    if (req.body.courseID !== undefined) values.push(req.body.courseID);
+    if (req.body.specialtyID !== undefined) values.push(req.body.specialtyID);
+    if (req.body.attendingPhysicianID !== undefined) values.push(req.body.attendingPhysicianID);
+    if (req.body.procedureID !== undefined) values.push(req.body.procedureID);
+    if (req.body.procedureText !== undefined) values.push(req.body.procedureText);
+    if (req.body.isObserved !== undefined) values.push(req.body.isObserved);
+    if (req.body.isAssisted !== undefined) values.push(req.body.isAssisted);
+    if (req.body.isPerformed !== undefined) values.push(req.body.isPerformed);
+    if (req.body.isSimulated !== undefined) values.push(req.body.isSimulated);
+    if (req.body.setting !== undefined) values.push(req.body.setting);
+    if (req.body.saveEpoch !== undefined) values.push(req.body.saveEpoch);
+    if (req.body.sentEpoch !== undefined) values.push(req.body.sentEpoch);
+    if (req.body.isSent !== undefined) values.push(req.body.isSent);
+    if (req.body.isApproved !== undefined) values.push(req.body.isApproved);
+    if (req.body.comment !== undefined) values.push(req.body.comment);
 
     console.log("values: " + values.toString());
 
+
     console.log(req.body);
 
-    var str = "UPDATE procedurereports SET ";
-    // ... (rest of your code)
+    var str = "UPDATE procedurereports SET " +
+        (req.body.studentID !== undefined ? "studentID = ?, " : "") +
+        (req.body.studentName !== undefined ? "studentName = ?, " : "") +
+        (req.body.rotationID !== undefined ? "rotationID = ?, " : "") +
+        (req.body.courseID !== undefined ? "courseID = ?, " : "") +
+        (req.body.specialtyID !== undefined ? "specialtyID = ?, " : "") +
+        (req.body.attendingPhysicianID !== undefined ? "attendingPhysicianID = ?, " : "") +
+        (req.body.procedureID !== undefined ? "procedureID = ?, " : "") +
+        (req.body.procedureText !== undefined ? "procedureText = ?, " : "") +
+        (req.body.isObserved !== undefined ? "isObserved = ?, " : "") +
+        (req.body.isAssisted !== undefined ? "isAssisted = ?, " : "") +
+        (req.body.isPerformed !== undefined ? "isPerformed = ?, " : "") +
+        (req.body.isSimulated !== undefined ? "isSimulated = ?, " : "") +
+        (req.body.setting !== undefined ? "setting = ?, " : "") +
+        (req.body.saveEpoch !== undefined ? "saveEpoch = ?, " : "") +
+        (req.body.sentEpoch !== undefined ? "sentEpoch = ?, " : "") +
+        (req.body.isSent !== undefined ? "isSent = ?, " : "") +
+        (req.body.isApproved !== undefined ? "isApproved = ?, " : "") +
+        (req.body.comment !== undefined ? "comment = ?, " : "");
 
     var pos = str.lastIndexOf(",");
     str = str.substring(0, pos) + str.substring(pos + 1);
@@ -186,7 +220,6 @@ const checkAndUpdateProcedure = (
         );
     }
 };
-
 
 
 
