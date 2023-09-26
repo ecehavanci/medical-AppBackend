@@ -86,13 +86,12 @@ exports.insertProcedure = (req, res, next) => {
     const values = [
         req.body.description,
         req.body.relatedReport,
-        0, // Assuming this is a default value for isApproved
     ];
 
     console.log(values);
 
     conn.query(
-        "INSERT INTO procedures (description, relatedReport, isApproved) VALUES (?, ?, ?)",
+        "INSERT INTO procedures (description, relatedReport, isApproved) VALUES (?, ?)",
         values, // Pass the array of values directly
         function (err, data, fields) {
             if (err) {
