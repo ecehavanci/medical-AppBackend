@@ -9,7 +9,7 @@ const specialties = require("./specialties");
 const course = require("./course");
 const rotations = require("./rotations");
 const web = require("./web");
-const procedureRoutes = require("./routes/procedureRoutes");
+const procedureRoutes = require("./procedure");
 const router = express();
 
 
