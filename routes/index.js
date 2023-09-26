@@ -9,7 +9,7 @@ const specialties = require("./specialties");
 const course = require("./course");
 const rotations = require("./rotations");
 const web = require("./web");
-const procedure = require("./procedure");
+const procedureRoutes = require("./routes/procedureRoutes");
 const router = express();
 
 
@@ -23,7 +23,7 @@ router.use("/specialties", specialties);
 router.use("/courses", course);
 router.use("/rotations", rotations);
 router.use("/web", web);
-router.use("/procedure", procedure);
+router.use("/procedure", procedureRoutes);
 // router.route("student").get(controllers.getAllStudents)
 // // .post(controllers.insertStd);
 
