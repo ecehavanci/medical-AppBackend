@@ -53,16 +53,17 @@ exports.insertProcedureForm = (req, res, next) => {
         "localStorageID) " +
         "VALUES(?)",
         [values],
-        function (err, data, fields) {
+        async function (err, data, fields) {
 
             if (err)
                 return next(new AppError(err, 500));
 
-            checkAndUpdateProcedure(req.body.procedureID, req.body.procedureText, insertedID);
+            const inserted = await checkAndUpdateProcedure(req.body.procedureID, req.body.procedureText, data.insertId, res, next);
 
             res.status(201).json({
                 status: "success",
                 message: "New form added!",
+                insertedId: inserted,
             });
         }
     );
@@ -132,12 +133,12 @@ exports.updateProcedureForm = (req, res, next) => {
                 if (err)
                     return next(new AppError(err, 500));
 
-                const insertId = await checkAndUpdateProcedure(req.body.procedureID, req.body.procedureText, data.insertId, res, next);
+                const inserted = await checkAndUpdateProcedure(req.body.procedureID, req.body.procedureText, data.insertId, res, next);
 
                 res.status(201).json({
                     status: "success",
                     message: "Student data successfully altered",
-                    insertedId: insertId,
+                    insertedId: inserted,
                 });
             }
         );
@@ -204,7 +205,7 @@ const checkAndUpdateProcedure = (
                             values,
                             function (err, data, fields) {
                                 if (err) {
-                                    console.error("INSERT non-similart procedure Error:", err);
+                                    console.error("INSERT procedure Error:", err);
                                     reject(err);
                                 }
 
@@ -213,13 +214,16 @@ const checkAndUpdateProcedure = (
                             }
                         );
                     } else {
-                        const similarProcedure = results[0];
                         resolve(null); // Indicate that no insertion was needed
+                        console.log("No insertion was needed.");
+
                     }
                 }
             );
         } else {
             resolve(null); // If procedureID is not -1, resolve with null to indicate no insertion was needed
+            console.log("ProcedureID is not -1");
+
         }
     });
 };
