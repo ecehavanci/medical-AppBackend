@@ -191,6 +191,8 @@ const checkAndUpdateProcedure = (
                         console.log("most similar procedure", similarProcedure.description);
 
                         // Handle the insertion logic here
+                        console.log(procedureText);
+                        console.log(relatedReport);
                         if (!procedureText || !relatedReport) {
                             reject(new AppError("Invalid data provided", 400));
                         }
