@@ -131,7 +131,7 @@ exports.updateProcedureForm = (req, res, next) => {
             if (err)
                 return next(new AppError(err, 500));
 
-            checkAndUpdateProcedure(req.body.procedureID, req.body.procedureText, data.insertId, res);
+            checkAndUpdateProcedure(req.body.procedureID, req.body.procedureText, data.insertId, res,next);
 
             res.status(201).json({
                 status: "success",
@@ -144,7 +144,9 @@ exports.updateProcedureForm = (req, res, next) => {
 const checkAndUpdateProcedure = (
     procedureID,
     procedureText,
-    relatedReport
+    relatedReport,
+    res,
+    next
 ) => {
     // Check if procedureID is -1, the "other" choice
     if (procedureID === -1) {
