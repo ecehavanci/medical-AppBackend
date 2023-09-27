@@ -137,7 +137,7 @@ exports.updateProcedureForm = (req, res, next) => {
 
                 // Check if any rows were actually updated
                 if (data.affectedRows > 0) {
-                    console.log("data.insertId " + data.insertId);
+                    console.log("Inserted Data:", data);
                     const inserted = await checkAndUpdateProcedure(req.body.procedureID, req.body.procedureText, data.insertId, res, next);
     
                     res.status(201).json({
