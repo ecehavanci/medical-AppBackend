@@ -125,20 +125,31 @@ exports.updateProcedureForm = (req, res, next) => {
 
     console.log("STR: " + str);
 
-    conn.query(
-        str, values,
-        function (err, data, fields) {
-            if (err)
-                return next(new AppError(err, 500));
+    try {
+        conn.query(
+            str, values,
+            async function (err, data, fields) {
+                if (err)
+                    return next(new AppError(err, 500));
 
-            checkAndUpdateProcedure(req.body.procedureID, req.body.procedureText, data.insertId, res,next);
+                const insertId = await checkAndUpdateProcedure(req.body.procedureID, req.body.procedureText, data.insertId, res, next);
 
-            res.status(201).json({
-                status: "success",
-                message: "Student data successfully altered",
-            });
-        }
-    );
+                res.status(201).json({
+                    status: "success",
+                    message: "Student data successfully altered",
+                    insertedId: insertId,
+                });
+            }
+        );
+    }
+    catch (error) {
+        console.error("Error:", error);
+        res.status(error.status || 500).json({
+            status: "error",
+            message: error.message || "Internal Server Error",
+        });
+    }
+
 };
 
 const checkAndUpdateProcedure = (
@@ -148,82 +159,68 @@ const checkAndUpdateProcedure = (
     res,
     next
 ) => {
-    // Check if procedureID is -1, the "other" choice
-    if (procedureID === -1) {
-        //  find the most similar procedure description to a given input string by calculating the Levenshtein 
-        //distance-based similarity percentage and filtering for procedures. The closest match is returned as a result.
-        const similarProcedureQuery = `
-            SELECT
-                description,
-                ((1 - levenshtein(?, description, 0) / GREATEST(CHAR_LENGTH(?), CHAR_LENGTH(description))) * 100) AS similarity
-            FROM
-                procedures
-            ORDER BY
-                similarity DESC
-            LIMIT 1`;
+    return new Promise((resolve, reject) => {
+        // Check if procedureID is -1, the "other" choice
+        if (procedureID === -1) {
+            // find the most similar procedure description to a given input string by calculating the Levenshtein 
+            //distance-based similarity percentage and filtering for procedures. The closest match is returned as a result.
+            const similarProcedureQuery = `
+                SELECT
+                    description,
+                    ((1 - levenshtein(?, description, 0) / GREATEST(CHAR_LENGTH(?), CHAR_LENGTH(description))) * 100) AS similarity
+                FROM
+                    procedures
+                ORDER BY
+                    similarity DESC
+                LIMIT 1`;
 
-        conn.query(
-            similarProcedureQuery,
-            [procedureText, procedureText],
-            (err, results) => {
-                if (err) {
-                    console.error("Error searching for similar procedure:", err);
-                    return;
-                }
-
-                console.log("result " + results[0].similarity);
-
-                // If a similar procedure is found with a similarity percentage <20 , insert the procedure text coming from form
-                if (results[0].similarity < 20) {
-                    const similarProcedure = results[0];
-                    console.log("most similar procedure", similarProcedure.description);
-
-                    const req = {
-                        body: {
-                            description: procedureText,
-                            relatedReport: relatedReport,
-                        },
-                    };
-
-                    // Handle the insertion logic here
-                    if (!procedureText || !relatedReport) {
-                        return next(new AppError("Invalid data provided", 400));
+            conn.query(
+                similarProcedureQuery,
+                [procedureText, procedureText],
+                (err, results) => {
+                    if (err) {
+                        console.error("Error searching for similar procedure:", err);
+                        reject(err);
                     }
 
-                    const values = [procedureText, relatedReport];
+                    console.log("result " + results[0].similarity);
 
-                    conn.query(
-                        "INSERT INTO procedures (description, relatedReport) VALUES (?, ?)",
-                        values,
-                        function (err, data, fields) {
-                            if (err) {
-                                console.error("INSERT Error:", err);
-                                return next(new AppError(err.message, 500));
-                            }
+                    // If a similar procedure is found with a similarity percentage <20 , insert the procedure text coming from the form
+                    if (results[0].similarity < 20) {
+                        const similarProcedure = results[0];
+                        console.log("most similar procedure", similarProcedure.description);
 
-                            console.log("Inserted Data:", data);
-
-                            res.status(201).json({
-                                status: "success",
-                                message: "New procedure added!",
-                                insertedId: data.insertId,
-                            });
+                        // Handle the insertion logic here
+                        if (!procedureText || !relatedReport) {
+                            reject(new AppError("Invalid data provided", 400));
                         }
-                    );
 
-                } else {
-                    const similarProcedure = results[0];
-                    //console.log("Found similar procedure:", similarProcedure.description);
-                    res.status(200).json({
-                        status: "success",
-                        message: "No need to insert similar procedure: found similarity upper than 20%",
-                    });
+                        const values = [procedureText, relatedReport];
+
+                        conn.query(
+                            "INSERT INTO procedures (description, relatedReport) VALUES (?, ?)",
+                            values,
+                            function (err, data, fields) {
+                                if (err) {
+                                    console.error("INSERT non-similart procedure Error:", err);
+                                    reject(err);
+                                }
+
+                                console.log("Inserted Data:", data);
+                                resolve(data.insertId);
+                            }
+                        );
+                    } else {
+                        const similarProcedure = results[0];
+                        resolve(null); // Indicate that no insertion was needed
+                    }
                 }
-            }
-        );
-    }
+            );
+        } else {
+            resolve(null); // If procedureID is not -1, resolve with null to indicate no insertion was needed
+        }
+    });
 };
-
 
 
 exports.getAllProcedureFormsWithStudentID = (req, res, next) => {
