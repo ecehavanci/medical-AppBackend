@@ -128,28 +128,40 @@ exports.updateProcedureForm = (req, res, next) => {
 
     try {
         conn.query(
-            str, values,
+            str,
+            values,
             async function (err, data, fields) {
-                if (err)
+                if (err) {
                     return next(new AppError(err, 500));
+                }
 
-                const inserted = await checkAndUpdateProcedure(req.body.procedureID, req.body.procedureText, data.insertId, res, next);
-
-                res.status(201).json({
-                    status: "success",
-                    message: "Student data successfully altered",
-                    insertedId: inserted,
-                });
+                // Check if any rows were actually updated
+                if (data.affectedRows > 0) {
+                    console.log("data.insertId " + data.insertId);
+                    const inserted = await checkAndUpdateProcedure(req.body.procedureID, req.body.procedureText, data.insertId, res, next);
+    
+                    res.status(201).json({
+                        status: "success",
+                        message: "Student data successfully altered",
+                        insertedId: inserted,
+                    });
+                } else {
+                    // Handle the case where no rows were updated (e.g., student data didn't change)
+                    res.status(200).json({
+                        status: "success",
+                        message: "No student data updated",
+                    });
+                }
             }
         );
-    }
-    catch (error) {
+    } catch (error) {
         console.error("Error:", error);
         res.status(error.status || 500).json({
             status: "error",
             message: error.message || "Internal Server Error",
         });
     }
+    
 
 };
 
