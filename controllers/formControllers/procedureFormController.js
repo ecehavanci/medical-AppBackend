@@ -186,7 +186,7 @@ const checkAndUpdateProcedure = (
                     };
 
                     // Handle the insertion logic here
-                    if (!req.body || !req.body.description || !req.body.relatedReport) {
+                    if (!procedureText || !relatedReport) {
                         return next(new AppError("Invalid data provided", 400));
                     }
 
