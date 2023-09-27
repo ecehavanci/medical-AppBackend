@@ -134,7 +134,7 @@ exports.updateProcedureForm = (req, res, next) => {
                 if (err) {
                     return next(new AppError(err, 500));
                 }
-
+    
                 // Check if any rows were actually updated
                 if (data.affectedRows > 0) {
                     console.log("Inserted Data:", data);
@@ -143,7 +143,7 @@ exports.updateProcedureForm = (req, res, next) => {
                     res.status(201).json({
                         status: "success",
                         message: "Student data successfully altered",
-                        insertedId: inserted,
+                        insertedId: inserted, // This should now have the correct value
                     });
                 } else {
                     // Handle the case where no rows were updated (e.g., student data didn't change)
@@ -160,9 +160,7 @@ exports.updateProcedureForm = (req, res, next) => {
             status: "error",
             message: error.message || "Internal Server Error",
         });
-    }
-    
-
+    }       
 };
 
 const checkAndUpdateProcedure = (
