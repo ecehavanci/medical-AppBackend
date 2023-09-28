@@ -15,7 +15,7 @@ exports.insertProcedureForm = (req, res, next) => {
         req.body.specialtyID,
         req.body.attendingPhysicianID,
         req.body.procedureID,
-        req.body.procedureText,
+        req.body.procedureText.toLowerCase().trim(),
         req.body.isObserved,
         req.body.isAssisted,
         req.body.isPerformed,
@@ -60,7 +60,7 @@ exports.insertProcedureForm = (req, res, next) => {
 
             if (data.affectedRows > 0) {
                 if (req.body.isSent === 1) {
-                const inserted = await checkAndUpdateProcedure(req.body.procedureID, req.body.procedureText, data.insertId, res, next);
+                const inserted = await checkAndUpdateProcedure(req.body.procedureID, req.body.procedureText.toLowerCase().trim(), data.insertId, res, next);
                 }
                 
                 res.status(201).json({
@@ -92,7 +92,7 @@ exports.updateProcedureForm = (req, res, next) => {
     if (req.body.specialtyID !== undefined) values.push(req.body.specialtyID);
     if (req.body.attendingPhysicianID !== undefined) values.push(req.body.attendingPhysicianID);
     if (req.body.procedureID !== undefined) values.push(req.body.procedureID);
-    if (req.body.procedureText !== undefined) values.push(req.body.procedureText);
+    if (req.body.procedureText !== undefined) values.push(req.body.procedureText.toLowerCase().trim());
     if (req.body.isObserved !== undefined) values.push(req.body.isObserved);
     if (req.body.isAssisted !== undefined) values.push(req.body.isAssisted);
     if (req.body.isPerformed !== undefined) values.push(req.body.isPerformed);
@@ -148,7 +148,7 @@ exports.updateProcedureForm = (req, res, next) => {
                 // Check if any rows were actually updated
                 if (data.affectedRows > 0) {
                     if (req.body.isSent === 1) {
-                        const inserted = await checkAndUpdateProcedure(req.body.procedureID, req.body.procedureText, req.params.ID, res, next);
+                        const inserted = await checkAndUpdateProcedure(req.body.procedureID, req.body.procedureText.toLowerCase().trim(), req.params.ID, res, next);
                     } 
 
                     res.status(201).json({

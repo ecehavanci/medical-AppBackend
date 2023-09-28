@@ -23,20 +23,20 @@ exports.insertPatientForm = (req, res, next) => {
         req.body.isPhysicalExamination,
         req.body.isDifferentialDiagnosis,
         req.body.setting,
-        req.body.illnessScript,
+        req.body.illnessScript.toLowerCase().trim(),
         req.body.tier1ID,
-        req.body.tier1,
+        req.body.tier1.toLowerCase().trim(),
         req.body.tier2ID,
-        req.body.tier2,
+        req.body.tier2.toLowerCase().trim(),
         req.body.tier3ID,
-        req.body.tier3,
+        req.body.tier3.toLowerCase().trim(),
         req.body.tier4ID,
-        req.body.tier4,
+        req.body.tier4.toLowerCase().trim(),
         req.body.saveEpoch,
         req.body.sentEpoch,
         req.body.isSent,
         req.body.isApproved,
-        req.body.comment,
+        req.body.comment.trim(),
         req.body.localStorageID
     ];
 
@@ -88,10 +88,10 @@ exports.insertPatientForm = (req, res, next) => {
                 var insertedTier4 = null;
 
                 if (req.body.isSent === 1) {
-                    insertedTier1 = await checkAndInsertTierData(req.body.tier1ID, req.body.tier1, data.insertId, res, next);
-                    insertedTier2 = await checkAndInsertTierData(req.body.tier2ID, req.body.tier2, data.insertId, res, next);
-                    insertedTier3 = await checkAndInsertTierData(req.body.tier3ID, req.body.tier3, data.insertId, res, next);
-                    insertedTier4 = await checkAndInsertTierData(req.body.tier4ID, req.body.tier4, data.insertId, res, next);
+                    insertedTier1 = await checkAndInsertTierData(req.body.tier1ID, req.body.tier1.toLowerCase().trim(), data.insertId, res, next);
+                    insertedTier2 = await checkAndInsertTierData(req.body.tier2ID, req.body.tier2.toLowerCase().trim(), data.insertId, res, next);
+                    insertedTier3 = await checkAndInsertTierData(req.body.tier3ID, req.body.tier3.toLowerCase().trim(), data.insertId, res, next);
+                    insertedTier4 = await checkAndInsertTierData(req.body.tier4ID, req.body.tier4.toLowerCase().trim(), data.insertId, res, next);
                 }
 
                 res.status(201).json({
@@ -134,15 +134,15 @@ exports.updatePatientForm = (req, res, next) => {
     if (req.body.isPhysicalExamination !== undefined) values.unshift(req.body.isPhysicalExamination);
     if (req.body.isDifferentialDiagnosis !== undefined) values.unshift(req.body.isDifferentialDiagnosis);
     if (req.body.setting !== undefined) values.unshift(req.body.setting);
-    if (req.body.illnessScript !== undefined) values.unshift(req.body.illnessScript);
+    if (req.body.illnessScript !== undefined) values.unshift(req.body.illnessScript.trim());
     if (req.body.tier1ID !== undefined) values.unshift(req.body.tier1ID);
-    if (req.body.tier1 !== undefined) values.unshift(req.body.tier1);
+    if (req.body.tier1 !== undefined) values.unshift(req.body.tier1.toLowerCase().trim());
     if (req.body.tier2ID !== undefined) values.unshift(req.body.tier2ID);
-    if (req.body.tier2 !== undefined) values.unshift(req.body.tier2);
+    if (req.body.tier2 !== undefined) values.unshift(req.body.tier2.toLowerCase().trim());
     if (req.body.tier3ID !== undefined) values.unshift(req.body.tier3ID);
-    if (req.body.tier3 !== undefined) values.unshift(req.body.tier3);
+    if (req.body.tier3 !== undefined) values.unshift(req.body.tier3.toLowerCase().trim());
     if (req.body.tier4ID !== undefined) values.unshift(req.body.tier4ID);
-    if (req.body.tier4 !== undefined) values.unshift(req.body.tier4);
+    if (req.body.tier4 !== undefined) values.unshift(req.body.tier4.toLowerCase().trim());
     if (req.body.saveEpoch !== undefined) values.unshift(req.body.saveEpoch);
     if (req.body.sentEpoch !== undefined) values.unshift(req.body.sentEpoch);
     if (req.body.isSent !== undefined) values.unshift(req.body.isSent);
@@ -206,10 +206,10 @@ exports.updatePatientForm = (req, res, next) => {
                 var insertedTier4 = null;
 
                 if (req.body.isSent === 1) {
-                    insertedTier1 = await checkAndInsertTierData(req.body.tier1ID, req.body.tier1, req.params.ID, res, next);
-                    insertedTier2 = await checkAndInsertTierData(req.body.tier2ID, req.body.tier2, req.params.ID, res, next);
-                    insertedTier3 = await checkAndInsertTierData(req.body.tier3ID, req.body.tier3, req.params.ID, res, next);
-                    insertedTier4 = await checkAndInsertTierData(req.body.tier4ID, req.body.tier4, req.params.ID, res, next);
+                    insertedTier1 = await checkAndInsertTierData(req.body.tier1ID, req.body.tier1.toLowerCase().trim(), req.params.ID, res, next);
+                    insertedTier2 = await checkAndInsertTierData(req.body.tier2ID, req.body.tier2.toLowerCase().trim(), req.params.ID, res, next);
+                    insertedTier3 = await checkAndInsertTierData(req.body.tier3ID, req.body.tier3.toLowerCase().trim(), req.params.ID, res, next);
+                    insertedTier4 = await checkAndInsertTierData(req.body.tier4ID, req.body.tier4.toLowerCase().trim(), req.params.ID, res, next);
                 }
 
                 res.status(201).json({

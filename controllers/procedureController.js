@@ -4,7 +4,7 @@ const conn = require("../services/db");
 exports.getApprovedProcedures = (req, res, next) => {
 
     conn.query(
-        "select * from procedures WHERE isApproved = 1",
+        "select * from procedures WHERE isApproved = 1 ORDER BY description ASC",
         function (err, data, fields) {
             if (err) return next(new AppError(err, 500));
             res.status(200).json({
