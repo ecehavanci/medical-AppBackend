@@ -82,10 +82,10 @@ exports.insertPatientForm = (req, res, next) => {
             }
 
             if (data.affectedRows > 0) {
-                const insertedTier1 = null;
-                const insertedTier2 = null;
-                const insertedTier3 = null;
-                const insertedTier4 = null;
+                var insertedTier1 = null;
+                var insertedTier2 = null;
+                var insertedTier3 = null;
+                var insertedTier4 = null;
 
                 if (req.body.isSent === 1) {
                     insertedTier1 = await checkAndInsertTierData(req.body.tier1ID, req.body.tier1, data.insertId, res, next);
@@ -200,10 +200,10 @@ exports.updatePatientForm = (req, res, next) => {
             // Check if any rows were actually updated
             if (data.affectedRows > 0) {
 
-                const insertedTier1 = null;
-                const insertedTier2 = null;
-                const insertedTier3 = null;
-                const insertedTier4 = null;
+                var insertedTier1 = null;
+                var insertedTier2 = null;
+                var insertedTier3 = null;
+                var insertedTier4 = null;
 
                 if (req.body.isSent === 1) {
                     insertedTier1 = await checkAndInsertTierData(req.body.tier1ID, req.body.tier1, req.params.ID, res, next);

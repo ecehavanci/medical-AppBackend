@@ -89,7 +89,7 @@ exports.insertProcedure = (req, res, next) => {
     const values = [description, relatedReport];
 
     conn.query(
-        "INSERT INTO procedures (description, relatedReport) VALUES (?, ?)",
+        "INSERT INTO procedures (description, relatedReport) VALUES (LOWER(?), ?)",
         values,
         function (err, data, fields) {
             if (err) {
