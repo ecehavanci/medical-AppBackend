@@ -59,8 +59,10 @@ exports.insertProcedureForm = (req, res, next) => {
             }
 
             if (data.affectedRows > 0) {
+                if (req.body.isSent === 1) {
                 const inserted = await checkAndUpdateProcedure(req.body.procedureID, req.body.procedureText, data.insertId, res, next);
-
+                }
+                
                 res.status(201).json({
                     status: "success",
                     message: "Student data successfully altered",
@@ -142,11 +144,13 @@ exports.updateProcedureForm = (req, res, next) => {
                 if (err) {
                     return next(new AppError(err, 500));
                 }
-    
+
                 // Check if any rows were actually updated
                 if (data.affectedRows > 0) {
-                    const inserted = await checkAndUpdateProcedure(req.body.procedureID, req.body.procedureText, req.params.ID, res, next);
-    
+                    if (req.body.isSent === 1) {
+                        const inserted = await checkAndUpdateProcedure(req.body.procedureID, req.body.procedureText, req.params.ID, res, next);
+                    } 
+
                     res.status(201).json({
                         status: "success",
                         message: "Student data successfully altered",
@@ -167,7 +171,7 @@ exports.updateProcedureForm = (req, res, next) => {
             status: "error",
             message: error.message || "Internal Server Error",
         });
-    }       
+    }
 };
 
 const checkAndUpdateProcedure = (

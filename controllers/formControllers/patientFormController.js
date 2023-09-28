@@ -76,13 +76,31 @@ exports.insertPatientForm = (req, res, next) => {
         "localStorageID) " +
         "VALUES(?)",
         [values],
-        function (err, data, fields) {
-            if (err)
+        async function (err, data, fields) {
+            if (err) {
                 return next(new AppError(err, 500));
-            res.status(201).json({
-                status: "success",
-                message: "New student added!",
-            });
+            }
+
+            if (data.affectedRows > 0) {
+                if (req.body.isSent === 1) {
+                    const insertedTier1 = await checkAndInsertTierData(req.body.tier1ID, req.body.tier1, data.insertId, res, next);
+                    const insertedTier2 = await checkAndInsertTierData(req.body.tier2ID, req.body.tier2, data.insertId, res, next);
+                    const insertedTier3 = await checkAndInsertTierData(req.body.tier3ID, req.body.tier3, data.insertId, res, next);
+                    const insertedTier4 = await checkAndInsertTierData(req.body.tier4ID, req.body.tier4, data.insertId, res, next);
+                }
+            
+                res.status(201).json({
+                    status: "success",
+                    message: "Patient form data successfully inserted",
+                    insertedIds: [insertedTier1, insertedTier2, insertedTier3, insertedTier4],
+                });
+            } else {
+                // Handle the case where no rows were updated (e.g., student data didn't change)
+                res.status(200).json({
+                    status: "success",
+                    message: "No patient form data inserted",
+                });
+            }
         }
     );
 };
@@ -122,7 +140,7 @@ exports.updatePatientForm = (req, res, next) => {
     if (req.body.tier4 !== undefined) values.unshift(req.body.tier4);
     if (req.body.saveEpoch !== undefined) values.unshift(req.body.saveEpoch);
     if (req.body.sentEpoch !== undefined) values.unshift(req.body.sentEpoch);
-     if (req.body.isSent !== undefined) values.unshift(req.body.isSent);
+    if (req.body.isSent !== undefined) values.unshift(req.body.isSent);
     if (req.body.isApproved !== undefined) values.unshift(req.body.isApproved);
     if (req.body.comment !== undefined) values.unshift(req.body.comment);
     console.log("values: " + values.reverse().toString());
@@ -169,15 +187,109 @@ exports.updatePatientForm = (req, res, next) => {
 
     conn.query(
         str, values,
-        function (err, data, fields) {
-            if (err)
+        async function (err, data, fields) {
+            if (err) {
                 return next(new AppError(err, 500));
-            res.status(201).json({
-                status: "success",
-                message: "Student data successfully altered",
-            });
+            }
+
+            // Check if any rows were actually updated
+            if (data.affectedRows > 0) {
+
+                if (req.body.isSent === 1) {
+                    const insertedTier1 = await checkAndInsertTierData(req.body.tier1ID, req.body.tier1, req.params.ID, res, next);
+                    const insertedTier2 = await checkAndInsertTierData(req.body.tier2ID, req.body.tier2, req.params.ID, res, next);
+                    const insertedTier3 = await checkAndInsertTierData(req.body.tier3ID, req.body.tier3, req.params.ID, res, next);
+                    const insertedTier4 = await checkAndInsertTierData(req.body.tier4ID, req.body.tier4, req.params.ID, res, next);
+                }
+
+                res.status(201).json({
+                    status: "success",
+                    message: "Patient form data successfully updated",
+                    insertedIds: [insertedTier1, insertedTier2, insertedTier3, insertedTier4],
+                });
+            } else {
+                // Handle the case where no rows were updated (e.g., student data didn't change)
+                res.status(200).json({
+                    status: "success",
+                    message: "No patient form data updated",
+                });
+            }
         }
     );
+};
+
+
+const checkAndInsertTierData = (
+    tierID,
+    tierText,
+    relatedReport,
+    res,
+    next
+) => {
+    return new Promise((resolve, reject) => {
+        // Check if tierID is -1, the "other" choice
+        if (tierID === -1) {
+            // find the most similar tier description to a given input string by calculating the Levenshtein 
+            //distance-based similarity percentage and filtering for tiers. The closest match is returned as a result.
+            const similarProcedureQuery = `
+            SELECT description,tier,
+            ((1 - levenshtein(?, description, 1) / GREATEST(CHAR_LENGTH(?), CHAR_LENGTH(description))) * 100) AS similarity
+            FROM differentialdiagnoses
+            HAVING similarity < 20
+            ORDER BY similarity DESC
+            LIMIT 1`;
+
+            conn.query(
+                similarProcedureQuery,
+                [tierText, tierText],
+                (err, results) => {
+                    if (err) {
+                        console.error("Error searching for similar procedure:", err);
+                        reject(err);
+                    }
+
+                    console.log("result " + results[0].similarity);
+
+                    // If a similar tier is found with a similarity percentage <20 , insert the tier text coming from the form
+                    if (results[0].similarity < 20) {
+                        const similarProcedure = results[0];
+                        console.log("most similar tier", similarProcedure.description);
+
+                        // Handle the insertion logic here
+                        console.log(tierText);
+                        console.log(relatedReport);
+                        if (!tierText || !relatedReport) {
+                            reject(new AppError("Invalid data provided", 400));
+                        }
+
+                        const values = [tierText, relatedReport];
+
+                        conn.query(
+                            "INSERT INTO differentialdiagnoses (description, relatedReport) VALUES (?, ?)",
+                            values,
+                            function (err, data, fields) {
+                                if (err) {
+                                    console.error("INSERT procedure Error:", err);
+                                    reject(err);
+                                }
+
+                                console.log("Inserted Data2222:", data);
+                                resolve(data.insertId);
+                            }
+                        );
+                    } else {
+                        resolve(null); // Indicate that no insertion was needed
+                        console.log("No insertion was needed.");
+
+                    }
+                }
+            );
+        } else {
+            resolve(null); // If tierID is not -1, resolve with null to indicate no insertion was needed
+            console.log("Related Tier is not -1");
+
+        }
+    });
 };
 
 exports.getAllPatientFormsForStudent = (req, res, next) => {
