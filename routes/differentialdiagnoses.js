@@ -9,7 +9,11 @@ router
     .get(differentialdiagnosesController.getApprovedDiffDiagnoses)
 router
     .route("/:diagnoseID")
-    .get(differentialdiagnosesController.getDiffDiagnosesByDiagnoseID)
+    .get(differentialdiagnosesController.getDiffDiagnosesByDiagnoseID);
+
+router.route("/insert")
+    .post(differentialdiagnosesController.insert);
+
 // .post(physicianController.insertPhyscian);
 
 // .delete(physicianController.deletePhysicianByID);
