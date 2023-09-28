@@ -82,13 +82,18 @@ exports.insertPatientForm = (req, res, next) => {
             }
 
             if (data.affectedRows > 0) {
+                const insertedTier1 = null;
+                const insertedTier2 = null;
+                const insertedTier3 = null;
+                const insertedTier4 = null;
+
                 if (req.body.isSent === 1) {
-                    const insertedTier1 = await checkAndInsertTierData(req.body.tier1ID, req.body.tier1, data.insertId, res, next);
-                    const insertedTier2 = await checkAndInsertTierData(req.body.tier2ID, req.body.tier2, data.insertId, res, next);
-                    const insertedTier3 = await checkAndInsertTierData(req.body.tier3ID, req.body.tier3, data.insertId, res, next);
-                    const insertedTier4 = await checkAndInsertTierData(req.body.tier4ID, req.body.tier4, data.insertId, res, next);
+                    insertedTier1 = await checkAndInsertTierData(req.body.tier1ID, req.body.tier1, data.insertId, res, next);
+                    insertedTier2 = await checkAndInsertTierData(req.body.tier2ID, req.body.tier2, data.insertId, res, next);
+                    insertedTier3 = await checkAndInsertTierData(req.body.tier3ID, req.body.tier3, data.insertId, res, next);
+                    insertedTier4 = await checkAndInsertTierData(req.body.tier4ID, req.body.tier4, data.insertId, res, next);
                 }
-            
+
                 res.status(201).json({
                     status: "success",
                     message: "Patient form data successfully inserted",
@@ -195,11 +200,16 @@ exports.updatePatientForm = (req, res, next) => {
             // Check if any rows were actually updated
             if (data.affectedRows > 0) {
 
+                const insertedTier1 = null;
+                const insertedTier2 = null;
+                const insertedTier3 = null;
+                const insertedTier4 = null;
+
                 if (req.body.isSent === 1) {
-                    const insertedTier1 = await checkAndInsertTierData(req.body.tier1ID, req.body.tier1, req.params.ID, res, next);
-                    const insertedTier2 = await checkAndInsertTierData(req.body.tier2ID, req.body.tier2, req.params.ID, res, next);
-                    const insertedTier3 = await checkAndInsertTierData(req.body.tier3ID, req.body.tier3, req.params.ID, res, next);
-                    const insertedTier4 = await checkAndInsertTierData(req.body.tier4ID, req.body.tier4, req.params.ID, res, next);
+                    insertedTier1 = await checkAndInsertTierData(req.body.tier1ID, req.body.tier1, req.params.ID, res, next);
+                    insertedTier2 = await checkAndInsertTierData(req.body.tier2ID, req.body.tier2, req.params.ID, res, next);
+                    insertedTier3 = await checkAndInsertTierData(req.body.tier3ID, req.body.tier3, req.params.ID, res, next);
+                    insertedTier4 = await checkAndInsertTierData(req.body.tier4ID, req.body.tier4, req.params.ID, res, next);
                 }
 
                 res.status(201).json({
