@@ -74,9 +74,11 @@ router
     .route("/get/ID/:studentID/:localStorageID")
     .get(procedureFormController.getIDofProcedureForm);
 
-/*router
+router
     .route("/delete/:ID")
     .delete(procedureFormController.deleteProcedureFormWithID);
+
+/*
 
 router
     .route("/update/:updateChoice/:approveDate/:approveTime/:reportID")

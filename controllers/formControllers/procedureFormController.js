@@ -492,7 +492,7 @@ exports.deleteProcedureFormWithID = (req, res, next) => {
             if (err) return next(new AppError(err, 500));
             res.status(201).json({
                 status: "success",
-                message: "student deleted!",
+                message: "Procedure form deleted!",
             });
         }
     );
