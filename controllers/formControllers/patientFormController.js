@@ -737,7 +737,7 @@ exports.deletePatientFormWithID = (req, res, next) => {
         return next(new AppError("No todo id found", 404));
     }
     conn.query(
-        "DELETE FROM patientreports studentID = ? && localStorageID = ?",
+        "DELETE FROM patientreports WHERE studentID = ? && localStorageID = ?",
         [req.params.ID,req.params.localStorageID],
         function (err, fields) {
             if (err) return next(new AppError(err, 500));
