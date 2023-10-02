@@ -503,10 +503,14 @@ exports.deleteProcedureFormWithID = (req, res, next) => {
                 console.error("Error deleting procedure form:", err);
                 return next(new AppError("Internal server error", 500));
             }
+
+            console.log("Delete result:", result);
+
             // Check if any rows were affected to determine if a record was deleted
             if (result.affectedRows === 0) {
                 return next(new AppError("Procedure form not found", 404));
             }
+
             res.status(201).json({
                 status: "success",
                 message: "Procedure form deleted!",
@@ -514,6 +518,7 @@ exports.deleteProcedureFormWithID = (req, res, next) => {
         }
     );
 };
+
 
 
 exports.getCount = (req, res, next) => {
