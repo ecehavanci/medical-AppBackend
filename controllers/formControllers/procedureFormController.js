@@ -487,12 +487,12 @@ exports.getProcedureFormWithID = (req, res, next) => {
 };
 
 exports.deleteProcedureFormWithID = (req, res, next) => {
-    if (!req.params.ID) {
+    if (!req.params.ID && req.params.localStorageID) {
         return next(new AppError("No todo id found", 404));
     }
     conn.query(
-        "DELETE FROM procedurereports WHERE ID=?",
-        [req.params.ID],
+        "DELETE FROM procedurereports WHERE studentID = ? && localStorageID = ?",
+        [req.params.ID,req.params.localStorageID],
         function (err, fields) {
             if (err) return next(new AppError(err, 500));
             res.status(201).json({

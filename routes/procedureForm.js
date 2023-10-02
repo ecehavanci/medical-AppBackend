@@ -75,7 +75,7 @@ router
     .get(procedureFormController.getIDofProcedureForm);
 
 router
-    .route("/delete/:ID")
+    .route("/delete/:ID/:localStorageID")
     .delete(procedureFormController.deleteProcedureFormWithID);
 
 /*

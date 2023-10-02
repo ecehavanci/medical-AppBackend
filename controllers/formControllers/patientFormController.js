@@ -733,12 +733,12 @@ exports.listAllPatientReportsAccApproveDateForDoc = (req, res, next) => {
 
 
 exports.deletePatientFormWithID = (req, res, next) => {
-    if (!req.params.ID) {
+    if (!req.params.ID && req.params.localStorageID) {
         return next(new AppError("No todo id found", 404));
     }
     conn.query(
-        "DELETE FROM patientreports WHERE ID=?",
-        [req.params.ID],
+        "DELETE FROM patientreports studentID = ? && localStorageID = ?",
+        [req.params.ID,req.params.localStorageID],
         function (err, fields) {
             if (err) return next(new AppError(err, 500));
             res.status(201).json({
