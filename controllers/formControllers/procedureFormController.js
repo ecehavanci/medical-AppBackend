@@ -486,7 +486,7 @@ exports.deleteProcedureFormWithID = (req, res, next) => {
         return next(new AppError("No todo id found", 404));
     }
     conn.query(
-        "DELETE FROM student WHERE ID=?",
+        "DELETE FROM procedurereports WHERE ID=?",
         [req.params.ID],
         function (err, fields) {
             if (err) return next(new AppError(err, 500));
