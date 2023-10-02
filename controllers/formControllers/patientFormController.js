@@ -733,21 +733,34 @@ exports.listAllPatientReportsAccApproveDateForDoc = (req, res, next) => {
 
 
 exports.deletePatientFormWithID = (req, res, next) => {
-    if (!req.params.ID && req.params.localStorageID) {
-        return next(new AppError("No todo id found", 404));
+    const studentID = req.params.ID;
+    const localStorageID = req.params.localStorageID;
+
+    // Check if either parameter is missing
+    if (!studentID || !localStorageID) {
+        return next(new AppError("Both studentID and localStorageID are required.", 400));
     }
+
     conn.query(
         "DELETE FROM patientreports WHERE studentID = ? && localStorageID = ?",
-        [req.params.ID,req.params.localStorageID],
-        function (err, fields) {
-            if (err) return next(new AppError(err, 500));
+        [studentID, localStorageID],
+        function (err, result) {
+            if (err) {
+                console.error("Error deleting patient form:", err);
+                return next(new AppError("Internal server error", 500));
+            }
+            // Check if any rows were affected to determine if a record was deleted
+            if (result.affectedRows === 0) {
+                return next(new AppError("Patient form not found", 404));
+            }
             res.status(201).json({
                 status: "success",
                 message: "Patient form deleted!",
             });
         }
     );
-}
+};
+
 
 
 exports.getCount = (req, res, next) => {

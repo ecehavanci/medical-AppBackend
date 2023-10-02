@@ -487,21 +487,34 @@ exports.getProcedureFormWithID = (req, res, next) => {
 };
 
 exports.deleteProcedureFormWithID = (req, res, next) => {
-    if (!req.params.ID && req.params.localStorageID) {
-        return next(new AppError("No todo id found", 404));
+    const studentID = req.params.ID;
+    const localStorageID = req.params.localStorageID;
+
+    // Check if both parameters are provided
+    if (!studentID || !localStorageID) {
+        return next(new AppError("Both studentID and localStorageID are required.", 400));
     }
+
     conn.query(
         "DELETE FROM procedurereports WHERE studentID = ? && localStorageID = ?",
-        [req.params.ID,req.params.localStorageID],
-        function (err, fields) {
-            if (err) return next(new AppError(err, 500));
+        [studentID, localStorageID],
+        function (err, result) {
+            if (err) {
+                console.error("Error deleting procedure form:", err);
+                return next(new AppError("Internal server error", 500));
+            }
+            // Check if any rows were affected to determine if a record was deleted
+            if (result.affectedRows === 0) {
+                return next(new AppError("Procedure form not found", 404));
+            }
             res.status(201).json({
                 status: "success",
                 message: "Procedure form deleted!",
             });
         }
     );
-}
+};
+
 
 exports.getCount = (req, res, next) => {
     conn.query(
