@@ -59,10 +59,13 @@ exports.insertProcedureForm = (req, res, next) => {
             }
 
             if (data.affectedRows > 0) {
+
+                var inserted = null;
+
                 if (req.body.isSent === 1) {
-                const inserted = await checkAndUpdateProcedure(req.body.procedureID, req.body.procedureText.toLowerCase().trim(), data.insertId, res, next);
+                    inserted = await checkAndUpdateProcedure(req.body.procedureID, req.body.procedureText.toLowerCase().trim(), data.insertId, res, next);
                 }
-                
+
                 res.status(201).json({
                     status: "success",
                     message: "Student data successfully altered",
@@ -147,14 +150,16 @@ exports.updateProcedureForm = (req, res, next) => {
 
                 // Check if any rows were actually updated
                 if (data.affectedRows > 0) {
+
+                    var inserted = null
                     if (req.body.isSent === 1) {
-                        const inserted = await checkAndUpdateProcedure(req.body.procedureID, req.body.procedureText.toLowerCase().trim(), req.params.ID, res, next);
-                    } 
+                        inserted = await checkAndUpdateProcedure(req.body.procedureID, req.body.procedureText.toLowerCase().trim(), req.params.ID, res, next);
+                    }
 
                     res.status(201).json({
                         status: "success",
                         message: "Student data successfully altered",
-                        insertedId: inserted, // This should now have the correct value
+                        //insertedId: inserted, // This should now have the correct value
                     });
                 } else {
                     // Handle the case where no rows were updated (e.g., student data didn't change)
