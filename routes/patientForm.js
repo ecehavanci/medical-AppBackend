@@ -86,7 +86,7 @@ router
     .put(patientFormController.updatePatientFormApproveInfo);
 
 router
-    .route("/delete/:ID:/:localStorageID")
+    .route("/delete/:stdID/:localStorageID")
     .delete(patientFormController.deletePatientFormWithID);
 
 module.exports = router;

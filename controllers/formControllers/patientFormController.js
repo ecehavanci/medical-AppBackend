@@ -733,7 +733,7 @@ exports.listAllPatientReportsAccApproveDateForDoc = (req, res, next) => {
 
 
 exports.deletePatientFormWithID = (req, res, next) => {
-    const studentID = req.params.ID;
+    const studentID = req.params.stdID;
     const localStorageID = req.params.localStorageID;
 
     if (!studentID || !localStorageID) {
