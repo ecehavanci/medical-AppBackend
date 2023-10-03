@@ -752,7 +752,7 @@ exports.deletePatientFormWithID = (req, res, next) => {
             if (result.affectedRows === 0) {
                 return next(new AppError("Patient form not found", 404));
             }
-            res.status(201).json({
+            res.status(200).json({
                 status: "success",
                 message: "Patient form deleted!",
             });

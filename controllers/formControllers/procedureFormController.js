@@ -511,7 +511,7 @@ exports.deleteProcedureFormWithID = (req, res, next) => {
                 return next(new AppError("Procedure form not found", 404));
             }
 
-            res.status(201).json({
+            res.status(200).json({
                 status: "success",
                 message: "Procedure form deleted!",
             });
