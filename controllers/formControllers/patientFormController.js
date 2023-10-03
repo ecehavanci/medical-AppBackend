@@ -736,7 +736,6 @@ exports.deletePatientFormWithID = (req, res, next) => {
     const studentID = req.params.ID;
     const localStorageID = req.params.localStorageID;
 
-    // Check if either parameter is missing
     if (!studentID || !localStorageID) {
         return next(new AppError("Both studentID and localStorageID are required.", 400));
     }
