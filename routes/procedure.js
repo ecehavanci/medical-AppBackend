@@ -9,7 +9,7 @@ router
     .get(procedureController.getApprovedProcedures);
 
 router
-    .route("/:procedureID")
+    .route("/get/:procedureID")
     .get(procedureController.getProceduresByID);
 
 router
