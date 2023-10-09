@@ -242,7 +242,7 @@ const checkAndInsertTierData = (
             // find the most similar tier description to a given input string by calculating the Levenshtein 
             //distance-based similarity percentage and filtering for tiers. The closest match is returned as a result.
             const similarProcedureQuery = `
-            SELECT description,tier,
+            SELECT description,
             ((1 - levenshtein(?, description, 1) / GREATEST(CHAR_LENGTH(?), CHAR_LENGTH(description))) * 100) AS similarity
             FROM differentialdiagnoses
             HAVING similarity < 20
