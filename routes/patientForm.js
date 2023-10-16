@@ -34,15 +34,15 @@ router
 
 
 router
-    .route("/get/all/:studentID/:isSent/:searchInput")
+    .route("/get/all/:studentID/:isSent/:searchInput") //////////////////////
     .get(patientFormController.searchPatientForms);
 
 router
-    .route("/get/all/:studentID/:searchInput/:isSent/:isApproved")
+    .route("/get/all/:studentID/:searchInput/:isSent/:isApproved")  //////////////////////
     .get(patientFormController.searchPatientFormsByAcceptance);
 
 router
-    .route("/get/all/:studentID/:searchInput/:isSent/:isApproved1/:isApproved2")
+    .route("/get/all/:studentID/:searchInput/:isSent/:isApproved1/:isApproved2") //////////////////////
     .get(patientFormController.searchPatientFormsByMultipleAcceptance);
 
 /*router
