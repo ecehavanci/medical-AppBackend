@@ -414,15 +414,20 @@ exports.searchPatientForms = (req, res, next) => {
 };
 
 exports.searchPatientFormsByAcceptance = (req, res, next) => {
+    const page = parseInt(req.query.page) || 1; // Current page number
+    const pageSize = parseInt(req.query.pageSize) || 10; // Number of items per page
     var input = req.params.searchInput === "|" ? "" : req.params.searchInput;
+
     conn.query(
         "select * from patientreports WHERE studentID = ? and isSent = ? AND isApproved = ? " +
-        "AND UPPER(illnessScript) LIKE '%" + input + "%' order by saveEpoch DESC",
-        [req.params.studentID, req.params.isSent, req.params.isApproved],
+        "AND UPPER(illnessScript) LIKE '%" + input + "%' order by saveEpoch DESC LIMIT ? OFFSET ?",
+        [req.params.studentID, req.params.isSent, req.params.isApproved, pageSize, offset],
         function (err, data, fields) {
             if (err) return next(new AppError(err, 500));
             res.status(200).json({
                 status: "success",
+                currentPage: page,
+                pageSize: pageSize,
                 length: data?.length,
                 data: data,
             });
@@ -435,12 +440,14 @@ exports.searchPatientFormsByMultipleAcceptance = (req, res, next) => {
     conn.query(
         "select * from patientreports WHERE studentID = ? and isSent = ? " +
         "AND (isApproved = ? OR isApproved = ?) " +
-        "AND UPPER(illnessScript) LIKE '%" + input + "%' order by saveEpoch DESC",
-        [req.params.studentID, req.params.isSent, req.params.isApproved1, req.params.isApproved2],
+        "AND UPPER(illnessScript) LIKE '%" + input + "%' order by saveEpoch DESC LIMIT ? OFFSET ?",
+        [req.params.studentID, req.params.isSent, req.params.isApproved1, req.params.isApproved2, pageSize, offset],
         function (err, data, fields) {
             if (err) return next(new AppError(err, 500));
             res.status(200).json({
                 status: "success",
+                currentPage: page,
+                pageSize: pageSize,
                 length: data?.length,
                 data: data,
             });
