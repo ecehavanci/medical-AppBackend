@@ -417,7 +417,7 @@ exports.searchPatientFormsByAcceptance = (req, res, next) => {
     const page = parseInt(req.query.page) || 1; // Current page number
     const pageSize = parseInt(req.query.pageSize) || 10; // Number of items per page
     const offset = (page - 1) * pageSize;
-    
+
     var input = req.params.searchInput === "|" ? "" : req.params.searchInput;
 
     conn.query(
@@ -441,7 +441,7 @@ exports.searchPatientFormsByMultipleAcceptance = (req, res, next) => {
     const page = parseInt(req.query.page) || 1; // Current page number
     const pageSize = parseInt(req.query.pageSize) || 10; // Number of items per page
     const offset = (page - 1) * pageSize;
-    
+
     var input = req.params.searchInput === "|" ? "" : req.params.searchInput;
     conn.query(
         "select * from patientreports WHERE studentID = ? and isSent = ? " +
@@ -464,7 +464,8 @@ exports.searchPatientFormsByMultipleAcceptance = (req, res, next) => {
 
 exports.getPatientFormsWithStudentID = (req, res, next) => {
     conn.query(
-        "SELECT * FROM patientreports WHERE studentID = ? AND isSent = ?", [req.params.studentID, req.params.isSent],
+        "SELECT * FROM patientreports WHERE studentID = ? AND isSent = ? ORDER BY saveEpoch DESC LIMIT 5 ",
+        [req.params.studentID, req.params.isSent],
         function (err, data, fields) {
             if (err) return next(new AppError(err, 500));
             res.status(200).json({

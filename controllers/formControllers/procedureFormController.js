@@ -354,7 +354,7 @@ exports.searchProcedureReportsByMultipleAcceptance = (req, res, next) => {
 
 
 exports.listProcedureFormsWithStudentID = (req, res, next) => {
-    var str = "SELECT * FROM procedurereports WHERE studentID = ? AND isSent = ?";
+    var str = "SELECT * FROM procedurereports WHERE studentID = ? AND isSent = ? ORDER BY saveEpoch DESC LIMIT 5";
     conn.query(
         str, [req.params.studentID, req.params.isSent],
         function (err, data, fields) {
