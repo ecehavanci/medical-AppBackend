@@ -299,6 +299,10 @@ exports.getAllSentProcedureForms = (req, res, next) => {
 };
 
 exports.searchProcedureReportsByAcceptance = (req, res, next) => {
+    const page = parseInt(req.query.page) || 1; // Current page number
+    const pageSize = parseInt(req.query.pageSize) || 10; // Number of items per page
+    const offset = (page - 1) * pageSize;
+
     var input = req.params.searchInput === "|" ? "" : req.params.searchInput;
     conn.query(
         "SELECT pr.*" +
@@ -306,12 +310,14 @@ exports.searchProcedureReportsByAcceptance = (req, res, next) => {
         "INNER JOIN procedures p ON pr.procedureID = p.ID " +
         "WHERE pr.studentID = ? AND pr.isSent = ? AND pr.isApproved = ? " +
         "AND UPPER(p.description) LIKE '%" + input + "%' " +
-        "ORDER BY pr.saveEpoch DESC",
-        [req.params.studentID, req.params.isSent, req.params.isApproved],
+        "ORDER BY pr.saveEpoch DESC LIMIT ? OFFSET ?",
+        [req.params.studentID, req.params.isSent, req.params.isApproved, pageSize, offset],
         function (err, data, fields) {
             if (err) return next(new AppError(err, 500));
             res.status(200).json({
                 status: "success",
+                currentPage: page,
+                pageSize: pageSize,
                 length: data?.length,
                 data: data,
             });
@@ -320,6 +326,10 @@ exports.searchProcedureReportsByAcceptance = (req, res, next) => {
 };
 
 exports.searchProcedureReportsByMultipleAcceptance = (req, res, next) => {
+    const page = parseInt(req.query.page) || 1; // Current page number
+    const pageSize = parseInt(req.query.pageSize) || 10; // Number of items per page
+    const offset = (page - 1) * pageSize;
+
     var input = req.params.searchInput === "|" ? "" : req.params.searchInput;
 
     conn.query(
@@ -329,8 +339,8 @@ exports.searchProcedureReportsByMultipleAcceptance = (req, res, next) => {
         "WHERE pr.studentID = ? AND pr.isSent = ? " +
         "AND (pr.isApproved = ? OR pr.isApproved = ?) " +
         "AND UPPER(p.description) LIKE '%" + input + "%' " +
-        "ORDER BY pr.saveEpoch DESC;",
-        [req.params.studentID, req.params.isSent, req.params.isApproved1, req.params.isApproved2],
+        "ORDER BY pr.saveEpoch DESC LIMIT ? OFFSET ?",
+        [req.params.studentID, req.params.isSent, req.params.isApproved1, req.params.isApproved2, pageSize, offset],
         function (err, data, fields) {
             if (err) return next(new AppError(err, 500));
             res.status(200).json({
@@ -421,6 +431,10 @@ exports.searchSentProcedureFormsWithDocIDAccordingToApproveDate = (req, res, nex
 
 
 exports.searchProcedureFormsForStudent = (req, res, next) => {
+    const page = parseInt(req.query.page) || 1; // Current page number
+    const pageSize = parseInt(req.query.pageSize) || 10; // Number of items per page
+    const offset = (page - 1) * pageSize;
+
     var input = req.params.searchInput === "|" ? "" : req.params.searchInput;
 
     conn.query(
@@ -430,12 +444,14 @@ exports.searchProcedureFormsForStudent = (req, res, next) => {
         "WHERE pr.studentID = ? AND " +
         "pr.isSent = ? " +
         "AND UPPER(p.description) LIKE '%" + input + "%' " +
-        "ORDER BY pr.saveEpoch DESC;",
-        [req.params.studentID, req.params.isSent],
+        "ORDER BY pr.saveEpoch DESC LIMIT ? OFFSET ?",
+        [req.params.studentID, req.params.isSent, pageSize, offset],
         function (err, data, fields) {
             if (err) return next(new AppError(err, 500));
             res.status(200).json({
                 status: "success",
+                currentPage: page,
+                pageSize: pageSize,
                 length: data?.length,
                 data: data,
             });
