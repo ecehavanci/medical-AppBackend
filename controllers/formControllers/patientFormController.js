@@ -416,6 +416,8 @@ exports.searchPatientForms = (req, res, next) => {
 exports.searchPatientFormsByAcceptance = (req, res, next) => {
     const page = parseInt(req.query.page) || 1; // Current page number
     const pageSize = parseInt(req.query.pageSize) || 10; // Number of items per page
+    const offset = (page - 1) * pageSize;
+    
     var input = req.params.searchInput === "|" ? "" : req.params.searchInput;
 
     conn.query(
@@ -436,6 +438,10 @@ exports.searchPatientFormsByAcceptance = (req, res, next) => {
 };
 
 exports.searchPatientFormsByMultipleAcceptance = (req, res, next) => {
+    const page = parseInt(req.query.page) || 1; // Current page number
+    const pageSize = parseInt(req.query.pageSize) || 10; // Number of items per page
+    const offset = (page - 1) * pageSize;
+    
     var input = req.params.searchInput === "|" ? "" : req.params.searchInput;
     conn.query(
         "select * from patientreports WHERE studentID = ? and isSent = ? " +
