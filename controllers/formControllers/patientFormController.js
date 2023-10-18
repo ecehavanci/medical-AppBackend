@@ -732,17 +732,23 @@ exports.listAllPatientReportsAccSentDateForDoc = (req, res, next) => {
 
 };
 
-//TODO 
+//TODO  
 exports.listAllPatientReportsAccApproveDateForDoc = (req, res, next) => {
+    const page = parseInt(req.query.page) || 1; // Current page number
+    const pageSize = parseInt(req.query.pageSize) || 10; // Number of items per page
+    const offset = (page - 1) * pageSize;
+
     const input = req.params.searchInput === "|" ? "" : req.params.searchInput;
 
     conn.query("select * from patientreports WHERE attendingPhysicianID= ? AND isSent = 1 AND isApproved = ? AND " +
-        "UPPER(studentName) LIKE '%" + input + "%' order by sentEpoch DESC",
-        [req.params.attphyscID, req.params.isApproved],
+        "UPPER(studentName) LIKE '%" + input + "%' order by sentEpoch DESC LIMIT ? OFFSET ?",
+        [req.params.attphyscID, req.params.isApproved, pageSize, offset],
         function (err, data, fields) {
             if (err) return next(new AppError(err, 500));
             res.status(200).json({
                 status: "success",
+                currentPage: page,
+                pageSize: pageSize,
                 length: data?.length,
                 data: data,
             });

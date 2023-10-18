@@ -407,6 +407,10 @@ exports.searchSentProcedureFormsWithDocIDAccordingToSendDate = (req, res, next) 
 
 
 exports.searchSentProcedureFormsWithDocIDAccordingToApproveDate = (req, res, next) => {
+    const page = parseInt(req.query.page) || 1; // Current page number
+    const pageSize = parseInt(req.query.pageSize) || 10; // Number of items per page
+    const offset = (page - 1) * pageSize;
+    
     var input = req.params.searchInput === "|" ? "" : req.params.searchInput;
 
     conn.query(
@@ -416,12 +420,14 @@ exports.searchSentProcedureFormsWithDocIDAccordingToApproveDate = (req, res, nex
         "WHERE pr.attendingPhysicianID = ? AND " +
         "pr.isSent = 1 AND pr.isApproved = ? " +
         "AND UPPER(p.description) LIKE '%" + input + "%' " +
-        "ORDER BY pr.sentEpoch DESC;",
-        [req.params.attendingPhysicianID, req.params.isApproved],
+        "ORDER BY pr.sentEpoch DESC LIMIT ? OFFSET ?",
+        [req.params.attendingPhysicianID, req.params.isApprove, pageSize, offset],
         function (err, data, fields) {
             if (err) return next(new AppError(err, 500));
             res.status(200).json({
                 status: "success",
+                currentPage: page,
+                pageSize: pageSize,
                 length: data?.length,
                 data: data,
             });
