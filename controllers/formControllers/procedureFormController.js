@@ -406,7 +406,7 @@ exports.searchSentProcedureFormsWithDocIDAccordingToSendDate = (req, res, next) 
 };
 
 
-exports.searchSentProcedureFormsWithDocIDAccordingToApproveDate = (req, res, next) => { //////////////////////////////////////
+exports.searchSentProcedureFormsWithDocIDAccordingToApproveDate = (req, res, next) => { //////////////////////////////////////todo inputu student name ile değiştir şuan istenilen arama olmuyor
     const page = parseInt(req.query.page) || 1; // Current page number
     const pageSize = parseInt(req.query.pageSize) || 10; // Number of items per page
     const offset = (page - 1) * pageSize;
@@ -419,7 +419,7 @@ exports.searchSentProcedureFormsWithDocIDAccordingToApproveDate = (req, res, nex
         "INNER JOIN procedures p ON pr.procedureID = p.ID " +
         "WHERE pr.attendingPhysicianID = ? AND " +
         "pr.isSent = 1 AND pr.isApproved = ? " +
-        "AND UPPER(p.studentName) LIKE '%" + input.toUpperCase() + "%' " +
+        "AND UPPER(p.description) LIKE '%" + input.toUpperCase() + "%' " +
         "ORDER BY pr.sentEpoch DESC LIMIT ? OFFSET ?",
         [req.params.attendingPhysicianID, req.params.isApproved, pageSize, offset],
         function (err, data, fields) {
