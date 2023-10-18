@@ -309,7 +309,7 @@ exports.searchProcedureReportsByAcceptance = (req, res, next) => {
         "FROM procedurereports pr " +
         "INNER JOIN procedures p ON pr.procedureID = p.ID " +
         "WHERE pr.studentID = ? AND pr.isSent = ? AND pr.isApproved = ? " +
-        "AND UPPER(p.description) LIKE '%" + input + "%' " +
+        "AND UPPER(p.description) LIKE '%" + input.toUpperCase() + "%' " +
         "ORDER BY pr.saveEpoch DESC LIMIT ? OFFSET ?",
         [req.params.studentID, req.params.isSent, req.params.isApproved, pageSize, offset],
         function (err, data, fields) {
@@ -338,7 +338,7 @@ exports.searchProcedureReportsByMultipleAcceptance = (req, res, next) => {
         "INNER JOIN procedures p ON pr.procedureID = p.ID " +
         "WHERE pr.studentID = ? AND pr.isSent = ? " +
         "AND (pr.isApproved = ? OR pr.isApproved = ?) " +
-        "AND UPPER(p.description) LIKE '%" + input + "%' " +
+        "AND UPPER(p.description) LIKE '%" + input.toUpperCase() + "%' " +
         "ORDER BY pr.saveEpoch DESC LIMIT ? OFFSET ?",
         [req.params.studentID, req.params.isSent, req.params.isApproved1, req.params.isApproved2, pageSize, offset],
         function (err, data, fields) {
@@ -391,7 +391,7 @@ exports.searchSentProcedureFormsWithDocIDAccordingToSendDate = (req, res, next) 
         "INNER JOIN procedures p ON pr.procedureID = p.ID " +
         "WHERE pr.attendingPhysicianID = ? AND " +
         "pr.isSent = 1 AND pr.isApproved = ? " +
-        "AND UPPER(p.description) LIKE '%" + input + "%' " +
+        "AND UPPER(p.description) LIKE '%" + input.toUpperCase() + "%' " +
         "ORDER BY pr.saveEpoch DESC;",
         [req.params.attendingPhysicianID, req.params.isApproved],
         function (err, data, fields) {
@@ -406,7 +406,7 @@ exports.searchSentProcedureFormsWithDocIDAccordingToSendDate = (req, res, next) 
 };
 
 
-exports.searchSentProcedureFormsWithDocIDAccordingToApproveDate = (req, res, next) => {
+exports.searchSentProcedureFormsWithDocIDAccordingToApproveDate = (req, res, next) => { //////////////////////////////////////
     const page = parseInt(req.query.page) || 1; // Current page number
     const pageSize = parseInt(req.query.pageSize) || 10; // Number of items per page
     const offset = (page - 1) * pageSize;
@@ -419,7 +419,7 @@ exports.searchSentProcedureFormsWithDocIDAccordingToApproveDate = (req, res, nex
         "INNER JOIN procedures p ON pr.procedureID = p.ID " +
         "WHERE pr.attendingPhysicianID = ? AND " +
         "pr.isSent = 1 AND pr.isApproved = ? " +
-        "AND UPPER(p.description) LIKE '%" + input + "%' " +
+        "AND UPPER(p.studentName) LIKE '%" + input.toUpperCase() + "%' " +
         "ORDER BY pr.sentEpoch DESC LIMIT ? OFFSET ?",
         [req.params.attendingPhysicianID, req.params.isApproved, pageSize, offset],
         function (err, data, fields) {
@@ -449,7 +449,7 @@ exports.searchProcedureFormsForStudent = (req, res, next) => {
         "INNER JOIN procedures p ON pr.procedureID = p.ID " +
         "WHERE pr.studentID = ? AND " +
         "pr.isSent = ? " +
-        "AND UPPER(p.description) LIKE '%" + input + "%' " +
+        "AND UPPER(p.description) LIKE '%" + input.toUpperCase() + "%' " +
         "ORDER BY pr.saveEpoch DESC LIMIT ? OFFSET ?",
         [req.params.studentID, req.params.isSent, pageSize, offset],
         function (err, data, fields) {
@@ -475,7 +475,7 @@ exports.searchProcedureFormsForStudentByAcceptance = (req, res, next) => {
         "INNER JOIN procedures p ON pr.procedureID = p.ID " +
         "WHERE pr.studentID = ? AND " +
         "pr.isSent = ? AND pr.isApproved = ? " +
-        "AND UPPER(p.description) LIKE '%" + input + "%' " +
+        "AND UPPER(p.description) LIKE '%" + input.toUpperCase() + "%' " +
         "ORDER BY pr.saveEpoch DESC;",
         [req.params.studentID, req.params.isSent, req.params.isApproved],
         function (err, data, fields) {

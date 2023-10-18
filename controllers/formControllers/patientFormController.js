@@ -741,7 +741,7 @@ exports.listAllPatientReportsAccApproveDateForDoc = (req, res, next) => {
     const input = req.params.searchInput === "|" ? "" : req.params.searchInput;
 
     conn.query("select * from patientreports WHERE attendingPhysicianID= ? AND isSent = 1 AND isApproved = ? AND " +
-        "UPPER(studentName) LIKE '%" + input + "%' order by sentEpoch DESC LIMIT ? OFFSET ?",
+        "UPPER(studentName) LIKE '%" + input.toUpperCase() + "%' order by sentEpoch DESC LIMIT ? OFFSET ?",
         [req.params.attphyscID, req.params.isApproved, pageSize, offset],
         function (err, data, fields) {
             if (err) return next(new AppError(err, 500));

@@ -42,15 +42,15 @@ router
     .get(procedureFormController.searchSentProcedureFormsWithDocIDAccordingToApproveDate);
 
 router
-    .route("/get/all/:studentID/:searchInput/:isSent") ///////////////
+    .route("/get/all/:studentID/:searchInput/:isSent")
     .get(procedureFormController.searchProcedureFormsForStudent);
-    
+
 router
-    .route("/get/all/:studentID/:searchInput/:isSent/:isApproved") ///////////////
+    .route("/get/all/:studentID/:searchInput/:isSent/:isApproved")
     .get(procedureFormController.searchProcedureReportsByAcceptance);
 
 router
-    .route("/get/all/:studentID/:searchInput/:isSent/:isApproved1/:isApproved2")///////////////
+    .route("/get/all/:studentID/:searchInput/:isSent/:isApproved1/:isApproved2")
     .get(procedureFormController.searchProcedureReportsByMultipleAcceptance);
 
 
