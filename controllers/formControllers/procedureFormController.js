@@ -1,7 +1,7 @@
+import { config } from './config.js';
 const AppError = require("../../utils/appError");
 const conn = require("../../services/db");
 const procedureController = require("../procedureController");
-const config = require("../../config");
 const currentYear = config.year;
 const currentSeason = config.season;
 

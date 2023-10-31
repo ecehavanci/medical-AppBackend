@@ -1,4 +1,7 @@
 
-export const year = 2023;
-export const season = 1;
-export const date = Date.now();
+export const config = {
+    year: 2023,
+    season: 1,
+    date: Date.now(),
+};
+
