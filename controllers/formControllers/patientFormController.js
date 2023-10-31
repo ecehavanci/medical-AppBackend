@@ -1,9 +1,9 @@
-import * as config from './config.js';
 const AppError = require("../../utils/appError");
 const conn = require("../../services/db");
 const { query } = require("express");
-const currentYear = config.year;
-const currentSeason = config.season;
+const config = require("../../config");
+const currentYear = config.config.year;
+const currentSeason = config.config.season;
 
 exports.insertPatientForm = (req, res, next) => {
     //we check if the client is sending an empty form "and return a 404 error message.

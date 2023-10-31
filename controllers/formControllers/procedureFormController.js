@@ -1,9 +1,9 @@
-import { config } from './config.js';
 const AppError = require("../../utils/appError");
 const conn = require("../../services/db");
 const procedureController = require("../procedureController");
-const currentYear = config.year;
-const currentSeason = config.season;
+const config = require("../../config");
+const currentYear = config.config.year;
+const currentSeason = config.config.season;
 
 
 exports.insertProcedureForm = (req, res, next) => {
@@ -689,7 +689,7 @@ exports.getIDofProcedureForm = (req, res, next) => {
     );
 }
 
- //counts student's form count for specified course && approval status
+//counts student's form count for specified course && approval status
 exports.getCountProcedureFormsForDashboardAccordingToApproval = (req, res, next) => {
     const studentID = req.params.studentID;
     const approvalCode = req.params.approvalCode;

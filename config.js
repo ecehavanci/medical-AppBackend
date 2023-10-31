@@ -1,7 +1,13 @@
 
-export const config = {
-    year: 2023,
-    season: 1,
-    date: Date.now(),
+const config = {
+    app: {
+        year: 2023,
+        season: 1,
+        date: Date.now(),
+    },
+    db: {
+        host: 'localhost',
+        port: 3000,
+        name: 'medTracker'
+    }
 };
-
