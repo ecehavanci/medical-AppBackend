@@ -1,6 +1,5 @@
 const express = require("express");
 const differentialdiagnosesController = require("../controllers/differentialdiagnosesController");
-// const ee = require("../controllers/physicianController");
 
 const router = express.Router();
 
@@ -9,16 +8,10 @@ router
     .get(differentialdiagnosesController.getApprovedDiffDiagnoses)
 router
     .route("/:diagnoseID")
-    .get(differentialdiagnosesController.getDiffDiagnosesByDiagnoseID);
+    .get(differentialdiagnosesController.getDiffDiagnosesByDiagnoseID)
+    .put(differentialdiagnosesController.updateApprovalStatus);
 
 router.route("/insert")
     .post(differentialdiagnosesController.insert);
-
-// .post(physicianController.insertPhyscian);
-
-// .delete(physicianController.deletePhysicianByID);
-
-// router.route("/:ID/:colName/:value")
-//     .put(physicianController.updatePhysicianByID) //!!!need to think a bit
 
 module.exports = router;

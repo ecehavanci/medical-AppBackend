@@ -7,9 +7,9 @@ router
     .route("/all/:studentID")
     .get(specialtyController.getAllSpecialties);
 
-// router
-//     .route("/previous/all/:studentID")
-//     .get(specialtyController.getSpecialtiesOfPreviousRotation);
+router
+    .route("/getCourseSpecialties/:studentID")
+    .get(specialtyController.getCourseSpecialties);
 
 router
     .route("/filter/:specialtyNo")

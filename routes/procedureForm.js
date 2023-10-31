@@ -1,70 +1,42 @@
 const express = require("express");
 const procedureFormController = require("../controllers/formControllers/procedureFormController");
-const patientFormController = require("../controllers/formControllers/patientFormController");
 const router = express.Router();
 
-//router.route('/all').get(stdController.getAllStudents).post(stdController.++tStd);
 router.route("/insert").post(procedureFormController.insertProcedureForm);
 
 router.route("/update/:ID").put(procedureFormController.updateProcedureForm);
 
-
 router
-    .route("/get/count/dashboard/required/:rotationID")
-    .get(procedureFormController.getRequiredCountProcedureFormsForDashboard);
-
-router
-    .route("/get/count/dashboard/all/:studentID/:rotationID")
-    .get(procedureFormController.getAllCountProcedureFormsForDashboard);
-
-router
-    .route("/get/count/dashboard/approved/:studentID/:rotationID/:approvalCode")
+    .route("/get/count/dashboard/approved/:studentID/:courseID/:approvalCode")
     .get(procedureFormController.getCountProcedureFormsForDashboardAccordingToApproval);
 
 router
-    .route("/get/all/:studentID")
-    .get(procedureFormController.getAllProcedureFormsWithStudentID);
-
-router
     .route("/get/all/:studentID/:isSent")
-    .get(procedureFormController.listProcedureFormsWithStudentID);
+    .get(procedureFormController.list5ProcedureFormsWithStudentID);
 
 router
-    .route("/get/all/sendDate/:studentID/:searchInput/:isSent/:isApproved")
+    .route("/get/all/sendDate/:studentID/:searchInput/:isSent/:isApproved/:courseID")
     .get(procedureFormController.searchProcedureFormsForStudentByAcceptance);
 
 router
-    .route("/get/all/by/sendDate/:attendingPhysicianID/:searchInput/:isApproved")
-    .get(procedureFormController.searchSentProcedureFormsWithDocIDAccordingToSendDate);
+    .route("/get/all/by/sendDate/:physicianID")
+    .get(procedureFormController.listWaitingReports);
 
 router
-    .route("/get/all/by/approveDate/:attendingPhysicianID/:searchInput/:isApproved")
+    .route("/get/all/by/approveDate/:attendingPhysicianID/:searchInput/:isApproved/:courseID")
     .get(procedureFormController.searchSentProcedureFormsWithDocIDAccordingToApproveDate);
 
 router
-    .route("/get/all/:studentID/:searchInput/:isSent")
+    .route("/get/all/:studentID/:searchInput/:isSent/:courseID")
     .get(procedureFormController.searchProcedureFormsForStudent);
 
 router
-    .route("/get/all/:studentID/:searchInput/:isSent/:isApproved")
+    .route("/get/all/:studentID/:searchInput/:isSent/:isApproved/:courseID")
     .get(procedureFormController.searchProcedureReportsByAcceptance);
 
 router
-    .route("/get/all/:studentID/:searchInput/:isSent/:isApproved1/:isApproved2")
+    .route("/get/all/:studentID/:searchInput/:isSent/:isApproved1/:isApproved2/:courseID")
     .get(procedureFormController.searchProcedureReportsByMultipleAcceptance);
-
-
-router
-    .route("/get/count/:studentID")
-    .get(procedureFormController.getCount);
-
-router
-    .route("/get/:ID")
-    .get(procedureFormController.getProcedureFormWithID);
-
-router
-    .route("/get/local_storage_id/:ID")
-    .get(procedureFormController.getLocalStorageIDofProcedureFormWithID);
 
 router
     .route("/get/ID/:studentID/:localStorageID")
@@ -73,15 +45,5 @@ router
 router
     .route("/delete/:ID/:localStorageID")
     .delete(procedureFormController.deleteProcedureFormWithID);
-
-/*
-
-router
-    .route("/update/:updateChoice/:approveDate/:approveTime/:reportID")
-    .put(procedureFormController.updateProcedureFormApproveInfo);
-
-router
-    .route("/get/count/dashboard/approved/:studentID/:rotationID/:approvalCode")
-    .get(procedureFormController.getCountProcedureFormsForDashboardAccordingToApproval);*/
 
 module.exports = router;

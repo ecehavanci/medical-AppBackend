@@ -13,7 +13,7 @@ router
     .get(procedureController.getProceduresByID);
 
 router
-    .route("/:relatedReport")
+    .route("/get/:relatedReport")
     .get(procedureController.getProcedureByRelatedReportID)
     .put(procedureController.updateProcedure);
 

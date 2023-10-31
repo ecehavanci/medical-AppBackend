@@ -30,17 +30,18 @@ exports.getDiffDiagnosesByDiagnoseID = (req, res, next) => {
         }
     );
 }
+
 exports.insert = (req, res, next) => {
-    if (!req.body || !req.body.description || !req.body.tier || !req.body.relatedReport) {
+    if (!req.body || !req.body.description || !req.body.relatedReport) {
         return next(new AppError("Invalid data provided", 400));
     }
 
-    const { description,tier, relatedReport } = req.body;
+    const { description, relatedReport } = req.body;
 
-    const values = [description,tier,relatedReport];
+    const values = [description, relatedReport];
 
     conn.query(
-        "INSERT INTO differentialdiagnoses (description,tier, relatedReport) VALUES (?, ?, ?)",
+        "INSERT INTO differentialdiagnoses (description, relatedReport) VALUES (?, ?)",
         values,
         function (err, data, fields) {
             if (err) {
@@ -59,3 +60,54 @@ exports.insert = (req, res, next) => {
     );
 };
 
+exports.updateApprovalStatus = (req, res, next) => {
+    if (!req.params.diagnoseID || !req.body.isApproved) {
+        return next(new AppError("Invalid request data", 400));
+    }
+
+    const { diagnoseID } = req.params;
+    const { isApproved } = req.body;
+
+    const updateQuery = "UPDATE differentialdiagnoses SET isApproved = ? WHERE ID = ?";
+    const values = [isApproved, diagnoseID];
+
+    conn.query(updateQuery, values, function (err, data, fields) {
+        if (err) {
+            console.error("Update Error:", err);
+            return next(new AppError(err.message, 500));
+        }
+
+        console.log("Updated Data:", data);
+
+        res.status(200).json({
+            status: "success",
+            message: "Diagnosis approval status updated successfully",
+        });
+    });
+};
+
+exports.updateApprovalStatus = (req, res, next) => {
+    if (!req.params.diagnoseID || !req.body.isApproved) {
+        return next(new AppError("Invalid request data", 400));
+    }
+
+    const { diagnoseID } = req.params;
+    const { isApproved } = req.body;
+
+    const updateQuery = "UPDATE differentialdiagnoses SET isApproved = ? WHERE ID = ?";
+    const values = [isApproved, diagnoseID];
+
+    conn.query(updateQuery, values, function (err, data, fields) {
+        if (err) {
+            console.error("Update Error:", err);
+            return next(new AppError(err.message, 500));
+        }
+
+        console.log("Updated Data:", data);
+
+        res.status(200).json({
+            status: "success",
+            message: "Diagnosis approval status updated successfully",
+        });
+    });
+};

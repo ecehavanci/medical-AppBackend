@@ -3,7 +3,15 @@ const rotationController = require("../controllers/rotationController");
 const router = express.Router();
 
 router
-    .route("/get/reportcount/:stdID")
-    .get(rotationController.requiredReportCountsOfRotation)
+    .route("/update/:rotationNo/:stdID")
+    .put(rotationController.updateStdRotation)
+
+router
+    .route("/update/:stdID")
+    .put(rotationController.deleteStdRotation)
+
+router
+    .route("/update/changeRotation")
+    .put(rotationController.changeRotationCourseOrder)
 
 module.exports = router;

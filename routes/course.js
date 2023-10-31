@@ -1,11 +1,10 @@
 const express = require("express");
 const courseController = require("../controllers/courseController");
-// const ee = require("../controllers/physicianController");
 
 const router = express.Router();
 
 router
-    .route("/get/all")
+    .route("/all")
     .get(courseController.getAllCourses)
 
 router
@@ -13,10 +12,18 @@ router
     .get(courseController.filterCourseByID)
 
 router
-    .route("/get/stdID=:ID")
+    .route("/get/:stdID")
     .get(courseController.getCourseName)
+router
+    .route("/get/all/:stdID")
+    .get(courseController.listStudentSemesterCourses)
 
-// router.route("/:ID/:colName/:value")
-//     .put(physicianController.updatePhysicianByID) //!!!need to think a bit
+router
+    .route("/get/all/psy/:physicianID")
+    .get(courseController.listPhysicianSemesterCourses)
 
-module.exports = router;
+router
+    .route("/requiredReportCountsOfCourse/:stdID")
+    .get(courseController.requiredReportCountsOfCourse)
+
+module.exports = router;""

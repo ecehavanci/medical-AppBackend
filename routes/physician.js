@@ -6,14 +6,13 @@ const router = express.Router();
 
 router
     .route("/all")
-    .get(physicianController.getAllPhysicians).post(physicianController.insertPhyscian);
+    .get(physicianController.getAllPhysicians)
+    .post(physicianController.insertPhysician);
 
 router
     .route("/:ID")
-    .get(physicianController.filterPhysicianByID)
+    .get(physicianController.filterPhysician)
+    .put(physicianController.updateAttendingPhysician)
     .delete(physicianController.deletePhysicianByID);
-
-router.route("/:ID/:colName/:value")
-    .put(physicianController.updatePhysicianByID) //!!!need to think a bit
 
 module.exports = router;

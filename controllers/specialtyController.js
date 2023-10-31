@@ -1,14 +1,10 @@
 const AppError = require("../utils/appError");
 const conn = require("../services/db");
 
-exports.getAllSpecialties = (req, res, next) => {
+exports.getAllSpecialties = (req, res, next) => { //all specialties in DB
 
     conn.query(
         "select * from specialties",
-        //This is the old query, I keep it in case
-        //"SELECT * from specialties where course = (Select course from " +
-        //"studentgroups where ID = (Select groupNo from rotations where ID " +
-        //"= (Select rotationNo from student where ID = ?)));",
         [req.params.studentID],
         function (err, data, fields) {
             if (err) return next(new AppError(err, 500));
@@ -21,24 +17,33 @@ exports.getAllSpecialties = (req, res, next) => {
     );
 }
 
-// exports.getSpecialtiesOfPreviousRotation = (req, res, next) => {
+exports.getCourseSpecialties = (req, res, next) => { //current course specialty
+    const queryString = `
+    select sp.description
+    from student s
+             left join enrollment e on e.std_id = s.ID
+             left join rotation_courses rc on rc.rotation_id = e.rotation_id
+             left join intervals i on i.ID = rc.interval_id
+             left join specialties sp on sp.course_ID = rc.course_id or sp.ID = -1
+    where current_date between i.end and i.start
+      and s.ID = ?;
+    `;
 
-//     conn.query("SELECT * from specialties where course = (Select course from " +
-//         "studentgroups where ID = (Select groupNo from rotations where ID " +
-//         "= (Select previousRotationNo from student where ID = ?)));",
-//         [req.params.studentID],
-//         function (err, data, fields) {
-//             if (err) return next(new AppError(err, 500));
-//             res.status(200).json({
-//                 status: "success",
-//                 length: data?.length,
-//                 data: data,
-//             });
-//         }
-//     );
-// }
+    conn.query(
+        queryString,
+        [req.params.studentID],
+        function (err, data, fields) {
+            if (err) return next(new AppError(err, 500));
+            res.status(200).json({
+                status: "success",
+                length: data?.length,
+                data: data,
+            });
+        }
+    );
+}
 
-exports.getSpecialtyName = (req, res, next) => {
+exports.getSpecialtyName = (req, res, next) => { //specialty description according to its ID
 
     conn.query("SELECT * from specialties where ID = ?;",
         [req.params.specialtyNo],

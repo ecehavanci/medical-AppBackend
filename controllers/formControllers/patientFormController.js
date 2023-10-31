@@ -1,5 +1,9 @@
 const AppError = require("../../utils/appError");
 const conn = require("../../services/db");
+const { query } = require("express");
+const config = require("../../config");
+const currentYear = config.year;
+const currentSeason = config.season;
 
 exports.insertPatientForm = (req, res, next) => {
     //we check if the client is sending an empty form "and return a 404 error message.
@@ -8,8 +12,6 @@ exports.insertPatientForm = (req, res, next) => {
 
     const values = [
         req.body.studentID,
-        req.body.studentName,
-        req.body.rotationID,
         req.body.courseID,
         req.body.specialtyID,
         req.body.attendingPhysicianID,
@@ -37,15 +39,15 @@ exports.insertPatientForm = (req, res, next) => {
         req.body.isSent,
         req.body.isApproved,
         req.body.comment.trim(),
-        req.body.localStorageID
+        req.body.localStorageID,
+        currentYear,
+        currentSeason
     ];
 
     console.log(req.body);
 
     conn.query(
         "INSERT INTO patientreports (studentID," +
-        "studentName," +
-        "rotationID," +
         "courseID," +
         "specialtyID," +
         "attendingPhysicianID," +
@@ -73,7 +75,9 @@ exports.insertPatientForm = (req, res, next) => {
         "isSent," +
         "isApproved," +
         "comment," +
-        "localStorageID) " +
+        "localStorageID, " +
+        "year, " +
+        "season) " +
         "VALUES(?)",
         [values],
         async function (err, data, fields) {
@@ -119,8 +123,6 @@ exports.updatePatientForm = (req, res, next) => {
 
     let values = [];
     if (req.body.studentID !== undefined) values.unshift(req.body.studentID);
-    if (req.body.studentName !== undefined) values.unshift(req.body.studentName);
-    if (req.body.rotationID !== undefined) values.unshift(req.body.rotationID);
     if (req.body.courseID !== undefined) values.unshift(req.body.courseID);
     if (req.body.specialtyID !== undefined) values.unshift(req.body.specialtyID);
     if (req.body.attendingPhysicianID !== undefined) values.unshift(req.body.attendingPhysicianID);
@@ -155,8 +157,6 @@ exports.updatePatientForm = (req, res, next) => {
 
     var str = "UPDATE patientreports SET " +
         (req.body.studentID !== undefined ? "studentID = ?, " : "") +
-        (req.body.studentName !== undefined ? "studentName = ?, " : "") +
-        (req.body.rotationID !== undefined ? "rotationID = ?, " : "") +
         (req.body.courseID !== undefined ? "courseID = ?, " : "") +
         (req.body.specialtyID !== undefined ? "specialtyID = ?, " : "") +
         (req.body.attendingPhysicianID !== undefined ? "attendingPhysicianID = ?, " : "") +
@@ -228,6 +228,431 @@ exports.updatePatientForm = (req, res, next) => {
     );
 };
 
+//counts student's form count for specified course && approval status
+exports.getCountPatientFormsForDashboardAccordingToApproval = (req, res, next) => {
+    const studentID = req.params.studentID;
+    const approvalCode = req.params.approvalCode;
+    let courseID = parseInt(req.query.courseID) || 1; // Default courseID
+
+    if (!req.query.courseID) {
+        // Use getCurrentCourse to get the courseID
+        getCurrentCourse(studentID)
+            .then((finalCourseID) => {
+                executeMainQuery(finalCourseID);
+            })
+            .catch((error) => {
+                // Handle errors from getCurrentCourse
+                return next(new AppError(error, 500));
+            });
+    } else {
+        // If courseID is provided in the query, proceed directly with the main query
+        executeMainQuery(courseID);
+    }
+
+    function executeMainQuery(finalCourseID) {
+        const query = `
+        select count(ID)
+        from patientreports
+        where studentID = ?
+                && courseID = ?
+                && isApproved = ? && year = ? && season = ?;`;
+
+        const values = [
+            studentID,
+            finalCourseID,
+            approvalCode,
+            currentYear,
+            currentSeason
+        ];
+
+        conn.query(
+            query, values,
+            function (err, data, fields) {
+                if (err) return next(new AppError(err, 500));
+                res.status(200).json({
+                    status: "success",
+                    length: data?.length,
+                    data: data,
+                });
+            }
+        );
+    }
+};
+
+//for student home dropdown just list 5 reports for the current course
+exports.listSent5ReportForStudent = (req, res, next) => {
+    const studentID = req.params.studentID;
+    const isSent = req.params.isSent;
+    const courseID = getStudentCurrentCourse(studentID);
+
+    conn.query(
+        "SELECT * FROM patientreports WHERE studentID = ? AND isSent = ? AND courseID = ? AND year = ? AND season = ? ORDER BY saveEpoch DESC LIMIT 5 ",
+        [studentID, isSent, courseID, currentYear, currentSeason],
+        function (err, data, fields) {
+            if (err) return next(new AppError(err, 500));
+            res.status(200).json({
+                status: "success",
+                length: data?.length,
+                data: data,
+            });
+        }
+    );
+};
+
+//list sent forms for doctor accepted & rejected page with filtering fuctionality with student name
+exports.searchSentPatientFormsWithDocIDAccordingToApproveDate = (req, res, next) => {
+    const page = parseInt(req.query.page) || 1; // Current page number
+    const pageSize = parseInt(req.query.pageSize) || 10; // Number of items per page
+    const offset = (page - 1) * pageSize;
+    const input = req.params.searchInput === "|" ? "" : req.params.searchInput;
+
+    const physicianID = req.params.attendingPhysicianID;
+    const approvement = req.params.isApproved;
+    let courseID = parseInt(req.query.courseID) || 1; // Default courseID
+
+    if (!req.query.courseID) {
+        // Use getCurrentCourse to get the courseID
+        getCurrentCourse(studentID)
+            .then((finalCourseID) => {
+                executeMainQuery(finalCourseID);
+            })
+            .catch((error) => {
+                // Handle errors from getCurrentCourse
+                return next(new AppError(error, 500));
+            });
+    } else {
+        // If courseID is provided in the query, proceed directly with the main query
+        executeMainQuery(courseID);
+    }
+
+    function executeMainQuery(finalCourseID) {
+        const query = `
+        SELECT pa.*
+        FROM patientreports pa
+                LEFT JOIN student std ON pa.studentID = std.ID
+        WHERE pa.attendingPhysicianID = ?
+        AND pa.isSent = 1
+        AND pa.isApproved = ?
+        AND UPPER(std.name) LIKE ?
+        AND pa.courseID = ?
+        AND pa.year = ?
+        AND pa.season = ?
+        ORDER BY pa.sentEpoch DESC
+        LIMIT ? OFFSET ?;`;
+        const values = [
+            physicianID,
+            approvement,
+            `%${input.toUpperCase()}%`,
+            finalCourseID,
+            currentYear,
+            currentSeason,
+            pageSize,
+            offset
+        ];
+
+        conn.query(
+            query,
+            values,
+            function (err, data, fields) {
+                if (err) return next(new AppError(err, 500));
+                res.status(200).json({
+                    status: "success",
+                    currentPage: page,
+                    pageSize: pageSize,
+                    length: data?.length,
+                    data: data,
+                });
+            }
+        );
+    }
+};
+
+//no need for filtering by course ID because it only gets *waiting reports*, lists att. physc. waiting reports
+exports.listWaitingReports = (req, res, next) => {
+    const searchInput = req.params.searchInput === "|" ? "" : req.params.searchInput;
+    const attPhysicianID = req.params.physicianID;
+    const isApproved = req.params.isApproved;
+
+    let courseID = req.query.courseID || null; // Default courseID
+
+    // Check if courseID is not specified, then find the current course for the physician
+    if (!courseID) {
+        getCurrentCourse(studentID)
+            .then((finalCourseID) => {
+                executeMainQuery(finalCourseID);
+            })
+            .catch((error) => {
+                // Handle errors from getCurrentCourse
+                return next(new AppError(error, 500));
+            });
+    } else {
+        // If courseID is provided in the query, proceed directly with the main query
+        executeMainQuery();
+    }
+    function executeMainQuery() { //now query doesnt have courseID filter
+        conn.query(
+            `SELECT pa.*
+            FROM patientreports pa
+            WHERE pa.attendingPhysicianID = ?
+              AND pa.isSent = 1
+              AND pa.isApproved = ?
+              AND pa.year = ?
+              AND pa.season = ?
+            ORDER BY saveEpoch DESC;`,
+            [attPhysicianID, isApproved, courseID, `%${searchInput.toUpperCase()}%`],
+            function (err, data, fields) {
+                if (err) return next(new AppError(err, 500));
+                res.status(200).json({
+                    status: "success",
+                    length: data.length,
+                    data: data,
+                });
+            }
+        );
+    }
+};
+
+//list sent forms for student to show on student sent page with ability to filter by procedure name & an input
+exports.searchPatientFormsForStudent = (req, res, next) => { //for student sent page pagination && filtering
+    const page = parseInt(req.query.page) || 1; // Current page number
+    const pageSize = parseInt(req.query.pageSize) || 10; // Number of items per page
+    const offset = (page - 1) * pageSize;
+    const searchInput = req.params.searchInput === "|" ? "" : req.params.searchInput;
+
+    const studentID = req.params.studentID;
+    const isSent = req.params.isSent;
+
+    let courseID = parseInt(req.query.courseID) || null; // Default courseID
+
+    // Check if courseID is not specified, then find the current course for the student
+    if (!courseID) {
+        // Use getCurrentCourse to get the courseID
+        getStudentCurrentCourse(studentID)
+            .then((finalCourseID) => {
+                executeMainQuery(finalCourseID);
+            })
+            .catch((error) => {
+                // Handle errors from getCurrentCourse
+                return next(new AppError(error, 500));
+            });
+    } else {
+        // If courseID is provided in the query, proceed directly with the main query
+        executeMainQuery(courseID);
+    }
+
+    function executeMainQuery(finalCourseID) {
+        const query = `
+        SELECT *
+        FROM patientreports
+        WHERE studentID = ?
+        AND isSent = ?
+        AND courseID = ?
+        AND year = ?
+        AND season = ?
+        AND UPPER(illnessScript) LIKE ?
+        ORDER BY saveEpoch DESC
+        LIMIT ? OFFSET ?`;
+
+        const values = [
+            studentID,
+            isSent,
+            finalCourseID,
+            currentYear,
+            currentSeason,
+            `%${searchInput.toUpperCase().trim()}%`,
+            pageSize,
+            offset
+        ];
+
+        conn.query(
+            query,
+            values,
+            function (err, data, fields) {
+                if (err) return next(new AppError(err, 500));
+                res.status(200).json({
+                    status: "success",
+                    currentPage: page,
+                    pageSize: pageSize,
+                    length: data.length,
+                    data: data,
+                });
+            }
+        );
+    }
+};
+
+exports.searchPatientFormsByAcceptance = (req, res, next) => {
+    const page = parseInt(req.query.page) || 1; // Current page number
+    const pageSize = parseInt(req.query.pageSize) || 10; // Number of items per page
+    const offset = (page - 1) * pageSize;
+    const searchInput = req.params.searchInput === "|" ? "" : req.params.searchInput;
+
+    const studentID = req.params.studentID;
+    const isSent = req.params.isSent;
+    const isApproved = req.params.isApproved;
+
+    let courseID = parseInt(req.query.courseID) || null; // Default courseID
+
+    // Check if courseID is not specified, then find the current course for the student
+    if (!courseID) {
+        // Use getCurrentCourse to get the courseID
+        getStudentCurrentCourse(studentID)
+            .then((finalCourseID) => {
+                executeMainQuery(finalCourseID);
+            })
+            .catch((error) => {
+                // Handle errors from getCurrentCourse
+                return next(new AppError(error, 500));
+            });
+    } else {
+        // If courseID is provided in the query, proceed directly with the main query
+        executeMainQuery(courseID);
+    }
+
+    function executeMainQuery(finalCourseID) {
+        const query = `
+        SELECT *
+        FROM patientreports
+        WHERE studentID = ?
+        AND isSent = ?
+        AND courseID = ?
+        AND isApproved = ?
+        AND year = ?
+        AND season = ?
+        AND UPPER(illnessScript) LIKE ?
+        ORDER BY saveEpoch DESC
+        LIMIT ? OFFSET ?`;
+
+        const values = [studentID, isSent, finalCourseID, isApproved, currentYear, currentSeason, `%${searchInput.toUpperCase()}%`, pageSize, offset];
+
+        conn.query(
+            query,
+            values,
+            function (err, data, fields) {
+                if (err) return next(new AppError(err, 500));
+                res.status(200).json({
+                    status: "success",
+                    currentPage: page,
+                    pageSize: pageSize,
+                    length: data.length,
+                    data: data,
+                });
+            }
+        );
+    }
+};
+
+exports.searchPatientFormsByMultipleAcceptance = (req, res, next) => {
+    const page = parseInt(req.query.page) || 1; // Current page number
+    const pageSize = parseInt(req.query.pageSize) || 10; // Number of items per page
+    const offset = (page - 1) * pageSize;
+    const searchInput = req.params.searchInput === "|" ? "" : req.params.searchInput;
+
+    const studentID = req.params.studentID;
+    const isSent = req.params.isSent;
+    const isApproved1 = req.params.isApproved1;
+    const isApproved2 = req.params.isApproved2;
+
+    let courseID = parseInt(req.query.courseID) || 1; // Default courseID
+
+    if (!courseID) {
+        // Use getCurrentCourse to get the courseID
+        getStudentCurrentCourse(studentID)
+            .then((finalCourseID) => {
+                executeMainQuery(finalCourseID);
+            })
+            .catch((error) => {
+                // Handle errors from getCurrentCourse
+                return next(new AppError(error, 500));
+            });
+    } else {
+        // If courseID is provided in the query, proceed directly with the main query
+        executeMainQuery(courseID);
+    }
+
+    function executeMainQuery(finalCourseID) {
+        const query = `
+        SELECT *
+        FROM patientreports
+        WHERE studentID = ?
+        AND isSent = ?
+        AND courseID = ?
+        AND (isApproved = ? OR isApproved = ?)
+        AND year = ?
+        AND season = ?
+        AND UPPER(illnessScript) LIKE ?
+        ORDER BY saveEpoch DESC
+        LIMIT ? OFFSET ?;`;
+
+        const values = [studentID, isSent, finalCourseID, isApproved1, isApproved2, `%${searchInput.toUpperCase()}%`, pageSize, offset];
+
+        conn.query(
+            query,
+            values,
+            function (err, data, fields) {
+                if (err) return next(new AppError(err, 500));
+                res.status(200).json({
+                    status: "success",
+                    currentPage: page,
+                    pageSize: pageSize,
+                    length: data.length,
+                    data: data,
+                });
+            }
+        );
+    }
+};
+
+//to see if there is a report in remote DB with a specified local storage ID
+exports.getIDofPatientForm = (req, res, next) => {
+    if (!req.params.studentID) {
+        return next(new AppError("No patient with this student ID found", 404));
+    }
+    if (!req.params.localStorageID) {
+        return next(new AppError("No patient with this local storage ID found", 404));
+    }
+    conn.query(
+        "select ID from patientreports WHERE studentID =  ? AND localStorageID = ? AND year = ? AND season = ? order by ID ASC LIMIT 1",
+        [req.params.studentID, req.params.localStorageID, currentYear, currentSeason],
+        function (err, data, fields) {
+            if (err) return next(new AppError(err, 500));
+            res.status(200).json({
+                status: "success",
+                length: data?.length,
+                data: data,
+            });
+        }
+    );
+}
+
+
+exports.deletePatientFormWithID = (req, res, next) => { //find the form by local storage ID && related student and delete that form
+    const studentID = req.params.stdID;
+    const localStorageID = req.params.localStorageID;
+
+    if (!studentID || !localStorageID) {
+        return next(new AppError("Both studentID and localStorageID are required.", 400));
+    }
+
+    conn.query(
+        "DELETE FROM patientreports WHERE studentID = ? && localStorageID = ?",
+        [studentID, localStorageID],
+        function (err, result) {
+            if (err) {
+                console.error("Error deleting patient form:", err);
+                return next(new AppError("Internal server error", 500));
+            }
+            // Check if any rows were affected to determine if a record was deleted
+            if (result.affectedRows === 0) {
+                return next(new AppError("Patient form not found", 404));
+            }
+            res.status(200).json({
+                status: "success",
+                message: "Patient form deleted!",
+            });
+        }
+    );
+};
 
 const checkAndInsertTierData = (
     tierID,
@@ -302,9 +727,12 @@ const checkAndInsertTierData = (
     });
 };
 
-exports.getAllPatientFormsForStudent = (req, res, next) => {
+exports.getAllSentPatientForms = (req, res, next) => { //list of specified course && student
+    const query = `SELECT * FROM patientreports WHERE isSent = 1 AND studentID = ? AND courseID = ?`;
+
     conn.query(
-        "SELECT * FROM patientreports WHERE studentID = ?", [req.params.studentID],
+        query,
+        [req.params.studentID, req.params.courseID],
         function (err, data, fields) {
             if (err) return next(new AppError(err, 500));
             res.status(200).json({
@@ -316,9 +744,12 @@ exports.getAllPatientFormsForStudent = (req, res, next) => {
     );
 };
 
-exports.getAllPatientForms = (req, res, next) => {
+exports.getRequiredCountPatientFormsForDashboard = (req, res, next) => { //get required form count for specified course
+    const query = `select patient_count from courses where ID = ?`;
+
     conn.query(
-        "SELECT * FROM patientreports where isSent = 1",
+        query,
+        [req.params.courseID],
         function (err, data, fields) {
             if (err) return next(new AppError(err, 500));
             res.status(200).json({
@@ -330,10 +761,12 @@ exports.getAllPatientForms = (req, res, next) => {
     );
 };
 
-exports.getRequiredCountPatientFormsForDashboard = (req, res, next) => {
+exports.getAllCountPatientFormsForDashboard = (req, res, next) => {  //counts student's form for specified course
+    const query = `select count(ID) from patientreports where studentID = ? && courseID = ? && isSent = 1;`;
+
     conn.query(
-        "select patientReportCount from rotations where ID = ?;",
-        [req.params.rotationID],
+        query,
+        [req.params.studentID, req.params.courseID],
         function (err, data, fields) {
             if (err) return next(new AppError(err, 500));
             res.status(200).json({
@@ -345,39 +778,9 @@ exports.getRequiredCountPatientFormsForDashboard = (req, res, next) => {
     );
 };
 
-exports.getAllCountPatientFormsForDashboard = (req, res, next) => {
+exports.getRotationCountPatientFormsForDashboard = (req, res, next) => { //gets different course IDs within patientreports DB 
     conn.query(
-        "select count(ID) from patientreports where studentID = ? && rotationID = ? && isSent = 1;",
-        [req.params.studentID, req.params.rotationID],
-        function (err, data, fields) {
-            if (err) return next(new AppError(err, 500));
-            res.status(200).json({
-                status: "success",
-                length: data?.length,
-                data: data,
-            });
-        }
-    );
-};
-
-exports.getCountPatientFormsForDashboardAccordingToApproval = (req, res, next) => {
-    conn.query(
-        "select count(ID) from patientreports where studentID =? && rotationID = ? && isApproved = ?;",
-        [req.params.studentID, req.params.rotationID, req.params.approvalCode],
-        function (err, data, fields) {
-            if (err) return next(new AppError(err, 500));
-            res.status(200).json({
-                status: "success",
-                length: data?.length,
-                data: data,
-            });
-        }
-    );
-};
-
-exports.getRotationCountPatientFormsForDashboard = (req, res, next) => {
-    conn.query(
-        "select distinct rotationID from patientreports where studentID = ?;",
+        "select distinct courseID from patientreports where studentID = ?;",
         [req.params.studentID],
         function (err, data, fields) {
             if (err) return next(new AppError(err, 500));
@@ -390,94 +793,35 @@ exports.getRotationCountPatientFormsForDashboard = (req, res, next) => {
     );
 };
 
-exports.searchPatientForms = (req, res, next) => {
-    const page = parseInt(req.query.page) || 1; // Current page number
-    const pageSize = parseInt(req.query.pageSize) || 10; // Number of items per page
-    const offset = (page - 1) * pageSize;
-
-    var input = req.params.searchInput === "|" ? "" : req.params.searchInput;
-    conn.query(
-        "select * from patientreports WHERE studentID = ? and isSent = ? " +
-        "AND UPPER(illnessScript) LIKE '%" + input + "%' order by saveEpoch DESC LIMIT ? OFFSET ?",
-        [req.params.studentID, req.params.isSent, pageSize, offset],
-        function (err, data, fields) {
-            if (err) return next(new AppError(err, 500));
-            res.status(200).json({
-                status: "success",
-                currentPage: page,
-                pageSize: pageSize,
-                length: data?.length,
-                data: data,
-            });
-        }
-    );
+// Create a function to get the current course of the student
+const getStudentCurrentCourse = (studentID) => {
+    return new Promise((resolve, reject) => {
+        conn.query(
+            "SELECT c.ID " +
+            "FROM student s " +
+            "LEFT JOIN enrollment e ON e.std_id = s.ID " +
+            "LEFT JOIN rotation_courses rc ON rc.rotation_id = e.rotation_id " +
+            "LEFT JOIN intervals i ON i.ID = rc.interval_id " +
+            "LEFT JOIN courses c ON c.ID = rc.course_id " +
+            "WHERE current_date BETWEEN i.end AND i.start " +
+            "AND s.ID = ?",
+            [studentID],
+            (err, data) => {
+                if (err) {
+                    reject(err);
+                } else if (data.length > 0) {
+                    resolve(data[0].ID);
+                } else {
+                    // Handle the case where the student is not enrolled in any course
+                    reject(new Error("Student is not currently enrolled in any course."));
+                }
+            }
+        );
+    });
 };
 
-exports.searchPatientFormsByAcceptance = (req, res, next) => {
-    const page = parseInt(req.query.page) || 1; // Current page number
-    const pageSize = parseInt(req.query.pageSize) || 10; // Number of items per page
-    const offset = (page - 1) * pageSize;
 
-    var input = req.params.searchInput === "|" ? "" : req.params.searchInput;
-
-    conn.query(
-        "select * from patientreports WHERE studentID = ? and isSent = ? AND isApproved = ? " +
-        "AND UPPER(illnessScript) LIKE '%" + input + "%' order by saveEpoch DESC LIMIT ? OFFSET ?",
-        [req.params.studentID, req.params.isSent, req.params.isApproved, pageSize, offset],
-        function (err, data, fields) {
-            if (err) return next(new AppError(err, 500));
-            res.status(200).json({
-                status: "success",
-                currentPage: page,
-                pageSize: pageSize,
-                length: data?.length,
-                data: data,
-            });
-        }
-    );
-};
-
-exports.searchPatientFormsByMultipleAcceptance = (req, res, next) => {
-    const page = parseInt(req.query.page) || 1; // Current page number
-    const pageSize = parseInt(req.query.pageSize) || 10; // Number of items per page
-    const offset = (page - 1) * pageSize;
-
-    var input = req.params.searchInput === "|" ? "" : req.params.searchInput;
-    conn.query(
-        "select * from patientreports WHERE studentID = ? and isSent = ? " +
-        "AND (isApproved = ? OR isApproved = ?) " +
-        "AND UPPER(illnessScript) LIKE '%" + input + "%' order by saveEpoch DESC LIMIT ? OFFSET ?",
-        [req.params.studentID, req.params.isSent, req.params.isApproved1, req.params.isApproved2, pageSize, offset],
-        function (err, data, fields) {
-            if (err) return next(new AppError(err, 500));
-            res.status(200).json({
-                status: "success",
-                currentPage: page,
-                pageSize: pageSize,
-                length: data?.length,
-                data: data,
-            });
-        }
-    )
-        ;
-};
-
-exports.getPatientFormsWithStudentID = (req, res, next) => {
-    conn.query(
-        "SELECT * FROM patientreports WHERE studentID = ? AND isSent = ? ORDER BY saveEpoch DESC LIMIT 5 ",
-        [req.params.studentID, req.params.isSent],
-        function (err, data, fields) {
-            if (err) return next(new AppError(err, 500));
-            res.status(200).json({
-                status: "success",
-                length: data?.length,
-                data: data,
-            });
-        }
-    );
-};
-
-exports.getPatientFormWithID = (req, res, next) => {
+exports.getPatientFormWithID = (req, res, next) => { //returns specific patientreports with ID
     if (!req.params.ID) {
         return next(new AppError("No patient with this ID found", 404));
     }
@@ -495,230 +839,10 @@ exports.getPatientFormWithID = (req, res, next) => {
     );
 };
 
-exports.updatePatientFormWithID = (req, res, next) => {
-    if (!req.params.ID) {
-        return next(new AppError("No todo id found", 404));
-    }
-
-    console.log("ID: " + req.params.ID);
-    console.log("Student ID: " + req.params.studentID);
-    console.log("Student Name: " + req.params.studentName);
-    console.log("Rotation ID: " + req.params.rotationID);
-    console.log("Specialty ID: " + req.params.specialtyID);
-
-    var firstArgumentEntered = false;
-    var queryString = "UPDATE patientreports SET ";
-
-    if (req.params.studentID !== undefined) {
-        queryString += "studentID=" + req.params.studentID;
-        firstArgumentEntered = true;
-    }
-
-    if (req.params.studentName !== undefined) {
-        if (firstArgumentEntered) {
-            queryString += ", ";
-        }
-        queryString += "studentName= '" + req.params.studentName + "'";
-        firstArgumentEntered = true;
-    }
-
-    if (req.params.rotationID !== undefined) {
-        if (firstArgumentEntered) {
-            queryString += ", ";
-        }
-        queryString += "rotationID= '" + req.params.rotationID + "'";
-        firstArgumentEntered = true;
-    }
-
-    if (req.params.specialtyID !== undefined) {
-        if (firstArgumentEntered) {
-            queryString += ", ";
-        }
-        queryString += "specialtyID= '" + req.params.specialtyID + "'";
-        firstArgumentEntered = true;
-    }
-
-    if (req.params.attendingPhysicianID !== undefined) {
-        if (firstArgumentEntered) {
-            queryString += ", ";
-        }
-        queryString += "attendingPhysicianID= '" + req.params.attendingPhysicianID + "'";
-        firstArgumentEntered = true;
-    }
-
-    if (req.params.patientHospitalID !== undefined) {
-        if (firstArgumentEntered) {
-            queryString += ", ";
-        }
-        queryString += "patientHospitalID= '" + req.params.patientHospitalID + "'";
-        firstArgumentEntered = true;
-    }
-
-    if (req.params.traineesRole !== undefined) {
-        if (firstArgumentEntered) {
-            queryString += ", ";
-        }
-        queryString += "traineesRole= '" + req.params.traineesRole + "'";
-        firstArgumentEntered = true;
-    }
-
-    if (req.params.levelOfCare !== undefined) {
-        if (firstArgumentEntered) {
-            queryString += ", ";
-        }
-        queryString += "levelOfCare= '" + req.params.levelOfCare + "'";
-        firstArgumentEntered = true;
-    }
-
-    if (req.params.setting !== undefined) {
-        if (firstArgumentEntered) {
-            queryString += ", ";
-        }
-        queryString += "setting= '" + req.params.setting + "'";
-        firstArgumentEntered = true;
-    }
-
-    if (req.params.illnessScript !== undefined) {
-        if (firstArgumentEntered) {
-            queryString += ", ";
-        }
-        queryString += "illnessScript= '" + req.params.illnessScript + "'";
-        firstArgumentEntered = true;
-    }
-
-    if (req.params.tier1ID !== undefined) {
-        if (firstArgumentEntered) {
-            queryString += ", ";
-        }
-        queryString += "tier1ID= '" + req.params.tier1ID + "'";
-        firstArgumentEntered = true;
-    }
-
-    if (req.params.tier1 !== undefined) {
-        if (firstArgumentEntered) {
-            queryString += ", ";
-        }
-        queryString += "tier1= '" + req.params.tier1 + "'";
-        firstArgumentEntered = true;
-    }
-
-    if (req.params.tier2 !== undefined) {
-        if (firstArgumentEntered) {
-            queryString += ", ";
-        }
-        queryString += "tier2= '" + req.params.tier2 + "'";
-        firstArgumentEntered = true;
-    }
-
-    if (req.params.tier2 !== undefined) {
-        if (firstArgumentEntered) {
-            queryString += ", ";
-        }
-        queryString += "tier3ID= '" + req.params.tier3ID + "'";
-        firstArgumentEntered = true;
-    }
-
-    if (req.params.tier3ID !== undefined) {
-        if (firstArgumentEntered) {
-            queryString += ", ";
-        }
-        queryString += "tier3ID= '" + req.params.tier3ID + "'";
-        firstArgumentEntered = true;
-    }
-
-    if (req.params.tier3 !== undefined) {
-        if (firstArgumentEntered) {
-            queryString += ", ";
-        }
-        queryString += "tier3= '" + req.params.tier3 + "'";
-        firstArgumentEntered = true;
-    }
-
-    if (req.params.tier4ID !== undefined) {
-        if (firstArgumentEntered) {
-            queryString += ", ";
-        }
-        queryString += "tier4ID= '" + req.params.tier4ID + "'";
-        firstArgumentEntered = true;
-    }
-
-    if (req.params.tier4 !== undefined) {
-        if (firstArgumentEntered) {
-            queryString += ", ";
-        }
-        queryString += "tier4= '" + req.params.tier4 + "'";
-        firstArgumentEntered = true;
-    }
-
-    if (req.params.saveEpoch !== undefined) {
-        if (firstArgumentEntered) {
-            queryString += ", ";
-        }
-        queryString += "saveEpoch= '" + req.params.saveEpoch + "'";
-        firstArgumentEntered = true;
-    }
-
-    if (req.params.sentEpoch !== undefined) {
-        if (firstArgumentEntered) {
-            queryString += ", ";
-        }
-        queryString += "sentEpoch= '" + req.params.sentEpoch + "'";
-        firstArgumentEntered = true;
-    }
-
-    if (req.params.isSent !== undefined) {
-        if (firstArgumentEntered) {
-            queryString += ", ";
-        }
-        queryString += "isSent= '" + req.params.isSent + "'";
-        firstArgumentEntered = true;
-    }
-
-    if (req.params.isApproved !== undefined) {
-        if (firstArgumentEntered) {
-            queryString += ", ";
-        }
-        queryString += "isApproved= '" + req.params.isApproved + "'";
-        firstArgumentEntered = true;
-    }
-
-    if (req.params.comment !== undefined) {
-        if (firstArgumentEntered) {
-            queryString += ", ";
-        }
-        queryString += "comment= '" + req.params.comment + "'";
-        firstArgumentEntered = true;
-    }
-
-    if (req.params.localStorageID !== undefined) {
-        if (firstArgumentEntered) {
-            queryString += ", ";
-        }
-        queryString += "localStorageID= '" + req.params.localStorageID + "'";
-        firstArgumentEntered = true;
-    }
-
-    queryString += " WHERE ID=" + req.params.ID;
-    console.log("THIS IS THE QUERY: " + queryString);
-
-    conn.query(
-        queryString,
-        function (err, data, fields) {
-            if (err) return next(new AppError(err, 500));
-            res.status(201).json({
-                status: "success",
-                message: "student updated!",
-            });
-        }
-    );
-
-
-};
-
 exports.listAllPatientReportsAccSentDateForDoc = (req, res, next) => {
     var input = req.params.searchInput === "|" ? "" : req.params.searchInput;
-    conn.query("select * from patientreports WHERE attendingPhysicianID= ? AND isSent = 1 AND isApproved = ? AND " +
-        "UPPER(studentName) LIKE '%" + input + "%' order by saveEpoch DESC",
+    conn.query("select * from patientreports WHERE attendingPhysicianID = ? AND isSent = 1 AND isApproved = ? AND " +
+        "UPPER(studentName) LIKE '%" + input.toUpperCase().trim() + "%' order by saveEpoch DESC",
         [req.params.attphyscID, req.params.isApproved],
         function (err, data, fields) {
             if (err) return next(new AppError(err, 500));
@@ -732,152 +856,4 @@ exports.listAllPatientReportsAccSentDateForDoc = (req, res, next) => {
 
 };
 
-//TODO  
-exports.listAllPatientReportsAccApproveDateForDoc = (req, res, next) => {
-    const page = parseInt(req.query.page) || 1; // Current page number
-    const pageSize = parseInt(req.query.pageSize) || 10; // Number of items per page
-    const offset = (page - 1) * pageSize;
 
-    const input = req.params.searchInput === "|" ? "" : req.params.searchInput;
-
-    conn.query("select * from patientreports WHERE attendingPhysicianID= ? AND isSent = 1 AND isApproved = ? AND " +
-        "UPPER(studentName) LIKE '%" + input.toUpperCase() + "%' order by sentEpoch DESC LIMIT ? OFFSET ?",
-        [req.params.attphyscID, req.params.isApproved, pageSize, offset],
-        function (err, data, fields) {
-            if (err) return next(new AppError(err, 500));
-            res.status(200).json({
-                status: "success",
-                currentPage: page,
-                pageSize: pageSize,
-                length: data?.length,
-                data: data,
-            });
-        }
-    );
-
-};
-
-
-exports.deletePatientFormWithID = (req, res, next) => {
-    const studentID = req.params.stdID;
-    const localStorageID = req.params.localStorageID;
-
-    if (!studentID || !localStorageID) {
-        return next(new AppError("Both studentID and localStorageID are required.", 400));
-    }
-
-    conn.query(
-        "DELETE FROM patientreports WHERE studentID = ? && localStorageID = ?",
-        [studentID, localStorageID],
-        function (err, result) {
-            if (err) {
-                console.error("Error deleting patient form:", err);
-                return next(new AppError("Internal server error", 500));
-            }
-            // Check if any rows were affected to determine if a record was deleted
-            if (result.affectedRows === 0) {
-                return next(new AppError("Patient form not found", 404));
-            }
-            res.status(200).json({
-                status: "success",
-                message: "Patient form deleted!",
-            });
-        }
-    );
-};
-
-
-
-exports.getCount = (req, res, next) => {
-    conn.query(
-        "select count(ID) from patientreports Where studentID = ?;",
-        [req.params.studentID],
-        function (err, data, fields) {
-            if (err) return next(new AppError(err, 500));
-            res.status(200).json({
-                status: "success",
-                length: data?.length,
-                data: data,
-            });
-        }
-    );
-};
-
-exports.getCountForRotation = (req, res, next) => {
-    conn.query(
-        "select count(ID) from patientreports Where studentID = ? rotationID = ?;",
-        [req.params.studentID, req.params.rotationID],
-        function (err, data, fields) {
-            if (err) return next(new AppError(err, 500));
-            res.status(200).json({
-                status: "success",
-                length: data?.length,
-                data: data,
-            });
-        }
-    );
-};
-
-
-exports.getLocalStorageIDofPatientFormWithID = (req, res, next) => {
-    if (!req.params.ID) {
-        return next(new AppError("No patient with this ID found", 404));
-    }
-    conn.query(
-        "SELECT localStorageID FROM patientreports WHERE ID = ?  order by ID ASC LIMIT 1",
-        [req.params.ID],
-        function (err, data, fields) {
-            if (err) return next(new AppError(err, 500));
-            res.status(200).json({
-                status: "success",
-                length: data?.length,
-                data: data,
-            });
-        }
-    );
-};
-
-exports.getIDofPatientForm = (req, res, next) => {
-    if (!req.params.studentID) {
-        return next(new AppError("No patient with this student ID found", 404));
-    }
-    if (!req.params.localStorageID) {
-        return next(new AppError("No patient with this local storage ID found", 404));
-    }
-    conn.query(
-        "select ID from patientreports WHERE studentID =  ? AND localStorageID = ? order by ID ASC LIMIT 1",
-        [req.params.studentID, req.params.localStorageID],
-        function (err, data, fields) {
-            if (err) return next(new AppError(err, 500));
-            res.status(200).json({
-                status: "success",
-                length: data?.length,
-                data: data,
-            });
-        }
-    );
-}
-
-exports.updatePatientFormApproveInfo = (req, res, next) => { //todoooooooooooo change it for also in app endpoint
-    if (!req.params.reportID) {
-        return next(new AppError("No report with this ID found", 404));
-    }
-    if (!req.params.updateChoice) {
-        return next(new AppError("Wrong update choice index", 404));
-    }
-    if (!req.params.approveDate || !req.params.approveTime) {
-        return next(new AppError("Wrong approve Date & Time", 404));
-    }
-    conn.query(
-        "UPDATE patientreports SET isApproved = ? ,sentEpoch = '?'  WHERE ID = ?",
-        [req.params.updateChoice, sentEpoch, req.params.reportID],
-        function (err, data, fields) {
-            if (err) return next(new AppError(err, 500));
-            res.status(200).json({
-                status: "success",
-                length: data?.length,
-                data: data,
-            });
-        }
-    );
-}
