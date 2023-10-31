@@ -2,8 +2,8 @@ const AppError = require("../../utils/appError");
 const conn = require("../../services/db");
 const procedureController = require("../procedureController");
 const config = require("../../config");
-const currentYear = config.config.year;
-const currentSeason = config.config.season;
+const currentYear = config.config.app.year;
+const currentSeason = config.config.app.season;
 
 
 exports.insertProcedureForm = (req, res, next) => {

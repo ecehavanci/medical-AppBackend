@@ -2,8 +2,8 @@ const AppError = require("../../utils/appError");
 const conn = require("../../services/db");
 const { query } = require("express");
 const config = require("../../config");
-const currentYear = config.config.year;
-const currentSeason = config.config.season;
+const currentYear = config.config.app.year;
+const currentSeason = config.config.app.season;
 
 exports.insertPatientForm = (req, res, next) => {
     //we check if the client is sending an empty form "and return a 404 error message.
