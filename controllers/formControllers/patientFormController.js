@@ -1,8 +1,7 @@
-import { config } from './config.js';
+import * as config from './config.js';
 const AppError = require("../../utils/appError");
 const conn = require("../../services/db");
 const { query } = require("express");
-const config = require("../../config");
 const currentYear = config.year;
 const currentSeason = config.season;
 
