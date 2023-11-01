@@ -25,14 +25,14 @@ exports.getCourseSpecialties = (req, res, next) => { //current course specialty
     const queryString = `
     select sp.ID, sp.description
     from student s
-            left join enrollment e on e.std_id = s.ID
-            left join rotation_courses rc on rc.rotation_id = e.rotation_id
-            left join intervals i on i.ID = rc.interval_id
-            left join specialties sp on sp.course_ID = rc.course_id or sp.ID = -1
+             left join enrollment e on e.std_id = s.ID
+             left join rotation_courses rc on rc.rotation_id = e.rotation_id
+             left join intervals i on i.ID = rc.interval_id
+             left join specialties sp on sp.course_ID = rc.course_id or sp.ID = -1
     where i.year = ?
-    and i.season = ?
-    and s.ID = ?
-    and ? between i.start and i.end;
+      and i.season = ?
+      and s.ID = ?
+      and current_date between i.start and i.end;
     `;
 
     conn.query(
