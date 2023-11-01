@@ -31,12 +31,13 @@ exports.getCourseSpecialties = (req, res, next) => { //current course specialty
             left join specialties sp on sp.course_ID = rc.course_id or sp.ID = -1
     where i.year = ?
     and i.season = ?
+    and s.ID = ?
     and ? between i.start and i.end;
     `;
 
     conn.query(
         queryString,
-        [req.params.studentID, currentYear, currentSeason, currentDate],
+        [currentYear, currentSeason, req.params.studentID, currentDate],
         function (err, data, fields) {
             if (err) return next(new AppError(err, 500));
             res.status(200).json({
