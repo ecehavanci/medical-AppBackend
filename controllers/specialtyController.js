@@ -35,8 +35,8 @@ exports.getCourseSpecialties = (req, res, next) => { //current course specialty
     `;
 
     conn.query(
-        queryString, currentYear, currentSeason, currentDate
-    [req.params.studentID],
+        queryString,
+        [req.params.studentID, currentYear, currentSeason, currentDate],
         function (err, data, fields) {
             if (err) return next(new AppError(err, 500));
             res.status(200).json({
