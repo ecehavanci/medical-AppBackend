@@ -10,12 +10,13 @@ router
 
 router
     .route("/get/:procedureID")
-    .get(procedureController.getProceduresByID);
+    .get(procedureController.getProceduresByID)
+    .put(procedureController.updateProcedure);
+
 
 router
     .route("/get/:relatedReport")
     .get(procedureController.getProcedureByRelatedReportID)
-    .put(procedureController.updateProcedure);
 
 router.route("/insert")
     .post(procedureController.insertProcedure);

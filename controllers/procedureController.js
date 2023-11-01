@@ -80,9 +80,10 @@ exports.updateProcedure = (req, res, next) => {
 }
 
 exports.updateProcedure = (req, res, next) => {
-    const { ID, description, relatedReport, isApproved } = req.body;
+    const ID = req.params.procedureID;
+    const { description, relatedReport, isApproved } = req.body;
 
-    if (!ID || (!description && !relatedReport && isApproved === undefined)) {
+    if (!ID || (!description && !relatedReport && !isApproved)) {
         return next(new AppError("Invalid request data", 400));
     }
 
