@@ -1,13 +1,12 @@
 const AppError = require("../utils/appError");
 const conn = require("../services/db");
 
-
 exports.updateStdRotation = (req, res, next) => {
-    if (!req.params.stdID || req.params.rotationNo) {
+    if (!req.params.stdID || !req.params.rotationNo) {
         return next(new AppError("No id found", 404));
     }
 
-    const query = `update enrollment set rotation_id = ? where std_id = ?;`;
+    const query = `UPDATE enrollment SET rotation_id = ? WHERE std_id = ?;`;
 
     conn.query(
         query,
@@ -21,6 +20,7 @@ exports.updateStdRotation = (req, res, next) => {
         }
     );
 }
+
 
 exports.deleteStdRotation = (req, res, next) => {
     if (!req.params.stdID) {
