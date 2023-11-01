@@ -32,9 +32,8 @@ exports.getProceduresByID = (req, res, next) => {
 }
 
 exports.getProcedureByRelatedReportID = (req, res, next) => {
-
     conn.query(
-        "select * from procedures WHERE relatedReport = ?",
+        "SELECT * FROM procedures WHERE relatedReport = ?",
         [req.params.relatedReport],
         function (err, data, fields) {
             if (err) return next(new AppError(err, 500));
