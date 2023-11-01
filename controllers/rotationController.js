@@ -46,23 +46,25 @@ exports.changeRotationCourseOrder = (req, res, next) => {
         return next(new AppError("No required info found.", 404));
     }
 
-    const query = `update rotation_courses rc set course_order = ? and interval_id = ? 
-    where rotation_id = ? and course_id = ?;`;
+    const query = `UPDATE rotation_courses rc 
+    SET rc.course_order = ?, rc.interval_id = ? 
+    WHERE rc.rotation_id = ? AND rc.course_id = ?;`;
 
-    //interval_id && course_order are going to be column id actually
+    const { rotation_id, course_id, course_order, interval_id } = req.body;
 
     conn.query(
         query,
-        [req.params.ID],
+        [course_order, interval_id, rotation_id, course_id],
         function (err, fields) {
             if (err) return next(new AppError(err, 500));
             res.status(201).json({
                 status: "success",
-                message: "Rotation deleted!",
+                message: "Rotation course order updated!",
             });
         }
     );
 }
+
 
 
 
