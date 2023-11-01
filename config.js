@@ -1,5 +1,5 @@
 
-const config = {
+module.exports = {
     app: {
         year: 2023,
         season: 1,
@@ -11,3 +11,4 @@ const config = {
         name: 'medTracker'
     }
 };
+
