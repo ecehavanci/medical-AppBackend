@@ -21,11 +21,11 @@ exports.insertPhysician = (req, res, next) => {
     }
 
     const values = [req.body.ID, req.body.name, req.body.surname,
-    req.body.institute_ID, req.body.speciality_ID, req.body.phone, req.body.is_active];
+    req.body.institute_ID, req.body.courseID, req.body.speciality_ID, req.body.phone, req.body.is_active];
 
     try {
         conn.query(
-            "INSERT INTO attendingphysicians (ID, name, surname, institute_ID, speciality_ID, phone, is_active) VALUES(?)",
+            "INSERT INTO attendingphysicians (ID, name, surname, institute_ID, courseID, speciality_ID, phone, is_active) VALUES(?)",
             [values],
             function (err, data, fields) {
                 if (err) {
