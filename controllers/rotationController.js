@@ -21,17 +21,16 @@ exports.updateStdRotation = (req, res, next) => {
     );
 }
 
-
 exports.deleteStdRotation = (req, res, next) => {
     if (!req.params.stdID) {
         return next(new AppError("No id found", 404));
     }
 
-    const query = `update enrollment set rotation_id = NULL where std_id = ?;`;
+    const query = `UPDATE enrollment SET rotation_id = NULL WHERE std_id = ?;`;
 
     conn.query(
         query,
-        [req.params.ID],
+        [req.params.stdID], // Correct the parameter name to req.params.stdID
         function (err, fields) {
             if (err) return next(new AppError(err, 500));
             res.status(201).json({
