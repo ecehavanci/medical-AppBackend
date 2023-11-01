@@ -126,32 +126,39 @@ exports.listPhysicianSemesterCourses = (req, res, next) => { //add, order by cou
 }
 
 //öğrencinin o tarihte bağlı olduğu kursun gerekli form sayılarını getirir
-exports.requiredReportCountsOfCourse = (req, res, next) => {
-    if (!req.params.stdID) {
-        return next(new AppError("No student with this ID found", 404));
-    }
-    const query = `
-    SELECT c.patient_count as patientReportCount, c.procedure_count as procedureReportCount
-    FROM enrollment e
-            LEFT JOIN rotation_courses rc ON e.rotation_id = rc.rotation_id
-            left join rotations ro on rc.rotation_id = ro.rotation_id
-            LEFT JOIN intervals i ON rc.interval_id = i.ID
-            LEFT JOIN courses c ON rc.course_id = c.ID
-    where ? between i.start and i.end
-    and i.year = ?
-    and i.season = ?
-    and e.std_id = ?;`;
-
-    conn.query(
-        query,
-        [currentDate, currentYear, currentSeason, req.params.stdID],
-        function (err, data, fields) {
-            if (err) return next(new AppError(err, 500));
-            res.status(200).json({
-                status: "success",
-                length: data?.length,
-                data: data,
-            });
+exports.requiredReportCountsOfCourse = async (req, res, next) => {
+    try {
+        const stdID = req.params.stdID;
+        if (!stdID) {
+            return next(new AppError("No student with this ID found", 404));
         }
-    );
-}
+
+        const query = `
+        SELECT c.patient_count as patientReportCount, c.procedure_count as procedureReportCount
+        FROM enrollment e
+        LEFT JOIN rotation_courses rc ON e.rotation_id = rc.rotation_id
+        LEFT JOIN rotations ro ON rc.rotation_id = ro.rotation_id
+        LEFT JOIN intervals i ON rc.interval_id = i.ID
+        LEFT JOIN courses c ON rc.course_id = c.ID
+        WHERE ? BETWEEN i.start AND i.end
+        AND i.year = ?
+        AND i.season = ?
+        AND e.std_id = ?;
+      `;
+
+        conn.query(
+            query,
+            [currentDate, currentYear, currentSeason, stdID],
+            function (err, data, fields) {
+                if (err) return next(new AppError(err, 500));
+                res.status(200).json({
+                    status: "success",
+                    length: data?.length,
+                    data: data,
+                });
+            }
+        );
+    } catch (err) {
+        return next(new AppError(err, 500));
+    }
+};
