@@ -11,7 +11,7 @@ router
     .get(stdController.filterStdByID)//do not forget to make it post later
     .delete(stdController.deleteStdByID);
 
-router.route("update/:ID")
+router.route("/update/:ID")
     .put(stdController.updateStdByID);
 
 module.exports = router;
