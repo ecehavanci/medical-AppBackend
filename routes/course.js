@@ -26,4 +26,4 @@ router
     .route("/requiredReportCountsOfCourse/:stdID")
     .get(courseController.requiredReportCountsOfCourse)
 
-module.exports = router;""
+module.exports = router;
