@@ -18,7 +18,7 @@ router
 
 router
     .route("/get/all/by/approveDate/:attendingPhysicianID/:searchInput/:isApproved/:courseID") ///////////////
-    .get(procedureFormController.searchSentPatientFormsWithDocIDAccordingToApproveDate);
+    .get(patientFormController.searchSentPatientFormsWithDocIDAccordingToApproveDate);
 
 router
     .route("/get/all/by/sendDate/:physicianID") ///////////////
