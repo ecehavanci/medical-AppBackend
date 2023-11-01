@@ -11,7 +11,7 @@ exports.updateStdRotation = (req, res, next) => {
 
     conn.query(
         query,
-        [req.params.ID],
+        [req.params.stdID, req.params.rotationNo],
         function (err, fields) {
             if (err) return next(new AppError(err, 500));
             res.status(201).json({
