@@ -80,13 +80,9 @@ exports.updateProcedure = (req, res, next) => {
 }
 
 exports.updateProcedure = (req, res, next) => {
-    if (!req.body) {
-        return next(new AppError("No provided data found", 404));
-    }
-
     const { ID, description, relatedReport, isApproved } = req.body;
 
-    if (ID === undefined || (description === undefined && relatedReport === undefined && isApproved === undefined)) {
+    if (!ID || (!description && !relatedReport && isApproved === undefined)) {
         return next(new AppError("Invalid request data", 400));
     }
 
@@ -103,7 +99,7 @@ exports.updateProcedure = (req, res, next) => {
 
     const query = "UPDATE procedures SET ? WHERE ID = ?";
 
-    conn.query(query, [updateValues, ID], (err, data, fields) => {
+    conn.query(query, [updateValues, ID], (err, data) => {
         if (err) {
             console.error("Update Error:", err);
             return next(new AppError(err.message, 500));
@@ -113,10 +109,11 @@ exports.updateProcedure = (req, res, next) => {
 
         res.status(201).json({
             status: "success",
-            message: "Procedure data successfully altered",
+            message: "Procedure data successfully updated",
         });
     });
 };
+
 
 exports.insertProcedure = (req, res, next) => {
     if (!req.body || !req.body.description || !req.body.relatedReport) {
