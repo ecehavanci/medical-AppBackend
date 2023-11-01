@@ -146,6 +146,7 @@ exports.requiredReportCountsOfCourse = async (req, res, next) => {
         AND e.std_id = ?;
       `;
 
+      print(currentDate);
         conn.query(
             query,
             [currentDate, currentYear, currentSeason, stdID],
