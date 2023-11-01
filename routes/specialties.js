@@ -4,7 +4,7 @@ const specialtyController = require("../controllers/specialtyController");
 const router = express.Router();
 
 router
-    .route("/all/:studentID")
+    .route("/all")
     .get(specialtyController.getAllSpecialties);
 
 router

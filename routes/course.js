@@ -15,8 +15,8 @@ router
     .route("/get/:stdID")
     .get(courseController.getCourseName)
 router
-    .route("/get/all/:stdID")
-    .get(courseController.listStudentSemesterCourses)
+    .route("/get/semesterInfo/:stdID")
+    .get(courseController.listStudentSemesterInfos)
 
 router
     .route("/get/all/psy/:physicianID")
