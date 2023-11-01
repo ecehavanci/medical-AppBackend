@@ -1,5 +1,9 @@
 const AppError = require("../utils/appError");
 const conn = require("../services/db");
+const config = require("../../config");
+const currentYear = config.app.year;
+const currentSeason = config.app.season;
+const currentDate = config.app.date;
 
 exports.getAllSpecialties = (req, res, next) => { //all specialties in DB
 
@@ -19,19 +23,20 @@ exports.getAllSpecialties = (req, res, next) => { //all specialties in DB
 
 exports.getCourseSpecialties = (req, res, next) => { //current course specialty
     const queryString = `
-    select sp.description
+    select sp.ID, sp.description
     from student s
-             left join enrollment e on e.std_id = s.ID
-             left join rotation_courses rc on rc.rotation_id = e.rotation_id
-             left join intervals i on i.ID = rc.interval_id
-             left join specialties sp on sp.course_ID = rc.course_id or sp.ID = -1
-    where current_date between i.end and i.start
-      and s.ID = ?;
+            left join enrollment e on e.std_id = s.ID
+            left join rotation_courses rc on rc.rotation_id = e.rotation_id
+            left join intervals i on i.ID = rc.interval_id
+            left join specialties sp on sp.course_ID = rc.course_id or sp.ID = -1
+    where i.year = ?
+    and i.season = ?
+    and ? between i.start and i.end;
     `;
 
     conn.query(
-        queryString,
-        [req.params.studentID],
+        queryString, currentYear, currentSeason, currentDate
+    [req.params.studentID],
         function (err, data, fields) {
             if (err) return next(new AppError(err, 500));
             res.status(200).json({
