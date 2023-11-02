@@ -120,9 +120,35 @@ exports.updatePatientForm = async (req, res, next) => {
     if (!req.body) {
         return next(new AppError("No form data found", 404));
     }
-
     const updateFields = [
-        // ... (rest of the fields)
+        "studentID",
+        "courseID",
+        "specialtyID",
+        "attendingPhysicianID",
+        "patientHospitalID",
+        "isObserved",
+        "isAssisted",
+        "isPerformed",
+        "isSimulated",
+        "isHistory",
+        "isTreatment",
+        "isPhysicalExamination",
+        "isDifferentialDiagnosis",
+        "setting",
+        "illnessScript",
+        "tier1ID",
+        "tier1",
+        "tier2ID",
+        "tier2",
+        "tier3ID",
+        "tier3",
+        "tier4ID",
+        "tier4",
+        "saveEpoch",
+        "sentEpoch",
+        "isSent",
+        "isApproved",
+        "comment",
     ];
 
     const values = updateFields
