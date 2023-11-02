@@ -396,6 +396,7 @@ exports.searchProcedureReportsByMultipleAcceptance = (req, res, next) => {
             currentYear, currentSeason,
             isApproved1, isApproved2,
             `%${input.toUpperCase()}%`,
+            `%${input.toUpperCase()}%`,
             pageSize,
             offset
         ];
