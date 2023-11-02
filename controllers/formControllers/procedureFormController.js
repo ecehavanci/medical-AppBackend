@@ -448,8 +448,8 @@ exports.listWaitingReports = (req, res, next) => {
     const isApproved = 0;
 
     const query = `
-        SELECT pr.*
-        FROM procedurereports pr, p.description as getteredDesc
+        SELECT pr.*, p.description as getteredDesc
+        FROM procedurereports pr
         INNER JOIN procedures p ON pr.procedureID = p.ID
         WHERE pr.attendingPhysicianID = ? 
             AND pr.isSent = 1 
