@@ -502,10 +502,10 @@ exports.searchSentProcedureFormsWithDocIDAccordingToApproveDate = (req, res, nex
 
     function executeMainQuery(finalCourseID) {
         const query = `
-        SELECT pr.*, p.description
+        SELECT pr.*, p.descriptionRETRET
         FROM procedurereports pr
-                 LEFT JOIN procedures p ON pr.procedureID = p.ID
-                 LEFT JOIN student std ON pr.studentID = std.ID
+        LEFT JOIN procedures p ON pr.procedureID = p.ID
+        LEFT JOIN student std ON pr.studentID = std.ID
         WHERE pr.attendingPhysicianID = ?
           AND pr.isSent = 1
           AND pr.isApproved = ?
@@ -515,13 +515,14 @@ exports.searchSentProcedureFormsWithDocIDAccordingToApproveDate = (req, res, nex
           AND pr.season = ?
         ORDER BY pr.sentEpoch DESC
         LIMIT ? OFFSET ?;`;
+
         const values = [
             physicianID,
             approvement,
             `%${input.toUpperCase()}%`,
             `%${input.toUpperCase()}%`,
             finalCourseID,
-            currentYear,
+            currentYear, // You should define currentYear and currentSeason
             currentSeason,
             pageSize,
             offset
@@ -543,6 +544,7 @@ exports.searchSentProcedureFormsWithDocIDAccordingToApproveDate = (req, res, nex
         );
     }
 };
+
 
 //list sent forms for student to show on student sent page with ability to filter by procedure name & an input
 exports.searchProcedureFormsForStudent = (req, res, next) => {
