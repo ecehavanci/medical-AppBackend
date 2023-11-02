@@ -335,7 +335,7 @@ const getCurrentCourseDoctor = (physicianID) => {
                 if (err) {
                     reject(err);
                 } else if (data.length > 0) {
-                    resolve(data[0].ID);
+                    resolve(data[0].course_id);
                 } else {
                     // Handle the case where the student is not enrolled in any course
                     reject(new Error("Student is not currently enrolled in any course."));
