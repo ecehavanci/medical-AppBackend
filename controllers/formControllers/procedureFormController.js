@@ -372,7 +372,9 @@ exports.list5ProcedureFormsWithStudentID = (req, res, next) => {
     const isSent = req.params.isSent;
 
     getCurrentCourse(stdID).then((courseID) => {
-        var query = "SELECT * FROM procedurereports WHERE studentID = ? AND isSent = ? AND courseID = ? AND year = ? AND season = ? ORDER BY saveEpoch DESC LIMIT 5";
+        const query = `SELECT * FROM procedurereports 
+        WHERE studentID = ? AND isSent = ? AND courseID = ? AND year = ? AND season = ? 
+        ORDER BY saveEpoch DESC LIMIT 5`;
         conn.query(
             query, [stdID, isSent, courseID, currentYear, currentSeason],
             function (err, data, fields) {
@@ -397,7 +399,7 @@ exports.listWaitingReports = (req, res, next) => {
 
     const query = `
         SELECT pr.*
-        FROM procedurereports pr
+        FROM procedurereports pr, p.description as getteredDesc
         INNER JOIN procedures p ON pr.procedureID = p.ID
         WHERE pr.attendingPhysicianID = ? 
             AND pr.isSent = 1 
@@ -428,7 +430,7 @@ exports.searchSentProcedureFormsWithDocIDAccordingToApproveDate = (req, res, nex
     const pageSize = parseInt(req.query.pageSize) || 10; // Number of items per page
     const offset = (page - 1) * pageSize;
     const input = req.params.searchInput === "|" ? "" : req.params.searchInput;
-
+    const studentID = req.params.studentID;
     const physicianID = req.params.attendingPhysicianID;
     const approvement = req.params.isApproved;
     let courseID = parseInt(req.query.courseID) || 1; // Default courseID
