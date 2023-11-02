@@ -234,38 +234,44 @@ exports.searchProcedureReportsByAcceptance = (req, res, next) => {
     const isSent = req.params.isSent;
     const isApproved = req.params.isApproved;
 
-    let courseID = parseInt(req.query.courseID) || 1; // Default courseID
+    let courseID = parseInt(req.query.courseID) || null; // Default courseID
+    
+    if (!req.query.courseID) {
+        // Use getCurrentCourse to get the courseID
+        getCurrentCourse(studentID)
+            .then((finalCourseID) => {
+                executeMainQuery(finalCourseID);
+            })
+            .catch((error) => {
+                // Handle errors from getCurrentCourse
+                return next(new AppError(error, 500));
+            });
+    } else {
+        // If courseID is provided in the query, proceed directly with the main query
+        executeMainQuery(courseID);
+    }
 
-    // Use getCurrentCourse to get the courseID
-    const getCourseID = courseID ?? getCurrentCourse(studentID);
-
-    // Now use the obtained or default courseID in the main query
-    getCourseID
-        .then((finalCourseID) => {
-            conn.query(
-                "SELECT pr.* " +
-                "FROM procedurereports pr " +
-                "INNER JOIN procedures p ON pr.procedureID = p.ID " +
-                "WHERE pr.studentID = ? AND pr.isSent = ? AND courseID = ? AND pr.isApproved = ? " +
-                "AND UPPER(p.description) LIKE ? " +
-                "ORDER BY pr.saveEpoch DESC LIMIT ? OFFSET ?",
-                [studentID, isSent, finalCourseID, isApproved, `%${input.toUpperCase()}%`, pageSize, offset],
-                (err, data) => {
-                    if (err) return next(new AppError(err, 500));
-                    res.status(200).json({
-                        status: "success",
-                        currentPage: page,
-                        pageSize: pageSize,
-                        length: data?.length,
-                        data: data,
-                    });
-                }
-            );
-        })
-        .catch((error) => {
-            // Handle errors from getCurrentCourse
-            return next(new AppError(error, 500));
-        });
+    function executeMainQuery(finalCourseID) {
+        conn.query(
+            "SELECT pr.* " +
+            "FROM procedurereports pr " +
+            "INNER JOIN procedures p ON pr.procedureID = p.ID " +
+            "WHERE pr.studentID = ? AND pr.isSent = ? AND courseID = ? AND pr.isApproved = ? " +
+            "AND UPPER(p.description) LIKE ? " +
+            "ORDER BY pr.saveEpoch DESC LIMIT ? OFFSET ?",
+            [studentID, isSent, finalCourseID, isApproved, `%${input.toUpperCase()}%`, pageSize, offset],
+            (err, data) => {
+                if (err) return next(new AppError(err, 500));
+                res.status(200).json({
+                    status: "success",
+                    currentPage: page,
+                    pageSize: pageSize,
+                    length: data?.length,
+                    data: data,
+                });
+            }
+        );
+    }
 };
 
 // Create a function to get the current course of the student
