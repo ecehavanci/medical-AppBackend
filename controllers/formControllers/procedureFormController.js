@@ -4,6 +4,7 @@ const procedureController = require("../procedureController");
 const config = require("../../config");
 const currentYear = config.app.year;
 const currentSeason = config.app.season;
+const currentDate = config.app.date;
 
 
 exports.insertProcedureForm = (req, res, next) => {
@@ -277,10 +278,10 @@ const getCurrentCourse = (studentID) => {
                      LEFT JOIN rotation_courses rc ON rc.rotation_id = e.rotation_id
                      LEFT JOIN intervals i ON i.ID = rc.interval_id
                      LEFT JOIN courses c ON c.ID = rc.course_id
-            WHERE current_date BETWEEN i.start AND i.end
+            WHERE ? BETWEEN i.start AND i.end
               AND s.ID = ?;
             `
-            [studentID],
+            [currentDate, studentID],
             (err, data) => {
                 if (err) {
                     reject(err);
@@ -693,7 +694,8 @@ exports.getCountProcedureFormsForDashboardAccordingToApproval = (req, res, next)
 
     function executeMainQuery(finalCourseID) {
         const query = `
-        select count(ID) from procedurereports where studentID = ? && courseID = ? && isApproved = ? && year = ? && season = ?;`;
+        select count(ID) from procedurereports 
+        where studentID = ? && courseID = ? && isApproved = ? && year = ? && season = ?;`;
 
         const values = [
             studentID,
