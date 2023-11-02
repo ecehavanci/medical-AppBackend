@@ -381,8 +381,6 @@ exports.searchProcedureReportsByMultipleAcceptance = (req, res, next) => {
         WHERE pr.studentID = ?
         AND pr.isSent = ?
         AND pr.courseID = ?
-        AND pr.year = ?
-        AND pr.season = ?
         AND (pr.isApproved IN (?, ?))
         AND (UPPER(p.description) LIKE ? OR UPPER(pr.procedureText) LIKE ?)
         AND year = ?
