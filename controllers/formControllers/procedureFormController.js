@@ -375,16 +375,18 @@ exports.searchProcedureReportsByMultipleAcceptance = (req, res, next) => {
 
     function executeMainQuery(finalCourseID) {
         const query = `
-        SELECT pr.*
+        SELECT pr.*, p.description as gettedProcedure
         FROM procedurereports pr
-        INNER JOIN procedures p ON pr.procedureID = p.ID
+                INNER JOIN procedures p ON pr.procedureID = p.ID
         WHERE pr.studentID = ?
-          AND pr.isSent = ?
-          AND pr.courseID = ?
-          AND pr.year = ?
-          AND pr.season = ?
-          AND (pr.isApproved IN (?, ?)) 
-          AND UPPER(p.description) LIKE ?
+        AND pr.isSent = ?
+        AND pr.courseID = ?
+        AND pr.year = ?
+        AND pr.season = ?
+        AND (pr.isApproved IN (?, ?))
+        AND (UPPER(p.description) LIKE ? OR UPPER(pr.procedureText) LIKE ?)
+        AND year = ?
+        AND season = ?
         ORDER BY pr.saveEpoch DESC
         LIMIT ? OFFSET ?;`;
         const values = [
