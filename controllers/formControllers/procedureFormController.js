@@ -368,9 +368,9 @@ exports.searchProcedureReportsByMultipleAcceptance = (req, res, next) => {
 
 //for student home dropdown just list 5 reports for the current course
 exports.list5ProcedureFormsWithStudentID = (req, res, next) => {
-    const courseID = getCurrentCourse(studentID);
-    const isSent = req.params.isSent;
     const stdID = req.params.studentID;
+    const courseID = getCurrentCourse(stdID);
+    const isSent = req.params.isSent;
 
     var query = "SELECT * FROM procedurereports WHERE studentID = ? AND isSent = ? AND courseID = ? AND year = ? AND season = ? ORDER BY saveEpoch DESC LIMIT 5";
     conn.query(
