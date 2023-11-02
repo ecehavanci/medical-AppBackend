@@ -296,6 +296,37 @@ const getCurrentCourse = (studentID) => {
     });
 };
 
+// Create a function to get the current course of the student
+const getCurrentCourseDoctor = (physicianID) => {
+    return new Promise((resolve, reject) => {
+        conn.query(
+            `SELECT DISTINCT rc.rotation_id, rc.course_id, c.code
+            FROM enrollment_physician e
+                     LEFT JOIN rotation_courses rc ON e.rotationNo = rc.rotation_id and rc.course_id = e.courseID
+                     left join rotations ro on rc.rotation_id = ro.rotation_id
+                     LEFT JOIN courses c ON rc.course_id = c.ID
+                     left join intervals i on i.ID = rc.interval_id
+            WHERE e.physicianID = ?
+              and i.year = ?
+              and i.season = ?
+              and ? between i.start and i.end
+            order by rc.course_order;
+            `,
+            [physicianID, currentYear, currentSeason, currentDate],
+            (err, data) => {
+                if (err) {
+                    reject(err);
+                } else if (data.length > 0) {
+                    resolve(data[0].ID);
+                } else {
+                    // Handle the case where the student is not enrolled in any course
+                    reject(new Error("Student is not currently enrolled in any course."));
+                }
+            }
+        );
+    });
+};
+
 //list sent forms for student to show on student sent page with ability to filter by procedure name & 2 approvements & input
 exports.searchProcedureReportsByMultipleAcceptance = (req, res, next) => {
     const page = parseInt(req.query.page) || 1; // Current page number
@@ -430,14 +461,14 @@ exports.searchSentProcedureFormsWithDocIDAccordingToApproveDate = (req, res, nex
     const pageSize = parseInt(req.query.pageSize) || 10; // Number of items per page
     const offset = (page - 1) * pageSize;
     const input = req.params.searchInput === "|" ? "" : req.params.searchInput;
-    const studentID = req.params.studentID;
+
     const physicianID = req.params.attendingPhysicianID;
     const approvement = req.params.isApproved;
-    let courseID = parseInt(req.query.courseID) || 1; // Default courseID
+    let courseID = parseInt(req.query.courseID) || null; // Default courseID
 
     if (!req.query.courseID) {
         // Use getCurrentCourse to get the courseID
-        getCurrentCourse(studentID)
+        getCurrentCourseDoctor(physicianID)
             .then((finalCourseID) => {
                 executeMainQuery(finalCourseID);
             })
