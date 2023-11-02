@@ -393,10 +393,10 @@ exports.searchProcedureReportsByMultipleAcceptance = (req, res, next) => {
             studentID,
             isSent,
             finalCourseID,
-            currentYear, currentSeason,
             isApproved1, isApproved2,
             `%${input.toUpperCase()}%`,
             `%${input.toUpperCase()}%`,
+            currentYear, currentSeason,
             pageSize,
             offset
         ];
