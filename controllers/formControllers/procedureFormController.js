@@ -502,7 +502,7 @@ exports.searchSentProcedureFormsWithDocIDAccordingToApproveDate = (req, res, nex
 
     function executeMainQuery(finalCourseID) {
         const query = `
-        SELECT pr.*, p.descriptionRETRET
+        SELECT pr.*, p.description AS gettedProcedure
         FROM procedurereports pr
         LEFT JOIN procedures p ON pr.procedureID = p.ID
         LEFT JOIN student std ON pr.studentID = std.ID
