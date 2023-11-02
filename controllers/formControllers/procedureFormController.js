@@ -85,88 +85,68 @@ exports.insertProcedureForm = (req, res, next) => {
 };
 
 exports.updateProcedureForm = (req, res, next) => {
-    //we check if the client is sending an empty form "and return a 404 error message.
-    if (!req.body)
-        return next(new AppError("No form data found", 404));
+    if (!req.body) {
+        return next(new AppError("No form data found", 400));
+    }
 
-    let values = [];
-    if (req.body.studentID !== undefined) values.push(req.body.studentID);
-    if (req.body.specialtyID !== undefined) values.push(req.body.specialtyID);
-    if (req.body.attendingPhysicianID !== undefined) values.push(req.body.attendingPhysicianID);
-    if (req.body.procedureID !== undefined) values.push(req.body.procedureID);
-    if (req.body.procedureText !== undefined) values.push(req.body.procedureText.toLowerCase().trim());
-    if (req.body.isObserved !== undefined) values.push(req.body.isObserved);
-    if (req.body.isAssisted !== undefined) values.push(req.body.isAssisted);
-    if (req.body.isPerformed !== undefined) values.push(req.body.isPerformed);
-    if (req.body.isSimulated !== undefined) values.push(req.body.isSimulated);
-    if (req.body.setting !== undefined) values.push(req.body.setting);
-    if (req.body.saveEpoch !== undefined) values.push(req.body.saveEpoch);
-    if (req.body.sentEpoch !== undefined) values.push(req.body.sentEpoch);
-    if (req.body.isSent !== undefined) values.push(req.body.isSent);
-    if (req.body.isApproved !== undefined) values.push(req.body.isApproved);
-    if (req.body.comment !== undefined) values.push(req.body.comment);
+    let query = "UPDATE procedurereports SET ";
 
-    var str = "UPDATE procedurereports SET " +
-        (req.body.studentID !== undefined ? "studentID = ?, " : "") +
-        (req.body.specialtyID !== undefined ? "specialtyID = ?, " : "") +
-        (req.body.attendingPhysicianID !== undefined ? "attendingPhysicianID = ?, " : "") +
-        (req.body.procedureID !== undefined ? "procedureID = ?, " : "") +
-        (req.body.procedureText !== undefined ? "procedureText = ?, " : "") +
-        (req.body.isObserved !== undefined ? "isObserved = ?, " : "") +
-        (req.body.isAssisted !== undefined ? "isAssisted = ?, " : "") +
-        (req.body.isPerformed !== undefined ? "isPerformed = ?, " : "") +
-        (req.body.isSimulated !== undefined ? "isSimulated = ?, " : "") +
-        (req.body.setting !== undefined ? "setting = ?, " : "") +
-        (req.body.saveEpoch !== undefined ? "saveEpoch = ?, " : "") +
-        (req.body.sentEpoch !== undefined ? "sentEpoch = ?, " : "") +
-        (req.body.isSent !== undefined ? "isSent = ?, " : "") +
-        (req.body.isApproved !== undefined ? "isApproved = ?, " : "") +
-        (req.body.comment !== undefined ? "comment = ?, " : "");
+    const setClauses = [];
 
-    var pos = str.lastIndexOf(",");
-    str = str.substring(0, pos) + str.substring(pos + 1);
+    const values = [];
 
-    str = str + " WHERE ID = " + req.params.ID + ";";
+    const updateFields = [
+        "studentID", "specialtyID", "courseID", "attendingPhysicianID", "procedureID",
+        "procedureText", "isObserved", "isAssisted", "isPerformed", "isSimulated",
+        "setting", "saveEpoch", "sentEpoch", "isSent", "isApproved", "comment"
+    ];
 
-    try {
-        conn.query(
-            str,
-            values,
-            async function (err, data, fields) {
-                if (err) {
-                    return next(new AppError(err, 500));
-                }
+    for (const field of updateFields) {
+        if (req.body[field] !== undefined) {
+            setClauses.push(`${field} = ?`);
+            values.push(req.body[field]);
+        }
+    }
 
-                // Check if any rows were actually updated
-                if (data.affectedRows > 0) {
-
-                    var inserted = null
-                    if (req.body.isSent === 1) {
-                        inserted = await checkAndUpdateProcedure(req.body.procedureID, req.body.procedureText.toLowerCase().trim(), req.params.ID, res, next);
-                    }
-
-                    res.status(201).json({
-                        status: "success",
-                        message: "Student data successfully altered",
-                        insertedId: inserted ?? "No new procedure data inserted", // This should now have the correct value
-                    });
-                } else {
-                    // Handle the case where no rows were updated (e.g., student data didn't change)
-                    res.status(200).json({
-                        status: "success",
-                        message: "No student data updated",
-                    });
-                }
-            }
-        );
-    } catch (error) {
-        console.error("Error:", error);
-        res.status(error.status || 500).json({
-            status: "error",
-            message: error.message || "Internal Server Error",
+    if (setClauses.length === 0) {
+        return res.status(200).json({
+            status: "success",
+            message: "No student data updated",
         });
     }
+
+    query += setClauses.join(", ");
+    query += " WHERE ID = ?;";
+    values.push(req.params.ID);
+
+    conn.query(query, values, async (err, data) => {
+        if (err) {
+            console.error("Update Error:", err);
+            return next(new AppError(err.message, 500));
+        }
+
+        // Handle the case where no rows were updated
+        if (data.affectedRows === 0) {
+            return res.status(200).json({
+                status: "success",
+                message: "No student data updated",
+            });
+        }
+
+        // Check and update the procedure (if needed)
+        let inserted = null;
+        if (req.body.isSent === 1) {
+            inserted = await checkAndUpdateProcedure(req.body.procedureID, req.body.procedureText.toLowerCase().trim(), req.params.ID, res, next);
+        }
+
+        res.status(201).json({
+            status: "success",
+            message: "Student data successfully altered",
+            insertedId: inserted || "No new procedure data inserted",
+        });
+    });
 };
+
 
 const checkAndUpdateProcedure = (
     procedureID,
