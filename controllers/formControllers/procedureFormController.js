@@ -280,7 +280,7 @@ const getCurrentCourse = (studentID) => {
                      LEFT JOIN courses c ON c.ID = rc.course_id
             WHERE ? BETWEEN i.start AND i.end
               AND s.ID = ?;
-            `
+            `,
             [currentDate, studentID],
             (err, data) => {
                 if (err) {
