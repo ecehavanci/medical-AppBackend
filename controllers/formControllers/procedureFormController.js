@@ -502,22 +502,23 @@ exports.searchSentProcedureFormsWithDocIDAccordingToApproveDate = (req, res, nex
 
     function executeMainQuery(finalCourseID) {
         const query = `
-        SELECT pr.*
+        SELECT pr.*, p.description
         FROM procedurereports pr
-                INNER JOIN procedures p ON pr.procedureID = p.ID
-                LEFT JOIN student std ON pr.studentID = std.ID
+                 LEFT JOIN procedures p ON pr.procedureID = p.ID
+                 LEFT JOIN student std ON pr.studentID = std.ID
         WHERE pr.attendingPhysicianID = ?
-        AND pr.isSent = 1
-        AND pr.isApproved = ?
-        AND UPPER(std.name) LIKE ?
-        AND pr.courseID = ?
-        AND pr.year = ?
-        AND pr.season = ?
+          AND pr.isSent = 1
+          AND pr.isApproved = ?
+          AND (UPPER(std.name) LIKE ? OR UPPER(std.surname) LIKE ?)
+          AND pr.courseID = ?
+          AND pr.year = ?
+          AND pr.season = ?
         ORDER BY pr.sentEpoch DESC
         LIMIT ? OFFSET ?;`;
         const values = [
             physicianID,
             approvement,
+            `%${input.toUpperCase()}%`,
             `%${input.toUpperCase()}%`,
             finalCourseID,
             currentYear,
