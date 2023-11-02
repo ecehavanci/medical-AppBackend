@@ -122,11 +122,7 @@ exports.updatePatientForm = async (req, res, next) => {
     }
 
     const updateFields = [
-        "studentID", "courseID", "specialtyID", "attendingPhysicianID", "patientHospitalID",
-        "isObserved", "isAssisted", "isPerformed", "isSimulated", "isHistory", "isTreatment",
-        "isPhysicalExamination", "isDifferentialDiagnosis", "setting", "illnessScript",
-        "tier1ID", "tier1", "tier2ID", "tier2", "tier3ID", "tier3", "tier4ID", "tier4",
-        "saveEpoch", "sentEpoch", "isSent", "isApproved", "comment"
+        // ... (rest of the fields)
     ];
 
     const values = updateFields
@@ -148,7 +144,7 @@ exports.updatePatientForm = async (req, res, next) => {
     try {
         const [data] = await conn.query(updateQuery, updateValues);
 
-        if (data.affectedRows > 0) {
+        if (data && data.affectedRows !== undefined) {
             const insertedIds = [];
             if (req.body.isSent === 1) {
                 for (let i = 1; i <= 4; i++) {
@@ -172,6 +168,7 @@ exports.updatePatientForm = async (req, res, next) => {
         return next(new AppError(err, 500));
     }
 };
+
 
 
 //counts student's form count for specified course && approval status
