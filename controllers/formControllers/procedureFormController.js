@@ -369,21 +369,25 @@ exports.searchProcedureReportsByMultipleAcceptance = (req, res, next) => {
 //for student home dropdown just list 5 reports for the current course
 exports.list5ProcedureFormsWithStudentID = (req, res, next) => {
     const stdID = req.params.studentID;
-    const courseID = getCurrentCourse(stdID);
     const isSent = req.params.isSent;
 
-    var query = "SELECT * FROM procedurereports WHERE studentID = ? AND isSent = ? AND courseID = ? AND year = ? AND season = ? ORDER BY saveEpoch DESC LIMIT 5";
-    conn.query(
-        query, [stdID, isSent, courseID, currentYear, currentSeason],
-        function (err, data, fields) {
-            if (err) return next(new AppError(err, 500));
-            res.status(200).json({
-                status: "success",
-                length: data?.length,
-                data: data,
-            });
-        }
-    );
+    getCurrentCourse(stdID).then((courseID) => {
+        var query = "SELECT * FROM procedurereports WHERE studentID = ? AND isSent = ? AND courseID = ? AND year = ? AND season = ? ORDER BY saveEpoch DESC LIMIT 5";
+        conn.query(
+            query, [stdID, isSent, courseID, currentYear, currentSeason],
+            function (err, data, fields) {
+                if (err) return next(new AppError(err, 500));
+                res.status(200).json({
+                    status: "success",
+                    length: data?.length,
+                    data: data,
+                });
+            }
+        );
+
+    }).catch((error) => {
+        return next(new AppError(error, 500));
+    });
 };
 
 //no need for filtering by course ID because it only gets *waiting reports*, lists att. physc. waiting reports
