@@ -235,7 +235,7 @@ exports.searchProcedureReportsByAcceptance = (req, res, next) => {
     const isApproved = req.params.isApproved;
 
     let courseID = parseInt(req.query.courseID) || null; // Default courseID
-    
+
     if (!req.query.courseID) {
         // Use getCurrentCourse to get the courseID
         getCurrentCourse(studentID)
@@ -252,14 +252,26 @@ exports.searchProcedureReportsByAcceptance = (req, res, next) => {
     }
 
     function executeMainQuery(finalCourseID) {
+        const query = `
+        SELECT pr.*, p.description as gettedProcedure
+        FROM procedurereports pr
+                 INNER JOIN procedures p ON pr.procedureID = p.ID
+        WHERE pr.studentID = ?
+          AND pr.isSent = ?
+          AND courseID = ?
+          AND pr.isApproved = ?
+          AND (UPPER(p.description) LIKE ? OR UPPER(pr.procedureText) LIKE ?)
+          AND year = ?
+          AND season = ?
+        ORDER BY pr.saveEpoch DESC
+        LIMIT ? OFFSET ?;
+        `;
+
+        const values = [studentID, isSent, finalCourseID, isApproved, `%${input.toUpperCase()}%`, `%${input.toUpperCase()}%`, currentYear, currentSeason, pageSize, offset];
+
         conn.query(
-            "SELECT pr.* " +
-            "FROM procedurereports pr " +
-            "INNER JOIN procedures p ON pr.procedureID = p.ID " +
-            "WHERE pr.studentID = ? AND pr.isSent = ? AND courseID = ? AND pr.isApproved = ? " +
-            "AND UPPER(p.description) LIKE ? " +
-            "ORDER BY pr.saveEpoch DESC LIMIT ? OFFSET ?",
-            [studentID, isSent, finalCourseID, isApproved, `%${input.toUpperCase()}%`, pageSize, offset],
+            query,
+            values,
             (err, data) => {
                 if (err) return next(new AppError(err, 500));
                 res.status(200).json({
