@@ -444,7 +444,7 @@ exports.list5ProcedureFormsWithStudentID = (req, res, next) => {
 
 //no need for filtering by course ID because it only gets *waiting reports*, lists att. physc. waiting reports
 exports.listWaitingReports = (req, res, next) => {
-    const physicianID = req.params.attendingPhysicianID;
+    const physicianID = req.params.physicianID;
     const isApproved = 0;
 
     const query = `
