@@ -271,14 +271,15 @@ exports.searchProcedureReportsByAcceptance = (req, res, next) => {
 const getCurrentCourse = (studentID) => {
     return new Promise((resolve, reject) => {
         conn.query(
-            "SELECT c.ID " +
-            "FROM student s " +
-            "LEFT JOIN enrollment e ON e.std_id = s.ID " +
-            "LEFT JOIN rotation_courses rc ON rc.rotation_id = e.rotation_id " +
-            "LEFT JOIN intervals i ON i.ID = rc.interval_id " +
-            "LEFT JOIN courses c ON c.ID = rc.course_id " +
-            "WHERE current_date BETWEEN i.end AND i.start " +
-            "AND s.ID = ?",
+            `SELECT c.ID
+            FROM student s
+                     LEFT JOIN enrollment e ON e.std_id = s.ID
+                     LEFT JOIN rotation_courses rc ON rc.rotation_id = e.rotation_id
+                     LEFT JOIN intervals i ON i.ID = rc.interval_id
+                     LEFT JOIN courses c ON c.ID = rc.course_id
+            WHERE current_date BETWEEN i.start AND i.end
+              AND s.ID = ?;
+            `
             [studentID],
             (err, data) => {
                 if (err) {
