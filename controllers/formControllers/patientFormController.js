@@ -120,6 +120,10 @@ exports.updatePatientForm = async (req, res, next) => {
     if (!req.body) {
         return next(new AppError("No form data found", 404));
     }
+    let query = "UPDATE patientreports SET ";
+    const setClauses = [];
+    const values = [];
+
     const updateFields = [
         "studentID",
         "courseID",
@@ -151,33 +155,26 @@ exports.updatePatientForm = async (req, res, next) => {
         "comment",
     ];
 
-    const values = updateFields
-    .map(field => {
-        if (field === "studentID") {
-            return BigInt(req.body[field]);
-        } else if (field === "isSent") {
-            return req.body[field] ? 1 : 0;
-        } else {
-            return req.body[field];
+    for (const field of updateFields) {
+        if (req.body[field] !== undefined) {
+            setClauses.push(`${field} = ?`);
+            values.push(req.body[field]);
         }
-    })
-    .filter(value => value !== undefined);
+    }
 
+    if (setClauses.length === 0) {
+        return res.status(200).json({
+            status: "success",
+            message: "No patient form data updated",
+        });
+    }
 
-    console.log("values: " + values.reverse().toString());
-    console.log(req.body);
-
-    const updateClauses = updateFields
-        .filter(field => req.body[field] !== undefined)
-        .map(field => `${field} = ?`)
-        .join(", ");
-
-    const updateQuery = `UPDATE patientreports SET ${updateClauses} WHERE ID = ?;`;
-
-    const updateValues = [...values, req.params.ID];
+    query += setClauses.join(", ");
+    query += " WHERE ID = ?;";
+    values.push(req.params.ID);
 
     try {
-        const [data] = await conn.query(updateQuery, updateValues);
+        const [data] = await conn.query(query, values);
 
         if (data && data.affectedRows !== undefined) {
             const insertedIds = [];
