@@ -116,8 +116,6 @@ exports.insertPatientForm = (req, res, next) => {
 };
 
 exports.updatePatientForm = async (req, res, next) => {
-    console.log("updating started");
-
     if (!req.body) {
         return next(new AppError("No form data found", 404));
     }
@@ -179,10 +177,20 @@ exports.updatePatientForm = async (req, res, next) => {
     console.log(...values);
 
     try {
-        const [data] = conn.query(query, ...values);
-        console.log(data);
+        conn.query(query, values, async (err, data) => {
+            if (err) {
+                console.error("Update Error:", err);
+                return next(new AppError(err.message, 500));
+            }
 
-        if (data && data.affectedRows !== undefined) {
+            // Handle the case where no rows were updated
+            if (data.affectedRows === 0) {
+                return res.status(200).json({
+                    status: "success",
+                    message: "No student data updated",
+                });
+            }
+
             const insertedIds = [];
             if (req.body.isSent === 1) {
                 for (let i = 1; i <= 4; i++) {
@@ -200,15 +208,10 @@ exports.updatePatientForm = async (req, res, next) => {
 
             res.status(201).json({
                 status: "success",
-                message: "Patient form data successfully updated",
-                insertedIds,
+                message: "Student data successfully altered",
+                insertedId: inserted || "No new tier data inserted",
             });
-        } else {
-            res.status(200).json({
-                status: "success",
-                message: "No patient form data updated",
-            });
-        }
+        });
     } catch (err) {
         return next(new AppError(err, 500));
     }
