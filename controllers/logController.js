@@ -16,11 +16,7 @@ exports.updatePatientFormLog = (updateFields, values) => {
         // Get the ID from the last index of the values array
         const ID = values[values.length - 1];
 
-        console.log(updateFields);
-        console.log(values);
-
-
-        if (updateFields.length+1 !== values.length) {
+        if (updateFields.length + 1 !== values.length) {
             // Check that both arrays have the same length
             console.error("Arrays must have the same length");
         } else {
@@ -34,7 +30,7 @@ exports.updatePatientFormLog = (updateFields, values) => {
 
             // Create a query to select the old data for the given ID
             const selectOldDataQuery = `SELECT ${updateFields.join(', ')} FROM patientreports WHERE ID = ?`;
-            console.log(selectOldDataQuery);
+            console.log(selectOldDataQuery,"aaaaaaaaaaaaaaaaaaaaaaa");
 
             conn.query(selectOldDataQuery, [ID], (err, oldDataRows) => {
                 if (err) {
