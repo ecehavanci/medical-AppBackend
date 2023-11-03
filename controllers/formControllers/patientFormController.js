@@ -160,11 +160,7 @@ exports.updatePatientForm = async (req, res, next) => {
     for (const field of updateFields) {
         if (req.body[field] !== undefined) {
             // Make sure the ID field is treated as an integer, not bigint
-            if (field === "ID") {
-                values.push(parseInt(req.params[field])); // Parse ID as an integer
-            } else {
-                values.push(req.body[field]);
-            }
+            values.push(req.body[field]);
             setClauses.push(`${field} = ?`);
         }
     }
@@ -178,7 +174,7 @@ exports.updatePatientForm = async (req, res, next) => {
 
     query += setClauses.join(", ");
     query += " WHERE ID = ?;";
-    values.push(req.params.ID);
+    values.push(parseInt(req.params.ID));
 
     console.log(query);
     console.log(values);
