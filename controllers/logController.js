@@ -7,33 +7,36 @@ const currentDate = config.app.date;
 
 exports.updatePatientFormLog = (updateFields, values) => {
     return new Promise((resolve, reject) => {
-        const valuesCopy = values;
-        const columnNamesCopy = updateFields;
+        const valuesCopy = values.slice(); // Create a copy of the values array
+        const columnNamesCopy = updateFields.slice(); // Create a copy of the column names array
 
-        updateFields.splice(updateFields.length - 1, 0, 'isApproved');
-        values.splice(values.length - 1, 0, 2); //rejection value of  isApproved
+        // Add 'isApproved' to the column names
+        columnNamesCopy.push('isApproved');
+
+        // Set the rejection value of 'isApproved'
+        valuesCopy.push(2);
 
         // Get the ID from the last index of the values array
-        const ID = values[values.length - 1];
+        const ID = valuesCopy.pop(); // Remove and store the last value (ID)
 
-        if (updateFields.length + 1 !== values.length) {
+        if (columnNamesCopy.length !== valuesCopy.length) {
             // Check that both arrays have the same length
             console.error("Arrays must have the same length");
+            reject("Arrays must have the same length");
         } else {
             const newJSON = {};
 
-            for (let i = 0; i < updateFields.length; i++) {
-                const field = columnNamesCopy[i];
-                const value = valuesCopy[i];
+            for (let i = 0; i < columnNamesCopy.length; i++) {
+                const field = updateFields[i];
+                const value = values[i];
                 newJSON[field] = value;
             }
 
             // Create a query to select the old data for the given ID
-            // Create a query to select the old data for the given ID
-            const placeholders = updateFields.map(() => '?').join(', ');
+            const placeholders = columnNamesCopy.map((col) => `\`${col}\``).join(', '); // Enclose column names in backticks
             const selectOldDataQuery = `SELECT ${placeholders} FROM patientreports WHERE ID = ?`;
 
-            console.log(selectOldDataQuery, "aaaaaaaaaaaaaaaaaaaaaaa");
+            console.log(selectOldDataQuery);
 
             conn.query(selectOldDataQuery, [ID], (err, oldDataRows) => {
                 if (err) {
@@ -57,8 +60,6 @@ exports.updatePatientFormLog = (updateFields, values) => {
                     // Now, you can insert the logData into your logger table
                     const insertLogDataQuery = "INSERT INTO patient_logger (old_data, new_data) VALUES (?, ?)";
 
-                    console.log([JSON.stringify(logData.old_data), JSON.stringify(logData.new_data)]);
-
                     conn.query(insertLogDataQuery, [JSON.stringify(logData.old_data), JSON.stringify(logData.new_data)], (err) => {
                         if (err) {
                             console.error("Error inserting log data:", err);
@@ -73,6 +74,7 @@ exports.updatePatientFormLog = (updateFields, values) => {
         }
     });
 }
+
 
 exports.updateProcedureFormLog = (updateFields, values, req, res, next) => {
 
