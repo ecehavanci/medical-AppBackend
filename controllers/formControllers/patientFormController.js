@@ -578,7 +578,7 @@ exports.searchPatientFormsByMultipleAcceptance = (req, res, next) => {
         WHERE studentID = ?
         AND isSent = ?
         AND courseID = ?
-        AND (pr.isApproved IN (?, ?))
+        AND (isApproved IN (?, ?))
         AND year = ?
         AND season = ?
         AND UPPER(illnessScript) LIKE ?
