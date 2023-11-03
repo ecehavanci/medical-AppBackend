@@ -372,18 +372,16 @@ exports.searchSentPatientFormsWithDocIDAccordingToApproveDate = (req, res, next)
 
 //no need for filtering by course ID because it only gets *waiting reports*, lists att. physc. waiting reports
 exports.listWaitingReports = (req, res, next) => {
-    const searchInput = req.params.searchInput === "|" ? "" : req.params.searchInput;
     const attPhysicianID = req.params.physicianID;
-    const isApproved = req.params.isApproved;
+    const isApproved = 0;
 
     let courseID = req.query.courseID || null; // Default courseID
 
     // Check if courseID is not specified, then find the current course for the physician
     if (!courseID) {
-        getCurrentCourse(studentID)
-            .then((finalCourseID) => {
-                executeMainQuery(finalCourseID);
-            })
+        getCurrentCourseDoctor(attPhysicianID).then((finalCourseID) => {
+            executeMainQuery(finalCourseID);
+        })
             .catch((error) => {
                 // Handle errors from getCurrentCourse
                 return next(new AppError(error, 500));
@@ -402,7 +400,7 @@ exports.listWaitingReports = (req, res, next) => {
               AND pa.year = ?
               AND pa.season = ?
             ORDER BY saveEpoch DESC;`,
-            [attPhysicianID, isApproved, courseID, `%${searchInput.toUpperCase()}%`],
+            [attPhysicianID, isApproved, currentYear, currentSeason],
             function (err, data, fields) {
                 if (err) return next(new AppError(err, 500));
                 res.status(200).json({
