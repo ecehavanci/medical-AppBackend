@@ -4,6 +4,7 @@ const { query } = require("express");
 const config = require("../../config");
 const currentYear = config['app']["year"];
 const currentSeason = config.app.season;
+const currentDate = config.app.date;
 
 exports.insertPatientForm = (req, res, next) => {
     //we check if the client is sending an empty form "and return a 404 error message.
