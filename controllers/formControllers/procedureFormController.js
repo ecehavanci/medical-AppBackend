@@ -1,6 +1,7 @@
 const AppError = require("../../utils/appError");
 const conn = require("../../services/db");
 const procedureController = require("../procedureController");
+const logController = require("../logController");
 const config = require("../../config");
 const currentYear = config.app.year;
 const currentSeason = config.app.season;

@@ -2,6 +2,7 @@ const AppError = require("../../utils/appError");
 const conn = require("../../services/db");
 const { query } = require("express");
 const config = require("../../config");
+const logController = require("../logController");
 const currentYear = config['app']["year"];
 const currentSeason = config.app.season;
 const currentDate = config.app.date;
@@ -204,11 +205,13 @@ exports.updatePatientForm = async (req, res, next) => {
                     insertedIds.push(insertedTier);
                     console.log(insertedTier);
                 }
+
+                await logController.updatePatientFormLog(updateFields, values);
             }
 
             res.status(201).json({
                 status: "success",
-                message: "Student data successfully altered",
+                message: "Form data successfully altered",
                 insertedId: insertedIds || "No new tier data inserted",
             });
         });
