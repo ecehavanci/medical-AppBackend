@@ -173,6 +173,7 @@ exports.updatePatientForm = async (req, res, next) => {
     query += " WHERE ID = ?;";
     values.push(req.params.ID);
 
+    console.log(query);
     try {
         const [data] = await conn.query(query, values);
 
