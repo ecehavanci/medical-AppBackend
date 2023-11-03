@@ -120,6 +120,7 @@ exports.updatePatientForm = async (req, res, next) => {
     if (!req.body) {
         return next(new AppError("No form data found", 404));
     }
+
     let query = "UPDATE patientreports SET ";
     const setClauses = [];
     const values = [];
@@ -174,6 +175,7 @@ exports.updatePatientForm = async (req, res, next) => {
     values.push(req.params.ID);
 
     console.log(query);
+
     try {
         const [data] = await conn.query(query, values);
 
@@ -181,7 +183,13 @@ exports.updatePatientForm = async (req, res, next) => {
             const insertedIds = [];
             if (req.body.isSent === 1) {
                 for (let i = 1; i <= 4; i++) {
-                    const insertedTier = await checkAndInsertTierData(req.body[`tier${i}ID`], req.body[`tier${i}`].toLowerCase().trim(), req.params.ID, res, next);
+                    const insertedTier = await checkAndInsertTierData(
+                        req.body[`tier${i}ID`],
+                        req.body[`tier${i}`].toLowerCase().trim(),
+                        req.params.ID,
+                        res,
+                        next
+                    );
                     insertedIds.push(insertedTier);
                 }
             }
@@ -636,72 +644,63 @@ const checkAndInsertTierData = (
     relatedReport,
     res,
     next
-) => {
+  ) => {
     return new Promise((resolve, reject) => {
-        // Check if tierID is -1, the "other" choice
-        if (tierID === -1) {
-            // find the most similar tier description to a given input string by calculating the Levenshtein 
-            //distance-based similarity percentage and filtering for tiers. The closest match is returned as a result.
-            const similarProcedureQuery = `
-            SELECT description,
-            ((1 - levenshtein(?, description, 1) / GREATEST(CHAR_LENGTH(?), CHAR_LENGTH(description))) * 100) AS similarity
-            FROM differentialdiagnoses
-            HAVING similarity < 20
-            ORDER BY similarity DESC
-            LIMIT 1`;
-
-            conn.query(
-                similarProcedureQuery,
-                [tierText, tierText],
-                (err, results) => {
-                    if (err) {
-                        console.error("Error searching for similar procedure:", err);
-                        reject(err);
-                    }
-
-                    console.log("result " + results[0].similarity);
-
-                    // If a similar tier is found with a similarity percentage <20 , insert the tier text coming from the form
-                    if (results[0].similarity < 20) {
-                        const similarProcedure = results[0];
-                        console.log("most similar tier", similarProcedure.description);
-
-                        // Handle the insertion logic here
-                        console.log(tierText);
-                        console.log(relatedReport);
-                        if (!tierText || !relatedReport) {
-                            reject(new AppError("Invalid data provided", 400));
-                        }
-
-                        const values = [tierText, relatedReport];
-
-                        conn.query(
-                            "INSERT INTO differentialdiagnoses (description, relatedReport) VALUES (?, ?)",
-                            values,
-                            function (err, data, fields) {
-                                if (err) {
-                                    console.error("INSERT procedure Error:", err);
-                                    reject(err);
-                                }
-
-                                console.log("Inserted Data2222:", data);
-                                resolve(data.insertId);
-                            }
-                        );
-                    } else {
-                        resolve(null); // Indicate that no insertion was needed
-                        console.log("No insertion was needed.");
-
-                    }
+      if (tierID === -1) {
+        const similarProcedureQuery = `
+          SELECT description,
+          ((1 - levenshtein(?, description, 1) / GREATEST(CHAR_LENGTH(?), CHAR_LENGTH(description))) * 100) AS similarity
+          FROM differentialdiagnoses
+          HAVING similarity < 20
+          ORDER BY similarity DESC
+          LIMIT 1`;
+  
+        conn.query(
+          similarProcedureQuery,
+          [tierText, tierText],
+          (err, results) => {
+            if (err) {
+              console.error("Error searching for similar procedure:", err);
+              reject(err);
+            }
+  
+            console.log("result " + results[0].similarity);
+  
+            if (results[0].similarity < 20) {
+              const similarProcedure = results[0];
+              console.log("most similar tier", similarProcedure.description);
+  
+              if (!tierText || !relatedReport) {
+                reject(new AppError("Invalid data provided", 400));
+              }
+  
+              const values = [tierText, relatedReport];
+  
+              conn.query(
+                "INSERT INTO differentialdiagnoses (description, relatedReport) VALUES (?, ?)",
+                values,
+                function (err, data, fields) {
+                  if (err) {
+                    console.error("INSERT procedure Error:", err);
+                    reject(err);
+                  }
+  
+                  console.log("Inserted Data2222:", data);
+                  resolve(data.insertId);
                 }
-            );
-        } else {
-            resolve(null); // If tierID is not -1, resolve with null to indicate no insertion was needed
-            console.log("Related Tier is not -1");
-
-        }
+              );
+            } else {
+              resolve(null);
+              console.log("No insertion was needed.");
+            }
+          }
+        );
+      } else {
+        resolve(null);
+        console.log("Related Tier is not -1");
+      }
     });
-};
+  };
 
 exports.getAllSentPatientForms = (req, res, next) => { //list of specified course && student
     const query = `SELECT * FROM patientreports WHERE isSent = 1 AND studentID = ? AND courseID = ?`;
