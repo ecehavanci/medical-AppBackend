@@ -209,7 +209,7 @@ exports.updatePatientForm = async (req, res, next) => {
                     insertedIds.push(insertedTier);
                 }
 
-                await logController.updatePatientFormLog(updateFields, values);
+                await logController.updatePatientFormLog(setClauses, values);
             }
 
             res.status(201).json({
