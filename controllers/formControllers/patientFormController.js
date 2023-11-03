@@ -114,6 +114,7 @@ exports.insertPatientForm = (req, res, next) => {
         }
     );
 };
+
 exports.updatePatientForm = async (req, res, next) => {
     console.log("updating started");
 
@@ -182,42 +183,42 @@ exports.updatePatientForm = async (req, res, next) => {
     console.log(query);
     console.log(values);
 
-    try {
-        const [data] = await conn.query(query, values);
+    const [data] = await conn.query(query, values);
 
-        if (data && data.affectedRows !== undefined) {
-            const insertedIds = [];
-            if (req.body.isSent === 1) {
-                for (let i = 1; i <= 4; i++) {
-                    const insertedTier = await checkAndInsertTierData(
-                        req.body[`tier${i}ID`],
-                        req.body[`tier${i}`].toLowerCase().trim(),
-                        req.params.ID,
-                        res,
-                        next
-                    );
-                    insertedIds.push(insertedTier);
-                }
+    if (data && data.affectedRows !== undefined) {
+        const insertedIds = [];
+        if (req.body.isSent === 1) {
+            for (let i = 1; i <= 4; i++) {
+                const insertedTier = await checkAndInsertTierData(
+                    req.body[`tier${i}ID`],
+                    req.body[`tier${i}`].toLowerCase().trim(),
+                    req.params.ID,
+                    res,
+                    next
+                );
+                insertedIds.push(insertedTier);
             }
-
-            res.status(201).json({
-                status: "success",
-                message: "Patient form data successfully updated",
-                insertedIds,
-            });
-        } else {
-            res.status(200).json({
-                status: "success",
-                message: "No patient form data updated",
-            });
         }
+
+        res.status(201).json({
+            status: "success",
+            message: "Patient form data successfully updated",
+            insertedIds,
+        });
+    } else {
+        res.status(200).json({
+            status: "success",
+            message: "No patient form data updated",
+        });
+    }
+
+
+    try {
+      
     } catch (err) {
         return next(new AppError(err, 500));
     }
 };
-
-
-
 
 //counts student's form count for specified course && approval status
 exports.getCountPatientFormsForDashboardAccordingToApproval = (req, res, next) => {
