@@ -274,20 +274,32 @@ exports.getCountPatientFormsForDashboardAccordingToApproval = (req, res, next) =
 exports.listSent5ReportForStudent = (req, res, next) => {
     const studentID = req.params.studentID;
     const isSent = req.params.isSent;
-    const courseID = getStudentCurrentCourse(studentID);
 
-    conn.query(
-        "SELECT * FROM patientreports WHERE studentID = ? AND isSent = ? AND courseID = ? AND year = ? AND season = ? ORDER BY saveEpoch DESC LIMIT 5 ",
-        [studentID, isSent, courseID, currentYear, currentSeason],
-        function (err, data, fields) {
-            if (err) return next(new AppError(err, 500));
-            res.status(200).json({
-                status: "success",
-                length: data?.length,
-                data: data,
-            });
-        }
-    );
+    getCurrentCourse(studentID).then((courseID) => {
+        const query = `SELECT *
+        FROM patientreports
+        WHERE studentID = ?
+          AND isSent = ?
+          AND courseID = ?
+          AND year = ?
+          AND season = ?
+        ORDER BY saveEpoch DESC
+        LIMIT 5;`;
+        conn.query(
+            query, [studentID, isSent, courseID, currentYear, currentSeason],
+            function (err, data, fields) {
+                if (err) return next(new AppError(err, 500));
+                res.status(200).json({
+                    status: "success",
+                    length: data?.length,
+                    data: data,
+                });
+            }
+        );
+
+    }).catch((error) => {
+        return next(new AppError(error, 500));
+    });
 };
 
 //list sent forms for doctor accepted & rejected page with filtering fuctionality with student name
