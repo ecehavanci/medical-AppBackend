@@ -176,41 +176,39 @@ exports.updatePatientForm = async (req, res, next) => {
     values.push(parseInt(req.params.ID));
 
     console.log(query);
-    console.log(values);
-
-    const [data] = conn.query(query, values);
-    console.log(data);
-
-    if (data && data.affectedRows !== undefined) {
-        const insertedIds = [];
-        if (req.body.isSent === 1) {
-            for (let i = 1; i <= 4; i++) {
-                const insertedTier = await checkAndInsertTierData(
-                    req.body[`tier${i}ID`],
-                    req.body[`tier${i}`].toLowerCase().trim(),
-                    req.params.ID,
-                    res,
-                    next
-                );
-                insertedIds.push(insertedTier);
-                console.log(insertedTier);
-            }
-        }
-
-        res.status(201).json({
-            status: "success",
-            message: "Patient form data successfully updated",
-            insertedIds,
-        });
-    } else {
-        res.status(200).json({
-            status: "success",
-            message: "No patient form data updated",
-        });
-    }
+    console.log(...values);
 
     try {
+        const [data] = conn.query(query, ...values);
+        console.log(data);
 
+        if (data && data.affectedRows !== undefined) {
+            const insertedIds = [];
+            if (req.body.isSent === 1) {
+                for (let i = 1; i <= 4; i++) {
+                    const insertedTier = await checkAndInsertTierData(
+                        req.body[`tier${i}ID`],
+                        req.body[`tier${i}`].toLowerCase().trim(),
+                        req.params.ID,
+                        res,
+                        next
+                    );
+                    insertedIds.push(insertedTier);
+                    console.log(insertedTier);
+                }
+            }
+
+            res.status(201).json({
+                status: "success",
+                message: "Patient form data successfully updated",
+                insertedIds,
+            });
+        } else {
+            res.status(200).json({
+                status: "success",
+                message: "No patient form data updated",
+            });
+        }
     } catch (err) {
         return next(new AppError(err, 500));
     }
