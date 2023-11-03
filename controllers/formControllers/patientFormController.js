@@ -554,7 +554,7 @@ exports.searchPatientFormsByMultipleAcceptance = (req, res, next) => {
     const isApproved1 = req.params.isApproved1;
     const isApproved2 = req.params.isApproved2;
 
-    let courseID = parseInt(req.query.courseID) || 1; // Default courseID
+    let courseID = parseInt(req.query.courseID) || null; // Default courseID
 
     if (!courseID) {
         // Use getCurrentCourse to get the courseID
