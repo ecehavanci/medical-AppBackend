@@ -209,7 +209,7 @@ exports.updatePatientForm = async (req, res, next) => {
             res.status(201).json({
                 status: "success",
                 message: "Student data successfully altered",
-                insertedId: inserted || "No new tier data inserted",
+                insertedId: insertedIds || "No new tier data inserted",
             });
         });
     } catch (err) {
