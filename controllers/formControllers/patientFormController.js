@@ -730,73 +730,6 @@ const checkAndInsertTierData = (
     });
 };
 
-exports.getAllSentPatientForms = (req, res, next) => { //list of specified course && student
-    const query = `SELECT * FROM patientreports WHERE isSent = 1 AND studentID = ? AND courseID = ?`;
-
-    conn.query(
-        query,
-        [req.params.studentID, req.params.courseID],
-        function (err, data, fields) {
-            if (err) return next(new AppError(err, 500));
-            res.status(200).json({
-                status: "success",
-                length: data?.length,
-                data: data,
-            });
-        }
-    );
-};
-
-exports.getRequiredCountPatientFormsForDashboard = (req, res, next) => { //get required form count for specified course
-    const query = `select patient_count from courses where ID = ?`;
-
-    conn.query(
-        query,
-        [req.params.courseID],
-        function (err, data, fields) {
-            if (err) return next(new AppError(err, 500));
-            res.status(200).json({
-                status: "success",
-                length: data?.length,
-                data: data,
-            });
-        }
-    );
-};
-
-exports.getAllCountPatientFormsForDashboard = (req, res, next) => {  //counts student's form for specified course
-    const query = `select count(ID) from patientreports where studentID = ? && courseID = ? && isSent = 1;`;
-
-    conn.query(
-        query,
-        [req.params.studentID, req.params.courseID],
-        function (err, data, fields) {
-            if (err) return next(new AppError(err, 500));
-            res.status(200).json({
-                status: "success",
-                length: data?.length,
-                data: data,
-            });
-        }
-    );
-};
-
-exports.getRotationCountPatientFormsForDashboard = (req, res, next) => { //gets different course IDs within patientreports DB 
-    conn.query(
-        "select distinct courseID from patientreports where studentID = ?;",
-        [req.params.studentID],
-        function (err, data, fields) {
-            if (err) return next(new AppError(err, 500));
-            res.status(200).json({
-                status: "success",
-                length: data?.length,
-                data: data,
-            });
-        }
-    );
-};
-
-
 // Create a function to get the current course of the student
 const getCurrentCourse = (studentID) => {
     return new Promise((resolve, reject) => {
@@ -872,23 +805,6 @@ exports.getPatientFormWithID = (req, res, next) => { //returns specific patientr
             });
         }
     );
-};
-
-exports.listAllPatientReportsAccSentDateForDoc = (req, res, next) => {
-    var input = req.params.searchInput === "|" ? "" : req.params.searchInput;
-    conn.query("select * from patientreports WHERE attendingPhysicianID = ? AND isSent = 1 AND isApproved = ? AND " +
-        "UPPER(studentName) LIKE '%" + input.toUpperCase().trim() + "%' order by saveEpoch DESC",
-        [req.params.attphyscID, req.params.isApproved],
-        function (err, data, fields) {
-            if (err) return next(new AppError(err, 500));
-            res.status(200).json({
-                status: "success",
-                length: data?.length,
-                data: data,
-            });
-        }
-    );
-
 };
 
 
