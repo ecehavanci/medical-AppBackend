@@ -113,7 +113,6 @@ exports.insertPatientForm = (req, res, next) => {
         }
     );
 };
-
 exports.updatePatientForm = async (req, res, next) => {
     console.log("updating started");
 
@@ -418,7 +417,7 @@ exports.searchPatientFormsForStudent = (req, res, next) => { //for student sent 
     // Check if courseID is not specified, then find the current course for the student
     if (!courseID) {
         // Use getCurrentCourse to get the courseID
-        getStudentCurrentCourse(studentID)
+        getCurrentCourse(studentID)
             .then((finalCourseID) => {
                 executeMainQuery(finalCourseID);
             })
@@ -487,7 +486,7 @@ exports.searchPatientFormsByAcceptance = (req, res, next) => {
     // Check if courseID is not specified, then find the current course for the student
     if (!courseID) {
         // Use getCurrentCourse to get the courseID
-        getStudentCurrentCourse(studentID)
+        getCurrentCourse(studentID)
             .then((finalCourseID) => {
                 executeMainQuery(finalCourseID);
             })
@@ -548,7 +547,7 @@ exports.searchPatientFormsByMultipleAcceptance = (req, res, next) => {
 
     if (!courseID) {
         // Use getCurrentCourse to get the courseID
-        getStudentCurrentCourse(studentID)
+        getCurrentCourse(studentID)
             .then((finalCourseID) => {
                 executeMainQuery(finalCourseID);
             })
@@ -785,7 +784,7 @@ exports.getRotationCountPatientFormsForDashboard = (req, res, next) => { //gets 
 };
 
 // Create a function to get the current course of the student
-const getStudentCurrentCourse = (studentID) => {
+const getCurrentCourse = (studentID) => {
     return new Promise((resolve, reject) => {
         conn.query(
             "SELECT c.ID " +
