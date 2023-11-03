@@ -161,7 +161,7 @@ exports.updatePatientForm = async (req, res, next) => {
         if (req.body[field] !== undefined) {
             // Make sure the ID field is treated as an integer, not bigint
             if (field === "ID") {
-                values.push(parseInt(req.body[field])); // Parse ID as an integer
+                values.push(parseInt(req.params[field])); // Parse ID as an integer
             } else {
                 values.push(req.body[field]);
             }
@@ -191,15 +191,15 @@ exports.updatePatientForm = async (req, res, next) => {
             const insertedIds = [];
             if (req.body.isSent === 1) {
                 for (let i = 1; i <= 4; i++) {
-                    // const insertedTier = await checkAndInsertTierData(
-                    //     req.body[`tier${i}ID`],
-                    //     req.body[`tier${i}`].toLowerCase().trim(),
-                    //     req.params.ID,
-                    //     res,
-                    //     next
-                    // );
-                    // insertedIds.push(insertedTier);
-                    // console.log(insertedTier);
+                    const insertedTier = await checkAndInsertTierData(
+                        req.body[`tier${i}ID`],
+                        req.body[`tier${i}`].toLowerCase().trim(),
+                        req.params.ID,
+                        res,
+                        next
+                    );
+                    insertedIds.push(insertedTier);
+                    console.log(insertedTier);
                 }
             }
 
