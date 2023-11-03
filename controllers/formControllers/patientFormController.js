@@ -197,7 +197,7 @@ exports.updatePatientForm = async (req, res, next) => {
                 for (let i = 1; i <= 4; i++) {
                     const insertedTier = await checkAndInsertTierData(
                         req.body[`tier${i}ID`],
-                        req.body[`tier${i}`].toLowerCase().trim(),
+                        req.body[`tier${i}`].toUpperCase().trim(),
                         req.params.ID,
                         res,
                         next
