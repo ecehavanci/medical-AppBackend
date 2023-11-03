@@ -315,7 +315,7 @@ exports.searchSentPatientFormsWithDocIDAccordingToApproveDate = (req, res, next)
 
     if (!req.query.courseID) {
         // Use getCurrentCourse to get the courseID
-        getCurrentCourse(studentID)
+        getCurrentCourseDoctor(physicianID)
             .then((finalCourseID) => {
                 executeMainQuery(finalCourseID);
             })
