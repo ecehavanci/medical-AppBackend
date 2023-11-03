@@ -7,6 +7,9 @@ const currentDate = config.app.date;
 
 exports.updatePatientFormLog = (updateFields, values) => {
     return new Promise((resolve, reject) => {
+        const valuesCopy = values;
+        const columnNamesCopy = updateFields;
+
         updateFields.splice(updateFields.length - 1, 0, 'isApproved');
         values.splice(values.length - 1, 0, 2); //rejection value of  isApproved
 
@@ -17,15 +20,15 @@ exports.updatePatientFormLog = (updateFields, values) => {
         console.log(values);
 
 
-        if (updateFields.length !== values.length) {
+        if (updateFields.length+1 !== values.length) {
             // Check that both arrays have the same length
             console.error("Arrays must have the same length");
         } else {
             const newJSON = {};
 
             for (let i = 0; i < updateFields.length; i++) {
-                const field = updateFields[i];
-                const value = values[i];
+                const field = columnNamesCopy[i];
+                const value = valuesCopy[i];
                 newJSON[field] = value;
             }
 
