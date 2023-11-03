@@ -10,12 +10,6 @@ exports.updatePatientFormLog = (updateFields, values) => {
         const valuesCopy = values.slice(); // Create a copy of the values array
         const columnNamesCopy = updateFields.slice(); // Create a copy of the column names array
 
-        // Add 'isApproved' to the column names
-        columnNamesCopy.push('isApproved');
-
-        // Set the rejection value of 'isApproved'
-        valuesCopy.push(2);
-
         // Get the ID from the last index of the values array
         const ID = valuesCopy.pop(); // Remove and store the last value (ID)
 
@@ -27,14 +21,14 @@ exports.updatePatientFormLog = (updateFields, values) => {
             const newJSON = {};
 
             for (let i = 0; i < columnNamesCopy.length; i++) {
-                const field = updateFields[i];
-                const value = values[i];
+                const field = columnNamesCopy[i];
+                const value = valuesCopy[i];
                 newJSON[field] = value;
             }
 
             // Create a query to select the old data for the given ID
-            const placeholders = columnNamesCopy.map((col) => `\`${col}\``).join(', '); // Enclose column names in backticks
-            const selectOldDataQuery = `SELECT ${placeholders} FROM patientreports WHERE ID = ?`;
+            const placeholders = columnNamesCopy.map((col) => `${col}`).join(', '); // Enclose column names in backticks
+            const selectOldDataQuery = `SELECT ${placeholders} FROM patientreports WHERE ID = ? AND isApproved = 2`;
 
             console.log(selectOldDataQuery);
 
