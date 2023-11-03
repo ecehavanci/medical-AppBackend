@@ -222,7 +222,7 @@ exports.updatePatientForm = async (req, res, next) => {
 exports.getCountPatientFormsForDashboardAccordingToApproval = (req, res, next) => {
     const studentID = req.params.studentID;
     const approvalCode = req.params.approvalCode;
-    let courseID = parseInt(req.query.courseID) || 1; // Default courseID
+    let courseID = parseInt(req.query.courseID) || null; // Default courseID
 
     if (!req.query.courseID) {
         // Use getCurrentCourse to get the courseID
@@ -783,19 +783,21 @@ exports.getRotationCountPatientFormsForDashboard = (req, res, next) => { //gets 
     );
 };
 
+
 // Create a function to get the current course of the student
 const getCurrentCourse = (studentID) => {
     return new Promise((resolve, reject) => {
         conn.query(
-            "SELECT c.ID " +
-            "FROM student s " +
-            "LEFT JOIN enrollment e ON e.std_id = s.ID " +
-            "LEFT JOIN rotation_courses rc ON rc.rotation_id = e.rotation_id " +
-            "LEFT JOIN intervals i ON i.ID = rc.interval_id " +
-            "LEFT JOIN courses c ON c.ID = rc.course_id " +
-            "WHERE current_date BETWEEN i.end AND i.start " +
-            "AND s.ID = ?",
-            [studentID],
+            `SELECT c.ID
+            FROM student s
+                     LEFT JOIN enrollment e ON e.std_id = s.ID
+                     LEFT JOIN rotation_courses rc ON rc.rotation_id = e.rotation_id
+                     LEFT JOIN intervals i ON i.ID = rc.interval_id
+                     LEFT JOIN courses c ON c.ID = rc.course_id
+            WHERE ? BETWEEN i.start AND i.end
+              AND s.ID = ?;
+            `,
+            [currentDate, studentID],
             (err, data) => {
                 if (err) {
                     reject(err);
@@ -810,6 +812,36 @@ const getCurrentCourse = (studentID) => {
     });
 };
 
+// Create a function to get the current course of the student
+const getCurrentCourseDoctor = (physicianID) => {
+    return new Promise((resolve, reject) => {
+        conn.query(
+            `SELECT DISTINCT rc.rotation_id, rc.course_id, c.code
+            FROM enrollment_physician e
+                     LEFT JOIN rotation_courses rc ON e.rotationNo = rc.rotation_id and rc.course_id = e.courseID
+                     left join rotations ro on rc.rotation_id = ro.rotation_id
+                     LEFT JOIN courses c ON rc.course_id = c.ID
+                     left join intervals i on i.ID = rc.interval_id
+            WHERE e.physicianID = ?
+              and i.year = ?
+              and i.season = ?
+              and ? between i.start and i.end
+            order by rc.course_order;
+            `,
+            [physicianID, currentYear, currentSeason, currentDate],
+            (err, data) => {
+                if (err) {
+                    reject(err);
+                } else if (data.length > 0) {
+                    resolve(data[0].course_id);
+                } else {
+                    // Handle the case where the student is not enrolled in any course
+                    reject(new Error("Student is not currently enrolled in any course."));
+                }
+            }
+        );
+    });
+};
 
 exports.getPatientFormWithID = (req, res, next) => { //returns specific patientreports with ID
     if (!req.params.ID) {
