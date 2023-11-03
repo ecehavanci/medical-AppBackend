@@ -195,17 +195,18 @@ exports.updatePatientForm = async (req, res, next) => {
             const insertedIds = [];
             if (req.body.isSent === 1) {
                 for (let i = 1; i <= 4; i++) {
-                    console.log(req.body[`tier${i}ID`], req.body[`tier${i}`].toUpperCase().trim());
+                    const tierID = req.body[`tier${i}ID`];
+                    const tierValue = req.body[`tier${i}`];
+                    console.log(tierID, tierValue);
 
                     const insertedTier = await checkAndInsertTierData(
-                        req.body[`tier${i}ID`],
-                        req.body[`tier${i}`].toUpperCase().trim(),
+                        tierID,
+                        tierValue,
                         req.params.ID,
                         res,
                         next
                     );
                     insertedIds.push(insertedTier);
-                    console.log(insertedTier);
                 }
 
                 await logController.updatePatientFormLog(updateFields, values);
