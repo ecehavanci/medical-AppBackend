@@ -152,8 +152,17 @@ exports.updatePatientForm = async (req, res, next) => {
     ];
 
     const values = updateFields
-        .map(field => req.body[field])
-        .filter(value => value !== undefined);
+    .map(field => {
+        if (field === "studentID") {
+            return BigInt(req.body[field]);
+        } else if (field === "isSent") {
+            return req.body[field] ? 1 : 0;
+        } else {
+            return req.body[field];
+        }
+    })
+    .filter(value => value !== undefined);
+
 
     console.log("values: " + values.reverse().toString());
     console.log(req.body);
