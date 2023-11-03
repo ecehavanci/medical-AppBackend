@@ -29,8 +29,11 @@ exports.updatePatientFormLog = (updateFields, values) => {
             }
 
             // Create a query to select the old data for the given ID
-            const selectOldDataQuery = `SELECT ${updateFields.join(', ')} FROM patientreports WHERE ID = ?`;
-            console.log(selectOldDataQuery,"aaaaaaaaaaaaaaaaaaaaaaa");
+            // Create a query to select the old data for the given ID
+            const placeholders = updateFields.map(() => '?').join(', ');
+            const selectOldDataQuery = `SELECT ${placeholders} FROM patientreports WHERE ID = ?`;
+
+            console.log(selectOldDataQuery, "aaaaaaaaaaaaaaaaaaaaaaa");
 
             conn.query(selectOldDataQuery, [ID], (err, oldDataRows) => {
                 if (err) {
