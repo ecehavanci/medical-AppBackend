@@ -585,7 +585,9 @@ exports.searchPatientFormsByMultipleAcceptance = (req, res, next) => {
         ORDER BY saveEpoch DESC
         LIMIT ? OFFSET ?;`;
 
-        const values = [studentID, isSent, finalCourseID, isApproved1, isApproved2, `%${searchInput.toUpperCase()}%`, pageSize, offset];
+        const values = [studentID, isSent, finalCourseID,
+            isApproved1, isApproved2, currentYear, currentSeason,
+            `%${searchInput.toUpperCase()}%`, pageSize, offset];
 
         conn.query(
             query,
