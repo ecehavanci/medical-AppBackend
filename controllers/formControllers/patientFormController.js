@@ -158,14 +158,15 @@ exports.updatePatientForm = async (req, res, next) => {
 
     for (const field of updateFields) {
         if (req.body[field] !== undefined) {
-          if (field === "ID") {
-            values.push(parseInt(req.body[field])); // Parse ID as an integer
-          } else {
-            values.push(req.body[field]);
-          }
-          setClauses.push(`${field} = ?`);
+            // Make sure the ID field is treated as an integer, not bigint
+            if (field === "ID") {
+                values.push(parseInt(req.body[field])); // Parse ID as an integer
+            } else {
+                values.push(req.body[field]);
+            }
+            setClauses.push(`${field} = ?`);
         }
-      }
+    }
 
     if (setClauses.length === 0) {
         return res.status(200).json({
@@ -214,6 +215,7 @@ exports.updatePatientForm = async (req, res, next) => {
         return next(new AppError(err, 500));
     }
 };
+
 
 
 
