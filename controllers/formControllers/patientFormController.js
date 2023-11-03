@@ -185,19 +185,21 @@ exports.updatePatientForm = async (req, res, next) => {
 
     try {
         const [data] = await conn.query(query, values);
+        console.log(data);
 
         if (data && data.affectedRows !== undefined) {
             const insertedIds = [];
             if (req.body.isSent === 1) {
                 for (let i = 1; i <= 4; i++) {
-                    const insertedTier = await checkAndInsertTierData(
-                        req.body[`tier${i}ID`],
-                        req.body[`tier${i}`].toLowerCase().trim(),
-                        req.params.ID,
-                        res,
-                        next
-                    );
-                    insertedIds.push(insertedTier);
+                    // const insertedTier = await checkAndInsertTierData(
+                    //     req.body[`tier${i}ID`],
+                    //     req.body[`tier${i}`].toLowerCase().trim(),
+                    //     req.params.ID,
+                    //     res,
+                    //     next
+                    // );
+                    // insertedIds.push(insertedTier);
+                    // console.log(insertedTier);
                 }
             }
 
