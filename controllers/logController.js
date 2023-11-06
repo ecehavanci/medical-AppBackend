@@ -5,17 +5,16 @@ const currentYear = config.app.year;
 const currentSeason = config.app.season;
 const currentDate = config.app.date;
 
-exports.updatePatientFormLog = (updateFields, values) => { //todo fix the query and handle the case when patient_logger increments the change_no
+exports.updatePatientFormLog = (selectClauses, values) => { //todo fix the query and handle the case when patient_logger increments the change_no
     return new Promise((resolve, reject) => {
         const valuesCopy = values.slice(); // Create a copy of the values array
-        const columnNamesCopy = updateFields.slice(); // Create a copy of the column names array
+        const columnNamesCopy = selectClauses.slice(); // Create a copy of the column names array
 
         // Get the ID from the last index of the values array
         const ID = valuesCopy.pop(); // Remove and store the last value (ID)
 
         if (columnNamesCopy.length !== valuesCopy.length) {
             // Check that both arrays have the same length
-            console.error("Arrays must have the same length");
             reject("Arrays must have the same length");
         } else {
             const newJSON = {};
@@ -28,13 +27,8 @@ exports.updatePatientFormLog = (updateFields, values) => { //todo fix the query 
 
             // Create a query to select the old data for the given ID
             const placeholders = columnNamesCopy.join(', ');
-            console.log(columnNamesCopy);
-
-            console.log(selectOldDataQuery);
 
             const selectOldDataQuery = `SELECT ${placeholders} FROM patientreports WHERE ID = ? AND isApproved = 2`;
-
-            console.log(selectOldDataQuery);
 
             const params = [ID]; 
 
@@ -78,6 +72,6 @@ exports.updatePatientFormLog = (updateFields, values) => { //todo fix the query 
 }
 
 
-exports.updateProcedureFormLog = (updateFields, values, req, res, next) => {
+exports.updateProcedureFormLog = (selectClauses, values, req, res, next) => {
 
 }

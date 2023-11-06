@@ -123,6 +123,7 @@ exports.updatePatientForm = async (req, res, next) => {
 
     let query = "UPDATE patientreports SET ";
     const setClauses = [];
+    const selectClauses = [];
     const values = [];
 
     const updateFields = [
@@ -160,6 +161,7 @@ exports.updatePatientForm = async (req, res, next) => {
         if (req.body[field] !== undefined) {
             values.push(req.body[field]);
             setClauses.push(`${field} = ?`);
+            selectClauses.push(field);
         }
     }
 
@@ -209,7 +211,7 @@ exports.updatePatientForm = async (req, res, next) => {
                     insertedIds.push(insertedTier);
                 }
 
-                await logController.updatePatientFormLog(setClauses, values);
+                await logController.updatePatientFormLog(selectClauses, values);
             }
 
             res.status(201).json({
