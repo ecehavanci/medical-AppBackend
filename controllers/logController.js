@@ -127,7 +127,7 @@ exports.updateProcedureFormLog = (selectClauses, values, req, res, next) => {
                         const insertLogDataQuery = "INSERT INTO procedure_logger (report_id, old_data, new_data) VALUES (?, ?, ?)";
                         console.log(insertLogDataQuery);
 
-                        conn.query(ID, JSON.stringify(logData.old_data), JSON.stringify(logData.new_data),
+                        conn.query(insertLogDataQuery,
                             [ID, JSON.stringify(logData.old_data), JSON.stringify(logData.new_data)], (err) => {
                                 if (err) {
                                     console.error("Error inserting log data:", err);
