@@ -30,7 +30,7 @@ exports.updatePatientFormLog = (selectClauses, values) => { //todo fix the query
 
             const selectOldDataQuery = `SELECT ${placeholders} FROM patientreports WHERE ID = ? AND isApproved = 2`;
 
-            const params = [ID]; 
+            const params = [ID];
 
             conn.query(selectOldDataQuery,
                 params,
@@ -54,17 +54,18 @@ exports.updatePatientFormLog = (selectClauses, values) => { //todo fix the query
                         };
 
                         // Now, you can insert the logData into your logger table
-                        const insertLogDataQuery = "INSERT INTO patient_logger (old_data, new_data) VALUES (?, ?)";
+                        const insertLogDataQuery = "INSERT INTO patient_logger (report_id, old_data, new_data) VALUES (?, ?)";
 
-                        conn.query(insertLogDataQuery, [JSON.stringify(logData.old_data), JSON.stringify(logData.new_data)], (err) => {
-                            if (err) {
-                                console.error("Error inserting log data:", err);
-                                reject(err);
-                            }
+                        conn.query(insertLogDataQuery,
+                            [ID, JSON.stringify(logData.old_data), JSON.stringify(logData.new_data)], (err) => {
+                                if (err) {
+                                    console.error("Error inserting log data:", err);
+                                    reject(err);
+                                }
 
-                            console.log("Log data inserted:", logData);
-                            resolve();
-                        });
+                                console.log("Log data inserted:", logData);
+                                resolve();
+                            });
                     }
                 });
         }
