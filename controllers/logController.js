@@ -27,7 +27,7 @@ exports.updatePatientFormLog = (updateFields, values) => { //todo fix the query 
             }
 
             // Create a query to select the old data for the given ID
-            const placeholders = Array(columnNamesCopy.length).fill('?').join(', ');
+            const placeholders = columnNamesCopy.map((columnName, index) => `${columnName} = ?`).join(', ');
             const selectOldDataQuery = `SELECT ${placeholders} FROM patientreports WHERE ID = ? AND isApproved = 2`;
 
             console.log(selectOldDataQuery);
