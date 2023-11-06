@@ -73,7 +73,7 @@ exports.updatePatientFormLog = (selectClauses, values) => { //todo fix the query
 }
 
 
-exports.updateProcedureFormLog = (selectClauses, values, req, res, next) => {
+exports.updateProcedureFormLog = (selectClauses, values) => {
     return new Promise((resolve, reject) => {
         const valuesCopy = values.slice(); // Create a copy of the values array
         const columnNamesCopy = selectClauses.slice(); // Create a copy of the column names array
