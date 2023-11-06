@@ -54,7 +54,7 @@ exports.updatePatientFormLog = (selectClauses, values) => { //todo fix the query
                         };
 
                         // Now, you can insert the logData into your logger table
-                        const insertLogDataQuery = "INSERT INTO patient_logger (report_id, old_data, new_data) VALUES (?, ?)";
+                        const insertLogDataQuery = "INSERT INTO patient_logger (report_id, old_data, new_data) VALUES (?, ?, ?)";
 
                         conn.query(insertLogDataQuery,
                             [ID, JSON.stringify(logData.old_data), JSON.stringify(logData.new_data)], (err) => {
