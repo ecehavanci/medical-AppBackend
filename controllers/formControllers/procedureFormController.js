@@ -114,41 +114,51 @@ exports.updateProcedureForm = (req, res, next) => {
     if (setClauses.length === 0) {
         return res.status(200).json({
             status: "success",
-            message: "No student data updated",
+            message: "No procedure form data updated",
         });
     }
 
     query += setClauses.join(", ");
     query += " WHERE ID = ?;";
-    values.push(req.params.ID);
+    values.push(parseInt(req.params.ID));
 
-    conn.query(query, values, async (err, data) => {
-        if (err) {
-            console.error("Update Error:", err);
-            return next(new AppError(err.message, 500));
-        }
+    try {
+        conn.query(query, values, async (err, data) => {
+            if (err) {
+                console.error("Update Error:", err);
+                return next(new AppError(err.message, 500));
+            }
 
-        // Handle the case where no rows were updated
-        if (data.affectedRows === 0) {
-            return res.status(200).json({
+            // Handle the case where no rows were updated
+            if (data.affectedRows === 0) {
+                return res.status(200).json({
+                    status: "success",
+                    message: "No student data updated",
+                });
+            }
+
+            console.log(req.body.isSent);
+
+            let inserted = null;
+            if (req.body.isSent === 1) {
+
+                inserted = await checkAndUpdateProcedure(req.body.procedureID, req.body.procedureText, req.params.ID, res, next);
+
+                await logController.updateProcedureFormLog(selectClauses, values);
+                console.log("2222");
+
+            }
+
+            res.status(201).json({
                 status: "success",
-                message: "No student data updated",
+                message: "Student data successfully altered222",
+                insertedId: inserted || "No new procedure data inserted",
             });
-        }
-
-        // Check and update the procedure (if needed)
-        let inserted = null;
-        if (req.body.isSent === 1) {
-            inserted = await checkAndUpdateProcedure(req.body.procedureID, req.body.procedureText.toLowerCase().trim(), req.params.ID, res, next);
-            await logController.updateProcedureFormLog(selectClauses, values);
-        }
-
-        res.status(201).json({
-            status: "success",
-            message: "Student data successfully altered",
-            insertedId: inserted || "No new procedure data inserted",
         });
-    });
+
+    } catch (err) {
+        return next(new AppError(err, 500));
+    }
 };
 
 
@@ -161,9 +171,12 @@ const checkAndUpdateProcedure = (
 ) => {
     return new Promise((resolve, reject) => {
         // Check if procedureID is -1, the "other" choice
-        if (procedureID === -1) {
+        if (procedureID === -1 || procedureText!= undefined) {
             // find the most similar procedure description to a given input string by calculating the Levenshtein 
             //distance-based similarity percentage and filtering for procedures. The closest match is returned as a result.
+            console.log(procedureText);
+            procedureText = procedureText.toLowerCase().trim();
+
             const similarProcedureQuery = `
                 SELECT
                     description,

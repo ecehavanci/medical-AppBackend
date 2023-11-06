@@ -74,6 +74,8 @@ exports.updatePatientFormLog = (selectClauses, values) => { //todo fix the query
 
 
 exports.updateProcedureFormLog = (selectClauses, values) => {
+    console.log(selectClauses);
+
     return new Promise((resolve, reject) => {
         const valuesCopy = values.slice(); // Create a copy of the values array
         const columnNamesCopy = selectClauses.slice(); // Create a copy of the column names array
@@ -95,13 +97,12 @@ exports.updateProcedureFormLog = (selectClauses, values) => {
 
             // Create a query to select the old data for the given ID
             const placeholders = columnNamesCopy.join(', ');
+            console.log(placeholders);
 
             const selectOldDataQuery = `SELECT ${placeholders} FROM procedurereports WHERE ID = ? AND isApproved = 2`;
-
+            console.log(selectOldDataQuery);
             const params = [ID];
 
-            console.log(params);
-            console.log(selectOldDataQuery);
             conn.query(selectOldDataQuery,
                 params,
                 (err, oldDataRows) => {
