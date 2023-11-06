@@ -100,6 +100,8 @@ exports.updateProcedureFormLog = (selectClauses, values, req, res, next) => {
 
             const params = [ID];
 
+            console.log(params);
+            console.log(selectOldDataQuery);
             conn.query(selectOldDataQuery,
                 params,
                 (err, oldDataRows) => {
@@ -123,8 +125,9 @@ exports.updateProcedureFormLog = (selectClauses, values, req, res, next) => {
 
                         // Now, you can insert the logData into your logger table
                         const insertLogDataQuery = "INSERT INTO procedure_logger (report_id, old_data, new_data) VALUES (?, ?, ?)";
+                        console.log(insertLogDataQuery);
 
-                        conn.query(insertLogDataQuery,
+                        conn.query(ID, JSON.stringify(logData.old_data), JSON.stringify(logData.new_data),
                             [ID, JSON.stringify(logData.old_data), JSON.stringify(logData.new_data)], (err) => {
                                 if (err) {
                                     console.error("Error inserting log data:", err);
