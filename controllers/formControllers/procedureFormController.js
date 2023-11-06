@@ -86,7 +86,7 @@ exports.insertProcedureForm = (req, res, next) => {
     );
 };
 
-exports.updateProcedureForm = (req, res, next) => {
+exports.updateProcedureForm = async (req, res, next) => {
     if (!req.body) {
         return next(new AppError("No form data found", 400));
     }
@@ -123,6 +123,11 @@ exports.updateProcedureForm = (req, res, next) => {
     values.push(parseInt(req.params.ID));
 
     try {
+        if (req.body.isSent === 1) {
+            await logController.updateProcedureFormLog(selectClauses, values);
+
+        }
+
         conn.query(query, values, async (err, data) => {
             if (err) {
                 console.error("Update Error:", err);
@@ -141,8 +146,6 @@ exports.updateProcedureForm = (req, res, next) => {
             if (req.body.isSent === 1) {
 
                 inserted = await checkAndUpdateProcedure(req.body.procedureID, req.body.procedureText, req.params.ID, res, next);
-                await logController.updateProcedureFormLog(selectClauses, values);
-
             }
 
             res.status(201).json({
@@ -167,7 +170,7 @@ const checkAndUpdateProcedure = (
 ) => {
     return new Promise((resolve, reject) => {
         // Check if procedureID is -1, the "other" choice
-        if (procedureID === -1 || procedureText != undefined) {
+        if (procedureID === -1 || procedureText!= undefined) {
             // find the most similar procedure description to a given input string by calculating the Levenshtein 
             //distance-based similarity percentage and filtering for procedures. The closest match is returned as a result.
             console.log(procedureText);

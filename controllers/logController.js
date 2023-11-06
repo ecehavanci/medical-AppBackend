@@ -204,7 +204,7 @@ exports.readPatientDifferences = (req, res, next) => {
     else {
         const formID = req.params.formID;
         const query = `
-        select new_data,change_no
+        select old_data,change_no
         from patient_logger
         where report_id = ?
         order by change_no desc limit 1;`;
@@ -232,7 +232,7 @@ exports.readProcedureDifferences = (req, res, next) => {
     else {
         const formID = req.params.formID;
         const query = `
-        select new_data,change_no
+        select old_data,change_no
         from procedure_logger
         where report_id = ?
         order by change_no desc limit 1;`;

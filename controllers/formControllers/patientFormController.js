@@ -180,6 +180,11 @@ exports.updatePatientForm = async (req, res, next) => {
     console.log(...values);
 
     try {
+        if (req.body.isSent === 1) {
+            await logController.updatePatientFormLog(selectClauses, values);
+
+        }
+
         conn.query(query, values, async (err, data) => {
             if (err) {
                 console.error("Update Error:", err);
@@ -210,8 +215,6 @@ exports.updatePatientForm = async (req, res, next) => {
                     );
                     insertedIds.push(insertedTier);
                 }
-
-                await logController.updatePatientFormLog(selectClauses, values);
             }
 
             res.status(201).json({
