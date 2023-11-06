@@ -94,8 +94,8 @@ exports.updateProcedureForm = (req, res, next) => {
     let query = "UPDATE procedurereports SET ";
 
     const setClauses = [];
-
     const values = [];
+    const selectClauses = [];
 
     const updateFields = [
         "studentID", "specialtyID", "courseID", "attendingPhysicianID", "procedureID",
@@ -107,6 +107,7 @@ exports.updateProcedureForm = (req, res, next) => {
         if (req.body[field] !== undefined) {
             setClauses.push(`${field} = ?`);
             values.push(req.body[field]);
+            selectClauses.push(field);
         }
     }
 
@@ -139,6 +140,7 @@ exports.updateProcedureForm = (req, res, next) => {
         let inserted = null;
         if (req.body.isSent === 1) {
             inserted = await checkAndUpdateProcedure(req.body.procedureID, req.body.procedureText.toLowerCase().trim(), req.params.ID, res, next);
+            await logController.updateProcedureFormLog(selectClauses, values);
         }
 
         res.status(201).json({
