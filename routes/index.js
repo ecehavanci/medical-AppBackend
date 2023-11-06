@@ -10,6 +10,7 @@ const course = require("./course");
 const rotations = require("./rotations");
 const web = require("./web");
 const procedureRoutes = require("./procedure");
+const logRouter = require("./log");
 const router = express();
 
 
@@ -24,6 +25,7 @@ router.use("/courses", course);
 router.use("/rotations", rotations);
 router.use("/web", web);
 router.use("/procedure", procedureRoutes);
+router.use("/logs", logRouter);
 // router.route("student").get(controllers.getAllStudents)
 // // .post(controllers.insertStd);
 

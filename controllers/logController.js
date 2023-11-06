@@ -143,3 +143,112 @@ exports.updateProcedureFormLog = (selectClauses, values) => {
         }
     });
 }
+
+exports.countPatientLogs = (req, res, next) => {
+    if (!req.params.formID) {
+        return next(new AppError("No form ID specified", 404));
+    }
+    else {
+        const formID = req.params.formID;
+        const query = `select change_no
+        from patient_logger
+        where report_id = ?
+        order by change_no desc limit 1;`;
+
+        conn.query(
+            query,
+            [formID],
+            function (err, data, fields) {
+                if (err) return next(new AppError(err, 500));
+                res.status(200).json({
+                    status: "success",
+                    length: data?.length,
+                    data: data,
+                });
+            }
+        );
+    }
+}
+
+exports.countProcedureLogs = (req, res, next) => {
+    if (!req.params.formID) {
+        return next(new AppError("No form ID specified", 404));
+    }
+    else {
+        const formID = req.params.formID;
+        const query = `select change_no
+        from procedure_logger
+        where report_id = ?
+        order by change_no desc limit 1;`;
+
+        conn.query(
+            query,
+            [formID],
+            function (err, data, fields) {
+                if (err) return next(new AppError(err, 500));
+                res.status(200).json({
+                    status: "success",
+                    length: data?.length,
+                    data: data,
+                });
+            }
+        );
+    }
+}
+
+//the latest difference of the report
+exports.readPatientDifferences = (req, res, next) => {
+    if (!req.params.formID) {
+        return next(new AppError("No form ID specified", 404));
+    }
+    else {
+        const formID = req.params.formID;
+        const query = `
+        select new_data,change_no
+        from patient_logger
+        where report_id = ?
+        order by change_no desc limit 1;`;
+
+        conn.query(
+            query,
+            [formID],
+            function (err, data, fields) {
+                if (err) return next(new AppError(err, 500));
+                res.status(200).json({
+                    status: "success",
+                    length: data?.length,
+                    data: data,
+                });
+            }
+        );
+    }
+}
+
+//the latest difference of the report
+exports.readProcedureDifferences = (req, res, next) => {
+    if (!req.params.formID) {
+        return next(new AppError("No form ID specified", 404));
+    }
+    else {
+        const formID = req.params.formID;
+        const query = `
+        select new_data,change_no
+        from procedure_logger
+        where report_id = ?
+        order by change_no desc limit 1;`;
+
+        conn.query(
+            query,
+            [formID],
+            function (err, data, fields) {
+                if (err) return next(new AppError(err, 500));
+                res.status(200).json({
+                    status: "success",
+                    length: data?.length,
+                    data: data,
+                });
+            }
+        );
+    }
+}
+
