@@ -4,6 +4,7 @@ const config = require("../config.js");
 const currentYear = config.app.year;
 const currentSeason = config.app.season;
 const currentDate = config.app.date;
+const deepDiff = require('deep-diff');
 
 exports.updatePatientFormLog = (selectClauses, values) => { //todo fix the query and handle the case when patient_logger increments the change_no
     return new Promise((resolve, reject) => {
@@ -200,27 +201,78 @@ exports.countProcedureLogs = (req, res, next) => {
 exports.readPatientDifferences = (req, res, next) => {
     if (!req.params.formID) {
         return next(new AppError("No form ID specified", 404));
-    }
-    else {
+    } else {
+
         const formID = req.params.formID;
         const query = `
-        select old_data,change_no
-        from patient_logger
-        where report_id = ?
-        order by change_no desc limit 1;`;
+        SELECT old_data, new_data, change_no
+        FROM patient_logger
+        WHERE report_id = ?
+        ORDER BY change_no ASC;`;
 
-        conn.query(
-            query,
-            [formID],
-            function (err, data, fields) {
-                if (err) return next(new AppError(err, 500));
-                res.status(200).json({
-                    status: "success",
-                    length: data?.length,
-                    data: data,
-                });
-            }
-        );
+        try {
+            conn.query(
+                query,
+                [formID],
+                function (err, data, fields) {
+                    if (err) return next(new AppError(err, 500));
+
+                    // Create an array to store all differences
+                    const allDifferences = {};
+
+                    data.forEach(row => {
+                        const oldData = JSON.parse(row.old_data);
+                        const newData = JSON.parse(row.new_data);
+
+                        // Compute the differences between oldData and newData
+                        const differences = deepDiff(oldData, newData);
+
+                        let diffText = '';
+
+                        if (differences) {
+                            differences.forEach(diff => {
+                                // Initialize an object for each diff.path if it doesn't exist
+                                if (!allDifferences[diff.path]) {
+                                    allDifferences[diff.path] = {
+                                        data: [], // An array to store the descriptions
+                                        totalChange: 0,
+                                    };
+                                }
+
+                                // You can customize the text generation based on the type of difference (added, deleted, or updated)
+                                let diffText = '';
+                                switch (diff.kind) {
+                                    case 'E':
+                                        diffText = `changed from '${diff.lhs}' to '${diff.rhs}'.`;
+                                        break;
+                                    case 'N':
+                                        diffText = `was added with value '${diff.rhs}'.`;
+                                        break;
+                                    case 'D':
+                                        diffText = `was removed with value '${diff.lhs}'.`;
+                                        break;
+                                    // You can handle other cases as needed
+                                }
+
+                                allDifferences[diff.path].data.push(diffText);
+                                allDifferences[diff.path].totalChange = row.change_no;
+                            });
+                        }
+                    });
+
+                    res.status(200).json({
+                        status: "success",
+                        length: data.length,
+                        data: {
+                            differences: allDifferences,
+                        },
+                    });
+                }
+            );
+        } catch (err) {
+            return next(new AppError(err, 500));
+        }
+
     }
 }
 
@@ -228,27 +280,79 @@ exports.readPatientDifferences = (req, res, next) => {
 exports.readProcedureDifferences = (req, res, next) => {
     if (!req.params.formID) {
         return next(new AppError("No form ID specified", 404));
-    }
-    else {
+    } else {
+
         const formID = req.params.formID;
         const query = `
-        select old_data,change_no
-        from procedure_logger
-        where report_id = ?
-        order by change_no desc limit 1;`;
+        SELECT old_data, new_data, change_no
+        FROM procedure_logger
+        WHERE report_id = ?
+        ORDER BY change_no ASC;`;
 
-        conn.query(
-            query,
-            [formID],
-            function (err, data, fields) {
-                if (err) return next(new AppError(err, 500));
-                res.status(200).json({
-                    status: "success",
-                    length: data?.length,
-                    data: data,
-                });
-            }
-        );
+        try {
+            conn.query(
+                query,
+                [formID],
+                function (err, data, fields) {
+                    if (err) return next(new AppError(err, 500));
+
+                    // Create an array to store all differences
+                    const allDifferences = {};
+
+                    data.forEach(row => {
+                        const oldData = JSON.parse(row.old_data);
+                        const newData = JSON.parse(row.new_data);
+
+                        // Compute the differences between oldData and newData
+                        const differences = deepDiff(oldData, newData);
+
+                        let diffText = '';
+
+                        if (differences) {
+                            differences.forEach(diff => {
+                                // Initialize an object for each diff.path if it doesn't exist
+                                if (!allDifferences[diff.path]) {
+                                    allDifferences[diff.path] = {
+                                        data: [], // An array to store the descriptions
+                                        totalChange: 0,
+                                    };
+                                }
+
+                                // You can customize the text generation based on the type of difference (added, deleted, or updated)
+                                let diffText = '';
+                                switch (diff.kind) {
+                                    case 'E':
+                                        diffText = `changed from '${diff.lhs}' to '${diff.rhs}'.`;
+                                        break;
+                                    case 'N':
+                                        diffText = `was added with value '${diff.rhs}'.`;
+                                        break;
+                                    case 'D':
+                                        diffText = `was removed with value '${diff.lhs}'.`;
+                                        break;
+                                    // You can handle other cases as needed
+                                }
+
+                                allDifferences[diff.path].data.push(diffText);
+                                allDifferences[diff.path].totalChange = row.change_no;
+                            });
+                        }
+                    });
+
+                    res.status(200).json({
+                        status: "success",
+                        length: data.length,
+                        data: {
+                            differences: allDifferences,
+                        },
+                    });
+                }
+            );
+        } catch (err) {
+            return next(new AppError(err, 500));
+        }
+
     }
-}
+};
+
 
