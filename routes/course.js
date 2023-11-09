@@ -16,7 +16,11 @@ router
     .get(courseController.getCourseName)
 router
     .route("/get/semesterInfo/:stdID")
-    .get(courseController.listStudentSemesterInfos)
+    .get(courseController.listStudentSemesterInfos);
+
+router
+    .route("/get/periodInfo/:stdID")
+    .get(courseController.getPeriodData)
 
 router
     .route("/get/all/psy/:physicianID")

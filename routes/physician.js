@@ -10,6 +10,10 @@ router
     .post(physicianController.insertPhysician);
 
 router
+    .route("/coursePhysicians/:stdID")
+    .get(physicianController.listCoursePhysicians)
+
+router
     .route("/:ID")
     .get(physicianController.filterPhysician)
     .put(physicianController.updateAttendingPhysician)

@@ -1,5 +1,6 @@
 const AppError = require("../utils/appError");
 const conn = require("../services/db");
+const courseHelper = require("../controllers/currentCourse");
 
 exports.getAllPhysicians = (req, res, next) => {//SELECT * FROM attendingphysicians where is_active = 1 order by ID ASC;
     conn.query(
@@ -144,4 +145,27 @@ exports.deletePhysicianByID = (req, res, next) => {
             });
         }
     );
+}
+
+exports.listCoursePhysicians = (req, res, next) => {
+    if (!req.params.stdID) {
+        return next(new AppError("No physician with this ID found", 404));
+    }
+
+    courseHelper.getCurrentCourse(req.params.stdID).then((finalCourseID) => {
+        conn.query(
+            "select ID,name,surname,speciality_ID as specialtyID from attendingphysicians where courseID = ? and is_active = 1;",
+            [finalCourseID],
+            function (err, data, fields) {
+                if (err) return next(new AppError(err, 500));
+                res.status(200).json({
+                    status: "success",
+                    length: data?.length,
+                    data: data,
+                });
+            }
+        );
+    }).catch((error) => {
+        return next(new AppError(error, 500));
+    });
 }

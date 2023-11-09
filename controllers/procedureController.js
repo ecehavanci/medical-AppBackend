@@ -1,5 +1,6 @@
 const AppError = require("../utils/appError");
 const conn = require("../services/db");
+const courseHelper = require("./currentCourse");
 
 exports.getApprovedProcedures = (req, res, next) => {
 
@@ -44,6 +45,33 @@ exports.getProcedureByRelatedReportID = (req, res, next) => {
             });
         }
     );
+}
+
+exports.currentCourseProcedures = (req, res, next) => {
+    const studentID = req.params.stdID;
+
+    if (!studentID) {
+        return next(new AppError("No student ID found", 404));
+    }
+
+    courseHelper.getCurrentCourse(studentID)
+        .then((finalCourseID) => {
+            conn.query(
+                "select * from procedures where courseID = ? && procedures.isApproved = 1;",
+                [finalCourseID],
+                function (err, data, fields) {
+                    if (err) return next(new AppError(err, 500));
+                    res.status(200).json({
+                        status: "success",
+                        length: data?.length,
+                        data: data,
+                    });
+                }
+            );
+        })
+        .catch((error) => {
+            return next(new AppError(error, 500));
+        });
 }
 
 exports.updateProcedure = (req, res, next) => {

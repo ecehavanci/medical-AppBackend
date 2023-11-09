@@ -2,6 +2,7 @@ const AppError = require("../../utils/appError");
 const conn = require("../../services/db");
 const procedureController = require("../procedureController");
 const logController = require("../logController");
+const courseHelper = require("../currentCourse");
 const config = require("../../config");
 const currentYear = config.app.year;
 const currentSeason = config.app.season;
@@ -12,78 +13,88 @@ exports.insertProcedureForm = (req, res, next) => {
     //we check if the client is sending an empty form "and return a 404 error message.
     if (!req.body)
         return next(new AppError("No form data found", 404));
+    else if (!req.body.studentID)
+        return next(new AppError("No student data provided", 404));
 
-    const values = [
-        req.body.studentID,
-        req.body.specialtyID,
-        req.body.attendingPhysicianID,
-        req.body.procedureID,
-        req.body.procedureText.toLowerCase().trim(),
-        req.body.isObserved,
-        req.body.isAssisted,
-        req.body.isPerformed,
-        req.body.isSimulated,
-        req.body.setting,
-        req.body.saveEpoch,
-        req.body.sentEpoch,
-        req.body.isSent,
-        req.body.isApproved,
-        req.body.comment,
-        req.body.localStorageID,
-        currentYear,
-        currentSeason
-    ];
+    const studentID = req.body.studentID;
+    courseHelper.getCurrentCourse(studentID)
+        .then((finalCourseID) => {
+            const values = [
+                req.body.studentID,
+                finalCourseID,
+                req.body.specialtyID,
+                req.body.attendingPhysicianID,
+                req.body.procedureID,
+                req.body.procedureText.toLowerCase().trim(),
+                req.body.isObserved,
+                req.body.isAssisted,
+                req.body.isPerformed,
+                req.body.isSimulated,
+                req.body.setting,
+                req.body.saveEpoch,
+                req.body.sentEpoch,
+                req.body.isSent,
+                req.body.isApproved,
+                req.body.comment,
+                req.body.localStorageID,
+                currentYear,
+                currentSeason
+            ];
 
-    console.log(req.body);
+            console.log(req.body);
 
-    conn.query(
-        "INSERT INTO procedurereports (studentID," +
-        "specialtyID," +
-        "attendingPhysicianID," +
-        "procedureID," +
-        "procedureText," +
-        "isObserved," +
-        "isAssisted," +
-        "isPerformed," +
-        "isSimulated," +
-        "setting," +
-        "saveEpoch," +
-        "sentEpoch," +
-        "isSent," +
-        "isApproved," +
-        "comment," +
-        "localStorageID, " +
-        "year, " +
-        "season) " +
-        "VALUES(?)",
-        [values],
-        async function (err, data, fields) {
-            if (err) {
-                return next(new AppError(err, 500));
-            }
+            conn.query(
+                "INSERT INTO procedurereports (studentID," +
+                "courseID," +
+                "specialtyID," +
+                "attendingPhysicianID," +
+                "procedureID," +
+                "procedureText," +
+                "isObserved," +
+                "isAssisted," +
+                "isPerformed," +
+                "isSimulated," +
+                "setting," +
+                "saveEpoch," +
+                "sentEpoch," +
+                "isSent," +
+                "isApproved," +
+                "comment," +
+                "localStorageID, " +
+                "year, " +
+                "season) " +
+                "VALUES(?)",
+                [values],
+                async function (err, data, fields) {
+                    if (err) {
+                        return next(new AppError(err, 500));
+                    }
 
-            if (data.affectedRows > 0) {
+                    if (data.affectedRows > 0) {
 
-                var inserted = null;
+                        var inserted = null;
 
-                if (req.body.isSent === 1) {
-                    inserted = await checkAndUpdateProcedure(req.body.procedureID, req.body.procedureText.toLowerCase().trim(), data.insertId, res, next);
+                        if (req.body.isSent === 1) {
+                            inserted = await checkAndUpdateProcedure(req.body.procedureID, req.body.procedureText.toLowerCase().trim(), data.insertId, res, next);
+                        }
+
+                        res.status(201).json({
+                            status: "success",
+                            message: "Student data successfully altered",
+                            insertedId: inserted, // This should now have the correct value
+                        });
+                    } else {
+                        // Handle the case where no rows were updated (e.g., student data didn't change)
+                        res.status(200).json({
+                            status: "success",
+                            message: "No student data updated",
+                        });
+                    }
                 }
+            );
 
-                res.status(201).json({
-                    status: "success",
-                    message: "Student data successfully altered",
-                    insertedId: inserted, // This should now have the correct value
-                });
-            } else {
-                // Handle the case where no rows were updated (e.g., student data didn't change)
-                res.status(200).json({
-                    status: "success",
-                    message: "No student data updated",
-                });
-            }
-        }
-    );
+        });
+
 };
 
 exports.updateProcedureForm = async (req, res, next) => {
@@ -170,7 +181,7 @@ const checkAndUpdateProcedure = (
 ) => {
     return new Promise((resolve, reject) => {
         // Check if procedureID is -1, the "other" choice
-        if (procedureID === -1 || procedureText!= undefined) {
+        if (procedureID === -1 || procedureText != undefined) {
             // find the most similar procedure description to a given input string by calculating the Levenshtein 
             //distance-based similarity percentage and filtering for procedures. The closest match is returned as a result.
             console.log(procedureText);
@@ -253,7 +264,7 @@ exports.searchProcedureReportsByAcceptance = (req, res, next) => {
 
     if (!req.query.courseID) {
         // Use getCurrentCourse to get the courseID
-        getCurrentCourse(studentID)
+        courseHelper.getCurrentCourse(studentID)
             .then((finalCourseID) => {
                 executeMainQuery(finalCourseID);
             })
@@ -301,33 +312,6 @@ exports.searchProcedureReportsByAcceptance = (req, res, next) => {
     }
 };
 
-// Create a function to get the current course of the student
-const getCurrentCourse = (studentID) => {
-    return new Promise((resolve, reject) => {
-        conn.query(
-            `SELECT c.ID
-            FROM student s
-                     LEFT JOIN enrollment e ON e.std_id = s.ID
-                     LEFT JOIN rotation_courses rc ON rc.rotation_id = e.rotation_id
-                     LEFT JOIN intervals i ON i.ID = rc.interval_id
-                     LEFT JOIN courses c ON c.ID = rc.course_id
-            WHERE ? BETWEEN i.start AND i.end
-              AND s.ID = ?;
-            `,
-            [currentDate, studentID],
-            (err, data) => {
-                if (err) {
-                    reject(err);
-                } else if (data.length > 0) {
-                    resolve(data[0].ID);
-                } else {
-                    // Handle the case where the student is not enrolled in any course
-                    reject(new Error("Student is not currently enrolled in any course."));
-                }
-            }
-        );
-    });
-};
 
 // Create a function to get the current course of the student
 const getCurrentCourseDoctor = (physicianID) => {
@@ -375,7 +359,7 @@ exports.searchProcedureReportsByMultipleAcceptance = (req, res, next) => {
 
     if (!req.query.courseID) {
         // Use getCurrentCourse to get the courseID
-        getCurrentCourse(studentID)
+        courseHelper.getCurrentCourse(studentID)
             .then((finalCourseID) => {
                 executeMainQuery(finalCourseID);
             })
@@ -436,7 +420,7 @@ exports.list5ProcedureFormsWithStudentID = (req, res, next) => {
     const stdID = req.params.studentID;
     const isSent = req.params.isSent;
 
-    getCurrentCourse(stdID).then((courseID) => {
+    courseHelper.getCurrentCourse(stdID).then((courseID) => {
         const query = `SELECT * FROM procedurereports 
         WHERE studentID = ? AND isSent = ? AND courseID = ? AND year = ? AND season = ? 
         ORDER BY saveEpoch DESC LIMIT 5`;
@@ -502,7 +486,7 @@ exports.searchSentProcedureFormsWithDocIDAccordingToApproveDate = (req, res, nex
 
     if (!req.query.courseID) {
         // Use getCurrentCourse to get the courseID
-        getCurrentCourseDoctor(physicianID)
+        courseHelper.getCurrentCourseDoctor(physicianID)
             .then((finalCourseID) => {
                 executeMainQuery(finalCourseID);
             })
@@ -574,7 +558,7 @@ exports.searchProcedureFormsForStudent = (req, res, next) => {
 
     if (!req.query.courseID) {
         // Use getCurrentCourse to get the courseID
-        getCurrentCourse(studentID)
+        courseHelper.getCurrentCourse(studentID)
             .then((finalCourseID) => {
                 executeMainQuery(finalCourseID);
             })
@@ -639,7 +623,7 @@ exports.searchProcedureFormsForStudentByAcceptance = (req, res, next) => {
 
     if (!req.query.courseID) {
         // Use getCurrentCourse to get the courseID
-        getCurrentCourse(studentID)
+        courseHelper.getCurrentCourse(studentID)
             .then((finalCourseID) => {
                 executeMainQuery(finalCourseID);
             })
@@ -754,7 +738,7 @@ exports.getCountProcedureFormsForDashboardAccordingToApproval = (req, res, next)
 
     if (!req.query.courseID) {
         // Use getCurrentCourse to get the courseID
-        getCurrentCourse(studentID)
+        courseHelper.getCurrentCourse(studentID)
             .then((finalCourseID) => {
                 executeMainQuery(finalCourseID);
             })

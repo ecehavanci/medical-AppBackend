@@ -3,117 +3,131 @@ const conn = require("../../services/db");
 const { query } = require("express");
 const config = require("../../config");
 const logController = require("../logController");
+const courseHelper = require("../currentCourse");
 const currentYear = config['app']["year"];
 const currentSeason = config.app.season;
 const currentDate = config.app.date;
 
 exports.insertPatientForm = (req, res, next) => {
     //we check if the client is sending an empty form "and return a 404 error message.
+
     if (!req.body)
         return next(new AppError("No form data found", 404));
+    else if (!req.body.studentID)
+        return next(new AppError("No student data provided", 404));
 
-    const values = [
-        req.body.studentID,
-        req.body.courseID,
-        req.body.specialtyID,
-        req.body.attendingPhysicianID,
-        req.body.patientHospitalID,
-        req.body.isObserved,
-        req.body.isAssisted,
-        req.body.isPerformed,
-        req.body.isSimulated,
-        req.body.isHistory,
-        req.body.isTreatment,
-        req.body.isPhysicalExamination,
-        req.body.isDifferentialDiagnosis,
-        req.body.setting,
-        req.body.illnessScript.toLowerCase().trim(),
-        req.body.tier1ID,
-        req.body.tier1.toLowerCase().trim(),
-        req.body.tier2ID,
-        req.body.tier2.toLowerCase().trim(),
-        req.body.tier3ID,
-        req.body.tier3.toLowerCase().trim(),
-        req.body.tier4ID,
-        req.body.tier4.toLowerCase().trim(),
-        req.body.saveEpoch,
-        req.body.sentEpoch,
-        req.body.isSent,
-        req.body.isApproved,
-        req.body.comment.trim(),
-        req.body.localStorageID,
-        currentYear,
-        currentSeason
-    ];
+    const studentID = req.body.studentID;
 
-    console.log(req.body);
+    courseHelper.getCurrentCourse(studentID)
+        .then((finalCourseID) => {
+            const values = [
+                req.body.studentID,
+                finalCourseID,
+                req.body.specialtyID,
+                req.body.attendingPhysicianID,
+                req.body.patientHospitalID,
+                req.body.isObserved,
+                req.body.isAssisted,
+                req.body.isPerformed,
+                req.body.isSimulated,
+                req.body.isHistory,
+                req.body.isTreatment,
+                req.body.isPhysicalExamination,
+                req.body.isDifferentialDiagnosis,
+                req.body.setting,
+                req.body.illnessScript.toLowerCase().trim(),
+                req.body.tier1ID,
+                req.body.tier1.toLowerCase().trim(),
+                req.body.tier2ID,
+                req.body.tier2.toLowerCase().trim(),
+                req.body.tier3ID,
+                req.body.tier3.toLowerCase().trim(),
+                req.body.tier4ID,
+                req.body.tier4.toLowerCase().trim(),
+                req.body.saveEpoch,
+                req.body.sentEpoch,
+                req.body.isSent,
+                req.body.isApproved,
+                req.body.comment.trim(),
+                req.body.localStorageID,
+                currentYear,
+                currentSeason
+            ];
 
-    conn.query(
-        "INSERT INTO patientreports (studentID," +
-        "courseID," +
-        "specialtyID," +
-        "attendingPhysicianID," +
-        "patientHospitalID," +
-        "isObserved," +
-        "isAssisted," +
-        "isPerformed," +
-        "isSimulated," +
-        "isHistory," +
-        "isTreatment," +
-        "isPhysicalExamination," +
-        "isDifferentialDiagnosis," +
-        "setting," +
-        "illnessScript," +
-        "tier1ID," +
-        "tier1," +
-        "tier2ID," +
-        "tier2," +
-        "tier3ID," +
-        "tier3," +
-        "tier4ID," +
-        "tier4," +
-        "saveEpoch," +
-        "sentEpoch," +
-        "isSent," +
-        "isApproved," +
-        "comment," +
-        "localStorageID, " +
-        "year, " +
-        "season) " +
-        "VALUES(?)",
-        [values],
-        async function (err, data, fields) {
-            if (err) {
-                return next(new AppError(err, 500));
-            }
+            console.log(req.body);
 
-            if (data.affectedRows > 0) {
-                var insertedTier1 = null;
-                var insertedTier2 = null;
-                var insertedTier3 = null;
-                var insertedTier4 = null;
+            conn.query(
+                "INSERT INTO patientreports (studentID," +
+                "courseID," +
+                "specialtyID," +
+                "attendingPhysicianID," +
+                "patientHospitalID," +
+                "isObserved," +
+                "isAssisted," +
+                "isPerformed," +
+                "isSimulated," +
+                "isHistory," +
+                "isTreatment," +
+                "isPhysicalExamination," +
+                "isDifferentialDiagnosis," +
+                "setting," +
+                "illnessScript," +
+                "tier1ID," +
+                "tier1," +
+                "tier2ID," +
+                "tier2," +
+                "tier3ID," +
+                "tier3," +
+                "tier4ID," +
+                "tier4," +
+                "saveEpoch," +
+                "sentEpoch," +
+                "isSent," +
+                "isApproved," +
+                "comment," +
+                "localStorageID, " +
+                "year, " +
+                "season) " +
+                "VALUES(?)",
+                [values],
+                async function (err, data, fields) {
+                    if (err) {
+                        return next(new AppError(err, 500));
+                    }
 
-                if (req.body.isSent === 1) {
-                    insertedTier1 = await checkAndInsertTierData(req.body.tier1ID, req.body.tier1.toLowerCase().trim(), data.insertId, res, next);
-                    insertedTier2 = await checkAndInsertTierData(req.body.tier2ID, req.body.tier2.toLowerCase().trim(), data.insertId, res, next);
-                    insertedTier3 = await checkAndInsertTierData(req.body.tier3ID, req.body.tier3.toLowerCase().trim(), data.insertId, res, next);
-                    insertedTier4 = await checkAndInsertTierData(req.body.tier4ID, req.body.tier4.toLowerCase().trim(), data.insertId, res, next);
+                    if (data.affectedRows > 0) {
+                        var insertedTier1 = null;
+                        var insertedTier2 = null;
+                        var insertedTier3 = null;
+                        var insertedTier4 = null;
+
+                        if (req.body.isSent === 1) {
+                            insertedTier1 = await checkAndInsertTierData(req.body.tier1ID, req.body.tier1.toLowerCase().trim(), data.insertId, res, next);
+                            insertedTier2 = await checkAndInsertTierData(req.body.tier2ID, req.body.tier2.toLowerCase().trim(), data.insertId, res, next);
+                            insertedTier3 = await checkAndInsertTierData(req.body.tier3ID, req.body.tier3.toLowerCase().trim(), data.insertId, res, next);
+                            insertedTier4 = await checkAndInsertTierData(req.body.tier4ID, req.body.tier4.toLowerCase().trim(), data.insertId, res, next);
+                        }
+
+                        res.status(201).json({
+                            status: "success",
+                            message: "Patient form data successfully inserted",
+                            insertedIds: [insertedTier1, insertedTier2, insertedTier3, insertedTier4],
+                        });
+                    } else {
+                        // Handle the case where no rows were updated (e.g., student data didn't change)
+                        res.status(200).json({
+                            status: "success",
+                            message: "No patient form data inserted",
+                        });
+                    }
                 }
+            );
 
-                res.status(201).json({
-                    status: "success",
-                    message: "Patient form data successfully inserted",
-                    insertedIds: [insertedTier1, insertedTier2, insertedTier3, insertedTier4],
-                });
-            } else {
-                // Handle the case where no rows were updated (e.g., student data didn't change)
-                res.status(200).json({
-                    status: "success",
-                    message: "No patient form data inserted",
-                });
-            }
-        }
-    );
+        })
+        .catch((error) => {
+            // Handle errors from getCurrentCourse
+            return next(new AppError(error, 500));
+        });
 };
 
 exports.updatePatientForm = async (req, res, next) => {
@@ -236,7 +250,7 @@ exports.getCountPatientFormsForDashboardAccordingToApproval = (req, res, next) =
 
     if (!req.query.courseID) {
         // Use getCurrentCourse to get the courseID
-        getCurrentCourse(studentID)
+        courseHelper.getCurrentCourse(studentID)
             .then((finalCourseID) => {
                 executeMainQuery(finalCourseID);
             })
@@ -284,7 +298,7 @@ exports.listSent5ReportForStudent = (req, res, next) => {
     const studentID = req.params.studentID;
     const isSent = req.params.isSent;
 
-    getCurrentCourse(studentID).then((courseID) => {
+    courseHelper.getCurrentCourse(studentID).then((courseID) => {
         const query = `SELECT *
         FROM patientreports
         WHERE studentID = ?
@@ -324,7 +338,7 @@ exports.searchSentPatientFormsWithDocIDAccordingToApproveDate = (req, res, next)
 
     if (!req.query.courseID) {
         // Use getCurrentCourse to get the courseID
-        getCurrentCourseDoctor(physicianID)
+        courseHelper.getCurrentCourseDoctor(physicianID)
             .then((finalCourseID) => {
                 executeMainQuery(finalCourseID);
             })
@@ -388,7 +402,7 @@ exports.listWaitingReports = (req, res, next) => {
 
     // Check if courseID is not specified, then find the current course for the physician
     if (!courseID) {
-        getCurrentCourseDoctor(attPhysicianID).then((finalCourseID) => {
+        courseHelper.getCurrentCourseDoctor(attPhysicianID).then((finalCourseID) => {
             executeMainQuery(finalCourseID);
         })
             .catch((error) => {
@@ -437,7 +451,7 @@ exports.searchPatientFormsForStudent = (req, res, next) => { //for student sent 
     // Check if courseID is not specified, then find the current course for the student
     if (!courseID) {
         // Use getCurrentCourse to get the courseID
-        getCurrentCourse(studentID)
+        courseHelper.getCurrentCourse(studentID)
             .then((finalCourseID) => {
                 executeMainQuery(finalCourseID);
             })
@@ -506,7 +520,7 @@ exports.searchPatientFormsByAcceptance = (req, res, next) => {
     // Check if courseID is not specified, then find the current course for the student
     if (!courseID) {
         // Use getCurrentCourse to get the courseID
-        getCurrentCourse(studentID)
+        courseHelper.getCurrentCourse(studentID)
             .then((finalCourseID) => {
                 executeMainQuery(finalCourseID);
             })
@@ -567,7 +581,7 @@ exports.searchPatientFormsByMultipleAcceptance = (req, res, next) => {
 
     if (!courseID) {
         // Use getCurrentCourse to get the courseID
-        getCurrentCourse(studentID)
+        courseHelper.getCurrentCourse(studentID)
             .then((finalCourseID) => {
                 executeMainQuery(finalCourseID);
             })
@@ -736,65 +750,6 @@ const checkAndInsertTierData = (
             console.log("Related Tier is not -1");
 
         }
-    });
-};
-
-// Create a function to get the current course of the student
-const getCurrentCourse = (studentID) => {
-    return new Promise((resolve, reject) => {
-        conn.query(
-            `SELECT c.ID
-            FROM student s
-                     LEFT JOIN enrollment e ON e.std_id = s.ID
-                     LEFT JOIN rotation_courses rc ON rc.rotation_id = e.rotation_id
-                     LEFT JOIN intervals i ON i.ID = rc.interval_id
-                     LEFT JOIN courses c ON c.ID = rc.course_id
-            WHERE ? BETWEEN i.start AND i.end
-              AND s.ID = ?;
-            `,
-            [currentDate, studentID],
-            (err, data) => {
-                if (err) {
-                    reject(err);
-                } else if (data.length > 0) {
-                    resolve(data[0].ID);
-                } else {
-                    // Handle the case where the student is not enrolled in any course
-                    reject(new Error("Student is not currently enrolled in any course."));
-                }
-            }
-        );
-    });
-};
-
-// Create a function to get the current course of the student
-const getCurrentCourseDoctor = (physicianID) => {
-    return new Promise((resolve, reject) => {
-        conn.query(
-            `SELECT DISTINCT rc.rotation_id, rc.course_id, c.code
-            FROM enrollment_physician e
-                     LEFT JOIN rotation_courses rc ON e.rotationNo = rc.rotation_id and rc.course_id = e.courseID
-                     left join rotations ro on rc.rotation_id = ro.rotation_id
-                     LEFT JOIN courses c ON rc.course_id = c.ID
-                     left join intervals i on i.ID = rc.interval_id
-            WHERE e.physicianID = ?
-              and i.year = ?
-              and i.season = ?
-              and ? between i.start and i.end
-            order by rc.course_order;
-            `,
-            [physicianID, currentYear, currentSeason, currentDate],
-            (err, data) => {
-                if (err) {
-                    reject(err);
-                } else if (data.length > 0) {
-                    resolve(data[0].course_id);
-                } else {
-                    // Handle the case where the student is not enrolled in any course
-                    reject(new Error("Student is not currently enrolled in any course."));
-                }
-            }
-        );
     });
 };
 

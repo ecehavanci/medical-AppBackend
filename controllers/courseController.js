@@ -101,7 +101,7 @@ exports.listStudentSemesterInfos = (req, res, next) => { //add, order by courses
 //doktorun bağlı olduğu rotasyonların şimdiki ve ve geçmişteki kurs bilgileri gösterir
 exports.listPhysicianSemesterCourses = (req, res, next) => { //add, order by courses end date
     const query = `
-    SELECT DISTINCT rc.rotation_id,rc.course_id,c.code
+    SELECT DISTINCT rc.rotation_id,rc.course_id,c.code,c.description
     FROM enrollment_physician e
             LEFT JOIN rotation_courses rc ON e.rotationNo = rc.rotation_id and rc.course_id = e.courseID
             left join rotations ro on rc.rotation_id = ro.rotation_id
@@ -146,7 +146,44 @@ exports.requiredReportCountsOfCourse = async (req, res, next) => {
         AND e.std_id = ?;
       `;
 
-      console.log(currentDate);
+        console.log(currentDate);
+        conn.query(
+            query,
+            [currentDate, currentYear, currentSeason, stdID],
+            function (err, data, fields) {
+                if (err) return next(new AppError(err, 500));
+                res.status(200).json({
+                    status: "success",
+                    length: data?.length,
+                    data: data,
+                });
+            }
+        );
+    } catch (err) {
+        return next(new AppError(err, 500));
+    }
+};
+
+exports.getPeriodData = async (req, res, next) => {
+    try {
+        const stdID = req.params.stdID;
+        if (!stdID) {
+            return next(new AppError("No student with this ID found", 404));
+        }
+
+        const query = `
+        SELECT i.year, i.season, rc.course_order as courseOrderNo, i.end
+        FROM enrollment e
+                 LEFT JOIN rotation_courses rc ON e.rotation_id = rc.rotation_id
+                 LEFT JOIN rotations ro ON rc.rotation_id = ro.rotation_id
+                 LEFT JOIN intervals i ON rc.interval_id = i.ID
+                 LEFT JOIN courses c ON rc.course_id = c.ID
+        WHERE ? BETWEEN i.start AND i.end
+          AND i.year = ?
+          AND i.season = ?
+          AND e.std_id = ?;
+      `;
+
         conn.query(
             query,
             [currentDate, currentYear, currentSeason, stdID],

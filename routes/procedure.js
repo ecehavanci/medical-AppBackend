@@ -14,6 +14,9 @@ router
 router
     .route("/get/:relatedReport")
     .get(procedureController.getProcedureByRelatedReportID);
+router
+    .route("/currentCourseProcedures/:stdID")
+    .get(procedureController.currentCourseProcedures);
 
 router.route("/insert")
     .post(procedureController.insertProcedure);
