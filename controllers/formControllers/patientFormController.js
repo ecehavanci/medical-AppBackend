@@ -108,10 +108,13 @@ exports.insertPatientForm = (req, res, next) => {
                             insertedTier4 = await checkAndInsertTierData(req.body.tier4ID, req.body.tier4.toLowerCase().trim(), data.insertId, res, next);
                         }
 
+                        const primaryID = data.insertId;
+
                         res.status(200).json({
                             status: "success",
                             message: "Patient form data successfully inserted",
                             insertedIds: [insertedTier1, insertedTier2, insertedTier3, insertedTier4],
+                            primaryID: primaryID
                         });
                     } else {
                         // Handle the case where no rows were updated (e.g., student data didn't change)
