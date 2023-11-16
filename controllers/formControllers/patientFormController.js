@@ -108,7 +108,7 @@ exports.insertPatientForm = (req, res, next) => {
                             insertedTier4 = await checkAndInsertTierData(req.body.tier4ID, req.body.tier4.toLowerCase().trim(), data.insertId, res, next);
                         }
 
-                        res.status(201).json({
+                        res.status(200).json({
                             status: "success",
                             message: "Patient form data successfully inserted",
                             insertedIds: [insertedTier1, insertedTier2, insertedTier3, insertedTier4],
@@ -209,7 +209,7 @@ exports.updatePatientForm = async (req, res, next) => {
             if (data.affectedRows === 0) {
                 return res.status(200).json({
                     status: "success",
-                    message: "No student data updated",
+                    message: "No patient form data updated",
                 });
             }
 
@@ -231,7 +231,7 @@ exports.updatePatientForm = async (req, res, next) => {
                 }
             }
 
-            res.status(201).json({
+            res.status(200).json({
                 status: "success",
                 message: "Form data successfully altered",
                 insertedId: insertedIds || "No new tier data inserted",

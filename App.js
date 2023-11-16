@@ -9,11 +9,6 @@ const api = "/";
 var bodyParser = require('body-parser');
 const killPort = require('kill-port');
 
-// console.log(routes);
-// app.all("*", (req, res, next) => {
-//  next(new AppError(`The URL ${req.originalUrl} does not exists`, 404));
-// });
-
 app.use(errorHandler);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
