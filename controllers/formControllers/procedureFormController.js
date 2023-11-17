@@ -35,7 +35,7 @@ exports.insertProcedureForm = (req, res, next) => {
                 req.body.sentEpoch,
                 req.body.isSent,
                 req.body.isApproved,
-                req.body.comment,
+                req.body.comment.trim(),
                 req.body.localStorageID,
                 currentYear,
                 currentSeason
@@ -78,10 +78,13 @@ exports.insertProcedureForm = (req, res, next) => {
                             inserted = await checkAndUpdateProcedure(req.body.procedureID, req.body.procedureText.toLowerCase().trim(), data.insertId, res, next);
                         }
 
+                        const primaryID = data.insertId;
+
                         res.status(201).json({
                             status: "success",
                             message: "Student data successfully altered",
-                            insertedId: inserted, // This should now have the correct value
+                            insertedId: inserted, 
+                            primaryID: primaryID
                         });
                     } else {
                         // Handle the case where no rows were updated (e.g., student data didn't change)
