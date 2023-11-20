@@ -57,7 +57,7 @@ exports.currentCourseProcedures = (req, res, next) => {
     courseHelper.getCurrentCourse(studentID)
         .then((finalCourseID) => {
             conn.query(
-                "select * from procedures where courseID = ? && procedures.isApproved = 1;",
+                "select * from procedures where courseID = ? && procedures.isApproved = 1 || ID = -1 order by description;",
                 [finalCourseID],
                 function (err, data, fields) {
                     if (err) return next(new AppError(err, 500));
