@@ -184,7 +184,7 @@ const checkAndUpdateProcedure = (
 ) => {
     return new Promise((resolve, reject) => {
         // Check if procedureID is -1, the "other" choice
-        if (procedureID === -1 || procedureText != undefined) {
+        if (procedureID === -1 && procedureText != undefined) {
             // find the most similar procedure description to a given input string by calculating the Levenshtein 
             //distance-based similarity percentage and filtering for procedures. The closest match is returned as a result.
             console.log(procedureText);
