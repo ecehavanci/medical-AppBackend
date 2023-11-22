@@ -249,7 +249,7 @@ exports.updatePatientForm = async (req, res, next) => {
 exports.getCountPatientFormsForDashboardAccordingToApproval = (req, res, next) => {
     const studentID = req.params.studentID;
     const approvalCode = req.params.approvalCode;
-    let courseID = parseInt(req.query.courseID) || null; // Default courseID
+    let courseID = parseInt(req.params.courseID) || null; // Default courseID
 
     if (!req.query.courseID) {
         // Use getCurrentCourse to get the courseID
@@ -337,7 +337,7 @@ exports.searchSentPatientFormsWithDocIDAccordingToApproveDate = (req, res, next)
 
     const physicianID = req.params.attendingPhysicianID;
     const approvement = req.params.isApproved;
-    let courseID = parseInt(req.query.courseID) || 1; // Default courseID
+    let courseID = parseInt(req.params.courseID) || 1; // Default courseID
 
     if (!req.query.courseID) {
         // Use getCurrentCourse to get the courseID
@@ -449,7 +449,7 @@ exports.searchPatientFormsForStudent = (req, res, next) => { //for student sent 
     const studentID = req.params.studentID;
     const isSent = req.params.isSent;
 
-    let courseID = parseInt(req.query.courseID) || null; // Default courseID
+    let courseID = parseInt(req.params.courseID) || null; // Default courseID
 
     // Check if courseID is not specified, then find the current course for the student
     if (!courseID) {
@@ -518,7 +518,7 @@ exports.searchPatientFormsByAcceptance = (req, res, next) => {
     const isSent = req.params.isSent;
     const isApproved = req.params.isApproved;
 
-    let courseID = parseInt(req.query.courseID) || null; // Default courseID
+    let courseID = parseInt(req.params.courseID) || null; // Default courseID
 
     // Check if courseID is not specified, then find the current course for the student
     if (!courseID) {
@@ -580,7 +580,7 @@ exports.searchPatientFormsByMultipleAcceptance = (req, res, next) => {
     const isApproved1 = req.params.isApproved1;
     const isApproved2 = req.params.isApproved2;
 
-    let courseID = parseInt(req.query.courseID) || null; // Default courseID
+    let courseID = parseInt(req.params.courseID) || null; // Default courseID
 
     if (!courseID) {
         // Use getCurrentCourse to get the courseID
