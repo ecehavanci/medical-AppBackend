@@ -730,7 +730,10 @@ exports.getCountProcedureFormsForDashboardAccordingToApproval = (req, res, next)
     function executeMainQuery(finalCourseID) {
         const query = `
         select count(ID) from procedurereports 
-        where studentID = ? && courseID = ? && isApproved = ? && year = ? && season = ?;`;
+        where studentID = ? 
+            && courseID = ? 
+            && isSent = 1
+            && isApproved = ? && year = ? && season = ?;`;
 
         const values = [
             studentID,

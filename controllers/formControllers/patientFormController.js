@@ -272,6 +272,7 @@ exports.getCountPatientFormsForDashboardAccordingToApproval = (req, res, next) =
         from patientreports
         where studentID = ?
                 && courseID = ?
+                && isSent = 1
                 && isApproved = ? && year = ? && season = ?;`;
 
         const values = [

@@ -2,7 +2,7 @@ const express = require("express");
 const patientFormController = require("../controllers/formControllers/patientFormController");
 const router = express.Router();
 
-router.route("/insert") //////////////////////
+router.route("/insert") 
     .post(patientFormController.insertPatientForm);
 
 router.route("/update/:ID") 
