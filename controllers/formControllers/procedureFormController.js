@@ -358,7 +358,7 @@ exports.searchProcedureReportsByMultipleAcceptance = (req, res, next) => {
     const isSent = req.params.isSent;
     const isApproved1 = req.params.isApproved1;
     const isApproved2 = req.params.isApproved2;
-    let courseID = parseInt(req.params.courseID) || 1; // Default courseID
+    let courseID = parseInt(req.params.courseID) || null; // Default courseID
 
     if (!courseID) {
         // Use getCurrentCourse to get the courseID
@@ -557,7 +557,7 @@ exports.searchProcedureFormsForStudent = (req, res, next) => {
 
     const studentID = req.params.studentID;
     const isSent = req.params.isSent;
-    let courseID = parseInt(req.params.courseID) || 1; // Default courseID
+    let courseID = parseInt(req.params.courseID) || null; // Default courseID
 
     console.log(courseID);
 
@@ -624,7 +624,7 @@ exports.searchProcedureFormsForStudentByAcceptance = (req, res, next) => {
     const studentID = req.params.studentID;
     const isSent = req.params.isSent;
     const isApproved = req.params.isApproved;
-    let courseID = parseInt(req.params.courseID) || 1; // Default courseID
+    let courseID = parseInt(req.params.courseID) || null; // Default courseID
 
     if (!courseID) {
         // Use getCurrentCourse to get the courseID
@@ -739,7 +739,7 @@ exports.getIDofProcedureForm = (req, res, next) => {
 exports.getCountProcedureFormsForDashboardAccordingToApproval = (req, res, next) => {
     const studentID = req.params.studentID;
     const approvalCode = req.params.approvalCode;
-    let courseID = parseInt(req.params.courseID) || 1; // Default courseID
+    let courseID = parseInt(req.params.courseID) || null; // Default courseID
 
     if (!courseID) {
         // Use getCurrentCourse to get the courseID
