@@ -4,6 +4,7 @@ const procedureController = require("../procedureController");
 const logController = require("../logController");
 const courseHelper = require("../currentCourse");
 const config = require("../../config");
+const { Console } = require("console");
 const currentYear = config.app.year;
 const currentSeason = config.app.season;
 const currentDate = config.app.date;
@@ -282,12 +283,12 @@ exports.searchProcedureReportsByAcceptance = (req, res, next) => {
 
     function executeMainQuery(finalCourseID) {
         const query = `
-        SELECT pr.*, p.description as gettedProcedure
+        SELECT pr.*
         FROM procedurereports pr
                  INNER JOIN procedures p ON pr.procedureID = p.ID
         WHERE pr.studentID = ?
           AND pr.isSent = ?
-          AND courseID = ?
+          AND pr.courseID = ?
           AND pr.isApproved = ?
           AND (UPPER(p.description) LIKE ? OR UPPER(pr.procedureText) LIKE ?)
           AND year = ?
