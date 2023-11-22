@@ -317,36 +317,6 @@ exports.searchProcedureReportsByAcceptance = (req, res, next) => {
 };
 
 
-// Create a function to get the current course of the student
-const getCurrentCourseDoctor = (physicianID) => {
-    return new Promise((resolve, reject) => {
-        conn.query(
-            `SELECT DISTINCT rc.rotation_id, rc.course_id, c.code
-            FROM enrollment_physician e
-                     LEFT JOIN rotation_courses rc ON e.rotationNo = rc.rotation_id and rc.course_id = e.courseID
-                     left join rotations ro on rc.rotation_id = ro.rotation_id
-                     LEFT JOIN courses c ON rc.course_id = c.ID
-                     left join intervals i on i.ID = rc.interval_id
-            WHERE e.physicianID = ?
-              and i.year = ?
-              and i.season = ?
-              and ? between i.start and i.end
-            order by rc.course_order;
-            `,
-            [physicianID, currentYear, currentSeason, currentDate],
-            (err, data) => {
-                if (err) {
-                    reject(err);
-                } else if (data.length > 0) {
-                    resolve(data[0].course_id);
-                } else {
-                    // Handle the case where the student is not enrolled in any course
-                    reject(new Error("Student is not currently enrolled in any course."));
-                }
-            }
-        );
-    });
-};
 
 //list sent forms for student to show on student sent page with ability to filter by procedure name & 2 approvements & input
 exports.searchProcedureReportsByMultipleAcceptance = (req, res, next) => {
@@ -378,7 +348,7 @@ exports.searchProcedureReportsByMultipleAcceptance = (req, res, next) => {
 
     function executeMainQuery(finalCourseID) {
         const query = `
-        SELECT pr.*, p.description as gettedProcedure
+        SELECT pr.*
         FROM procedurereports pr
                 INNER JOIN procedures p ON pr.procedureID = p.ID
         WHERE pr.studentID = ?
@@ -579,7 +549,7 @@ exports.searchProcedureFormsForStudent = (req, res, next) => {
 
     function executeMainQuery(finalCourseID) {
         const query = `
-        SELECT pr.*, p.description as gettedProcedure
+        SELECT pr.*
         FROM procedurereports pr
                 INNER JOIN procedures p ON pr.procedureID = p.ID
         WHERE pr.studentID = ?
