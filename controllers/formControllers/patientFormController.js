@@ -251,7 +251,7 @@ exports.getCountPatientFormsForDashboardAccordingToApproval = (req, res, next) =
     const approvalCode = req.params.approvalCode;
     let courseID = parseInt(req.params.courseID) || null; // Default courseID
 
-    if (!req.query.courseID) {
+    if (!courseID) {
         // Use getCurrentCourse to get the courseID
         courseHelper.getCurrentCourse(studentID)
             .then((finalCourseID) => {
@@ -337,9 +337,9 @@ exports.searchSentPatientFormsWithDocIDAccordingToApproveDate = (req, res, next)
 
     const physicianID = req.params.attendingPhysicianID;
     const approvement = req.params.isApproved;
-    let courseID = parseInt(req.params.courseID) || 1; // Default courseID
+    let courseID = parseInt(req.params.courseID) || null; // Default courseID
 
-    if (!req.query.courseID) {
+    if (!courseID) {
         // Use getCurrentCourse to get the courseID
         courseHelper.getCurrentCourseDoctor(physicianID)
             .then((finalCourseID) => {
