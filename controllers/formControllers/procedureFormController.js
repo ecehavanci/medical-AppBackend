@@ -83,7 +83,7 @@ exports.insertProcedureForm = (req, res, next) => {
                         res.status(201).json({
                             status: "success",
                             message: "Student data successfully altered",
-                            insertedId: inserted, 
+                            insertedId: inserted,
                             primaryID: primaryID
                         });
                     } else {
@@ -265,7 +265,7 @@ exports.searchProcedureReportsByAcceptance = (req, res, next) => {
 
     let courseID = parseInt(req.params.courseID) || null; // Default courseID
 
-    if (!req.query.courseID) {
+    if (!courseID) {
         // Use getCurrentCourse to get the courseID
         courseHelper.getCurrentCourse(studentID)
             .then((finalCourseID) => {
@@ -360,7 +360,7 @@ exports.searchProcedureReportsByMultipleAcceptance = (req, res, next) => {
     const isApproved2 = req.params.isApproved2;
     let courseID = parseInt(req.params.courseID) || 1; // Default courseID
 
-    if (!req.query.courseID) {
+    if (!courseID) {
         // Use getCurrentCourse to get the courseID
         courseHelper.getCurrentCourse(studentID)
             .then((finalCourseID) => {
@@ -487,7 +487,7 @@ exports.searchSentProcedureFormsWithDocIDAccordingToApproveDate = (req, res, nex
     const approvement = req.params.isApproved;
     let courseID = parseInt(req.params.courseID) || null; // Default courseID
 
-    if (!req.query.courseID) {
+    if (!courseID) {
         // Use getCurrentCourse to get the courseID
         courseHelper.getCurrentCourseDoctor(physicianID)
             .then((finalCourseID) => {
@@ -559,7 +559,9 @@ exports.searchProcedureFormsForStudent = (req, res, next) => {
     const isSent = req.params.isSent;
     let courseID = parseInt(req.params.courseID) || 1; // Default courseID
 
-    if (!req.query.courseID) {
+    console.log(courseID);
+
+    if (!courseID) {
         // Use getCurrentCourse to get the courseID
         courseHelper.getCurrentCourse(studentID)
             .then((finalCourseID) => {
@@ -624,7 +626,7 @@ exports.searchProcedureFormsForStudentByAcceptance = (req, res, next) => {
     const isApproved = req.params.isApproved;
     let courseID = parseInt(req.params.courseID) || 1; // Default courseID
 
-    if (!req.query.courseID) {
+    if (!courseID) {
         // Use getCurrentCourse to get the courseID
         courseHelper.getCurrentCourse(studentID)
             .then((finalCourseID) => {
@@ -739,7 +741,7 @@ exports.getCountProcedureFormsForDashboardAccordingToApproval = (req, res, next)
     const approvalCode = req.params.approvalCode;
     let courseID = parseInt(req.params.courseID) || 1; // Default courseID
 
-    if (!req.query.courseID) {
+    if (!courseID) {
         // Use getCurrentCourse to get the courseID
         courseHelper.getCurrentCourse(studentID)
             .then((finalCourseID) => {
