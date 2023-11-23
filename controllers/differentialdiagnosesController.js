@@ -1,5 +1,6 @@
 const AppError = require("../utils/appError");
 const conn = require("../services/db");
+const courseHelper = require("./currentCourse");
 
 exports.getApprovedDiffDiagnoses = (req, res, next) => {
 
@@ -15,6 +16,33 @@ exports.getApprovedDiffDiagnoses = (req, res, next) => {
         }
     );
 }
+
+exports.getApprovedCourseDiagnosis = (req, res, next) => {
+    const studentID = req.params.studentID;
+    const isApproved = 1;
+
+    if (!studentID)
+        return next(new AppError("No student data provided", 404));
+
+    courseHelper.getCurrentCourse(studentID)
+        .then((finalCourseID) => {
+            const values = [finalCourseID, isApproved];
+
+            conn.query(
+                `select ID,description from differentialdiagnoses WHERE courseID = ? && isApproved = ? ORDER BY description ASC`,
+                values,
+                function (err, data, fields) {
+                    if (err) return next(new AppError(err, 500));
+                    res.status(200).json({
+                        status: "success",
+                        length: data?.length,
+                        data: data,
+                    });
+                }
+            );
+        });
+}
+
 exports.getDiffDiagnosesByDiagnoseID = (req, res, next) => {
 
     conn.query(
@@ -32,7 +60,7 @@ exports.getDiffDiagnosesByDiagnoseID = (req, res, next) => {
 }
 
 exports.insert = (req, res, next) => {
-    if (!req.body || !req.body.description || !req.body.relatedReport) {
+    if (!req.body || !req.body.description || !req.body.relatedReport && !req.body.courseID) {
         return next(new AppError("Invalid data provided", 400));
     }
 
@@ -41,7 +69,7 @@ exports.insert = (req, res, next) => {
     const values = [description, relatedReport];
 
     conn.query(
-        "INSERT INTO differentialdiagnoses (description, relatedReport) VALUES (?, ?)",
+        "INSERT INTO differentialdiagnoses (courseID, description, relatedReport) VALUES (?, ?)",
         values,
         function (err, data, fields) {
             if (err) {

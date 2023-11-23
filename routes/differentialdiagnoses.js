@@ -7,6 +7,9 @@ router
     .route("/approved")
     .get(differentialdiagnosesController.getApprovedDiffDiagnoses)
 router
+    .route("/approved/:studentID")
+    .get(differentialdiagnosesController.getApprovedCourseDiagnosis);
+router
     .route("/:diagnoseID")
     .get(differentialdiagnosesController.getDiffDiagnosesByDiagnoseID)
     .put(differentialdiagnosesController.updateApprovalStatus);
