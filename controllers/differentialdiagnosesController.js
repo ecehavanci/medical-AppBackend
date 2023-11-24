@@ -64,9 +64,9 @@ exports.insert = (req, res, next) => {
         return next(new AppError("Invalid data provided", 400));
     }
 
-    const { description, relatedReport } = req.body;
+    const { description, relatedReport, courseID } = req.body;
 
-    const values = [description, relatedReport];
+    const values = [description, relatedReport, courseID];
 
     conn.query(
         "INSERT INTO differentialdiagnoses (courseID, description, relatedReport) VALUES (?, ?)",
