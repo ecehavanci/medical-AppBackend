@@ -101,7 +101,7 @@ exports.listStudentSemesterInfos = (req, res, next) => { //add, order by courses
 //doktorun bağlı olduğu rotasyonların şimdiki ve ve geçmişteki kurs bilgileri gösterir
 exports.listPhysicianSemesterCourses = (req, res, next) => { //add, order by courses end date
     const query = `
-    SELECT DISTINCT rc.rotation_id,rc.course_id,c.code,c.description
+    SELECT DISTINCT rc.rotation_id,rc.course_id as ID,c.code,c.description
     FROM enrollment_physician e
             LEFT JOIN rotation_courses rc ON e.rotationNo = rc.rotation_id and rc.course_id = e.courseID
             left join rotations ro on rc.rotation_id = ro.rotation_id
@@ -109,6 +109,7 @@ exports.listPhysicianSemesterCourses = (req, res, next) => { //add, order by cou
             left join intervals i on i.ID = rc.interval_id
     WHERE e.physicianID = ?
     and i.year = ?
+    
     and i.season = ?
     order by rc.course_order;`;
     conn.query(

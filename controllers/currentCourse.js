@@ -59,7 +59,7 @@ exports.getCurrentCourseDoctor = (physicianID) => {
                     resolve(data[0].course_id);
                 } else {
                     // Handle the case where the student is not enrolled in any course
-                    reject(new Error("Student is not currently enrolled in any course."));
+                    reject(new Error("Physician is not currently enrolled in any course."));
                 }
             }
         );
