@@ -48,6 +48,31 @@ exports.getCourseSpecialties = (req, res, next) => { //current course specialty
         }
     );
 }
+exports.getCourseSpecialtiesByCourseID = (req, res, next) => { //current course specialty by course ID
+    if (!req.params.courseID)
+        return next(new AppError("Course ID specified", 404));
+
+    const courseID = req.params.courseID;
+
+    const queryString = `
+    select sp.ID, sp.description
+    from specialties sp
+    where sp.course_ID = ?;
+    `;
+
+    conn.query(
+        queryString,
+        [courseID],
+        function (err, data, fields) {
+            if (err) return next(new AppError(err, 500));
+            res.status(200).json({
+                status: "success",
+                length: data?.length,
+                data: data,
+            });
+        }
+    );
+}
 
 exports.getSpecialtyName = (req, res, next) => { //specialty description according to its ID
 

@@ -15,4 +15,8 @@ router
     .route("/filter/:specialtyNo")
     .get(specialtyController.getSpecialtyName);
 
+router
+    .route("/filter/course/:courseID")
+    .get(specialtyController.getCourseSpecialtiesByCourseID);
+
 module.exports = router;
