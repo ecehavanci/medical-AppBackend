@@ -516,8 +516,9 @@ exports.searchSentProcedureFormsWithDocIDAccordingToApproveDate = (req, res, nex
         let query = '';
         let values = [];
 
-        if (specialtyID && procedureID) {
-            query = `
+        console.log(procedureID);
+
+        query = `
             SELECT pr.*, p.description AS gettedProcedure
             FROM procedurereports pr
             LEFT JOIN procedures p ON pr.procedureID = p.ID
@@ -527,100 +528,45 @@ exports.searchSentProcedureFormsWithDocIDAccordingToApproveDate = (req, res, nex
               AND pr.isApproved = ?
               AND (UPPER(std.name) LIKE ? OR UPPER(std.surname) LIKE ?)
               AND pr.courseID = ?
-              AND pr.specialtyID = ?
-              AND pr.procedureID = ?
               AND pr.year = ?
               AND pr.season = ?
+              ${specialtyID ? 'AND pr.specialtyID = ?' : ''}
+              ${procedureID ? 'AND pr.procedureID = ?' : ''}
             ORDER BY pr.sentEpoch DESC
             LIMIT ? OFFSET ?;`;
-
-            values = [
-                physicianID,
-                approvement,
-                `%${input.toUpperCase()}%`,
-                `%${input.toUpperCase()}%`,
-                finalCourseID,
-                specialtyID,
-                procedureID,
-                currentYear, // You should define currentYear and currentSeason
-                currentSeason,
-                pageSize,
-                offset
-            ];
-        } else if (specialtyID) {
-            query = `
-            SELECT pr.*, p.description AS gettedProcedure
-            FROM procedurereports pr
-            LEFT JOIN procedures p ON pr.procedureID = p.ID
-            LEFT JOIN student std ON pr.studentID = std.ID
-            WHERE pr.attendingPhysicianID = ?
-              AND pr.isSent = 1
-              AND pr.isApproved = ?
-              AND (UPPER(std.name) LIKE ? OR UPPER(std.surname) LIKE ?)
-              AND pr.courseID = ?
-              AND pr.specialtyID = ?
-              AND pr.year = ?
-              AND pr.season = ?
-            ORDER BY pr.sentEpoch DESC
-            LIMIT ? OFFSET ?;`;
-
-            values = [
-                physicianID,
-                approvement,
-                `%${input.toUpperCase()}%`,
-                `%${input.toUpperCase()}%`,
-                finalCourseID,
-                specialtyID,
-                currentYear, // You should define currentYear and currentSeason
-                currentSeason,
-                pageSize,
-                offset
-            ];
+    
+        values = [
+            physicianID,
+            approvement,
+            `%${input.toUpperCase()}%`,
+            `%${input.toUpperCase()}%`,
+            finalCourseID,
+            currentYear, 
+            currentSeason,
+        ];
+    
+        if (specialtyID) {
+            values.push(specialtyID);
         }
-        else {
-            query = `
-            SELECT pr.*, p.description AS gettedProcedure
-            FROM procedurereports pr
-            LEFT JOIN procedures p ON pr.procedureID = p.ID
-            LEFT JOIN student std ON pr.studentID = std.ID
-            WHERE pr.attendingPhysicianID = ?
-              AND pr.isSent = 1
-              AND pr.isApproved = ?
-              AND (UPPER(std.name) LIKE ? OR UPPER(std.surname) LIKE ?)
-              AND pr.courseID = ?
-              AND pr.year = ?
-              AND pr.season = ?
-            ORDER BY pr.sentEpoch DESC
-            LIMIT ? OFFSET ?;`;
-
-            values = [
-                physicianID,
-                approvement,
-                `%${input.toUpperCase()}%`,
-                `%${input.toUpperCase()}%`,
-                finalCourseID,
-                currentYear, // You should define currentYear and currentSeason
-                currentSeason,
-                pageSize,
-                offset
-            ];
+    
+        if (procedureID) {
+            values.push(procedureID);
         }
-
-        conn.query(
-            query,
-            values,
-            function (err, data, fields) {
-                if (err) return next(new AppError(err, 500));
-                res.status(200).json({
-                    status: "success",
-                    currentPage: page,
-                    pageSize: pageSize,
-                    length: data?.length,
-                    data: data,
-                });
-            }
-        );
+    
+        values.push(pageSize, offset);
+    
+        conn.query(query, values, function (err, data, fields) {
+            if (err) return next(new AppError(err, 500));
+            res.status(200).json({
+                status: "success",
+                currentPage: page,
+                pageSize: pageSize,
+                length: data?.length,
+                data: data,
+            });
+        });
     }
+    
 };
 
 
