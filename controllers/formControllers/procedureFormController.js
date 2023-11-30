@@ -472,7 +472,7 @@ exports.searchSentProcedureFormsWithDocIDAccordingToApproveDate = (req, res, nex
 
         conn.query(
             `
-            SELECT pr.*e
+            SELECT pr.*
             FROM procedurereports pr
             LEFT JOIN procedures p ON pr.procedureID = p.ID
             LEFT JOIN student std ON pr.studentID = std.ID
