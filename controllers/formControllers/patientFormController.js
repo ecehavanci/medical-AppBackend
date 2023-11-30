@@ -343,14 +343,47 @@ exports.searchSentPatientFormsWithDocIDAccordingToApproveDate = (req, res, next)
 
     if (!courseID) {
         // Use getCurrentCourse to get the courseID
-        courseHelper.getCurrentCourseDoctor(physicianID)
-            .then((finalCourseID) => {
-                executeMainQuery(finalCourseID, specialtyID);
-            })
-            .catch((error) => {
-                // Handle errors from getCurrentCourse
-                return next(new AppError(error, 500));
-            });
+        // courseHelper.getCurrentCourseDoctor(physicianID)
+        //     .then((finalCourseID) => {
+        //         executeMainQuery(finalCourseID, specialtyID);
+        //     })
+        //     .catch((error) => {
+        //         // Handle errors from getCurrentCourse
+        //         return next(new AppError(error, 500));
+        //     });
+        conn.query(
+            `
+            SELECT pa.*
+            FROM patientreports pa
+                    LEFT JOIN student std ON pa.studentID = std.ID
+            WHERE pa.attendingPhysicianID = ?
+            AND pa.isSent = 1
+            AND pa.isApproved = ?
+            AND UPPER(std.name) LIKE ?
+            AND pa.year = ?
+            AND pa.season = ?
+            ORDER BY pa.sentEpoch DESC
+            LIMIT ? OFFSET ?;`,
+            [
+                physicianID,
+                approvement,
+                `%${input.toUpperCase()}%`,
+                currentYear,
+                currentSeason,
+                pageSize,
+                offset
+            ],
+            function (err, data, fields) {
+                if (err) return next(new AppError(err, 500));
+                res.status(200).json({
+                    status: "success",
+                    currentPage: page,
+                    pageSize: pageSize,
+                    length: data?.length,
+                    data: data,
+                });
+            }
+        );
     } else {
         // If courseID is provided in the query, proceed directly with the main query
         executeMainQuery(courseID, specialtyID);
@@ -359,7 +392,7 @@ exports.searchSentPatientFormsWithDocIDAccordingToApproveDate = (req, res, next)
     function executeMainQuery(finalCourseID, specialtyID) {
         let query = '';
         let values = [];
-        
+
         if (specialtyID) {
             query = `
             SELECT pa.*
