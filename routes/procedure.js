@@ -7,6 +7,10 @@ router
     .get(procedureController.getApprovedProcedures);
 
 router
+    .route("/approved/course/:courseID")
+    .get(procedureController.getApprovedProceduresByCourseID);
+
+router
     .route("/get/:procedureID")
     .get(procedureController.getProceduresByID)
     .put(procedureController.updateProcedure);

@@ -16,6 +16,28 @@ exports.getApprovedProcedures = (req, res, next) => {
         }
     );
 }
+
+exports.getApprovedProceduresByCourseID = (req, res, next) => {
+    const courseID = req.params.courseID;
+
+    if (!courseID) {
+        return next(new AppError("Both studentID and localStorageID are required.", 400));
+    }
+
+    conn.query(
+        "select ID,courseID,description from procedures WHERE (isApproved = 1 || ID = -1 )&& courseID = ? ORDER BY description ASC",
+        [courseID],
+        function (err, data, fields) {
+            if (err) return next(new AppError(err, 500));
+            res.status(200).json({
+                status: "success",
+                length: data?.length,
+                data: data,
+            });
+        }
+    );
+}
+
 exports.getProceduresByID = (req, res, next) => {
 
     conn.query(
