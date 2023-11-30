@@ -359,7 +359,7 @@ exports.searchSentPatientFormsWithDocIDAccordingToApproveDate = (req, res, next)
             WHERE pa.attendingPhysicianID = ?
             AND pa.isSent = 1
             AND pa.isApproved = ?
-            AND UPPER(std.name) LIKE ?
+            AND (UPPER(std.name) LIKE ? OR UPPER(std.surname) LIKE ?)
             AND pa.year = ?
             AND pa.season = ?
             ORDER BY pa.sentEpoch DESC
@@ -367,6 +367,7 @@ exports.searchSentPatientFormsWithDocIDAccordingToApproveDate = (req, res, next)
             [
                 physicianID,
                 approvement,
+                `%${input.toUpperCase()}%`,
                 `%${input.toUpperCase()}%`,
                 currentYear,
                 currentSeason,

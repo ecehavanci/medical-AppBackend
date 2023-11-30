@@ -461,14 +461,51 @@ exports.searchSentProcedureFormsWithDocIDAccordingToApproveDate = (req, res, nex
 
     if (!courseID) {
         // Use getCurrentCourse to get the courseID
-        courseHelper.getCurrentCourseDoctor(physicianID)
-            .then((finalCourseID) => {
-                executeMainQuery(finalCourseID, specialtyID);
-            })
-            .catch((error) => {
-                // Handle errors from getCurrentCourse
-                return next(new AppError(error, 500));
-            });
+        // courseHelper.getCurrentCourseDoctor(physicianID)
+        //     .then((finalCourseID) => {
+        //         executeMainQuery(finalCourseID, specialtyID);
+        //     })
+        //     .catch((error) => {
+        //         // Handle errors from getCurrentCourse
+        //         return next(new AppError(error, 500));
+        //     });
+
+        conn.query(
+            `
+            SELECT pr.*e
+            FROM procedurereports pr
+            LEFT JOIN procedures p ON pr.procedureID = p.ID
+            LEFT JOIN student std ON pr.studentID = std.ID
+            WHERE pr.attendingPhysicianID = ?
+              AND pr.isSent = 1
+              AND pr.isApproved = ?
+              AND (UPPER(std.name) LIKE ? OR UPPER(std.surname) LIKE ?)
+              AND pr.year = ?
+              AND pr.season = ?
+            ORDER BY pr.sentEpoch DESC
+            LIMIT ? OFFSET ?;`,
+            [
+                physicianID,
+                approvement,
+                `%${input.toUpperCase()}%`,
+                `%${input.toUpperCase()}%`,
+                currentYear,
+                currentSeason,
+                pageSize,
+                offset
+            ],
+            function (err, data, fields) {
+                if (err) return next(new AppError(err, 500));
+                res.status(200).json({
+                    status: "success",
+                    currentPage: page,
+                    pageSize: pageSize,
+                    length: data?.length,
+                    data: data,
+                });
+            }
+        );
+
     } else {
         // If courseID is provided in the query, proceed directly with the main query
         executeMainQuery(courseID, specialtyID);
