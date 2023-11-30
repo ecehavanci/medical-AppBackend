@@ -458,6 +458,7 @@ exports.searchSentProcedureFormsWithDocIDAccordingToApproveDate = (req, res, nex
     const approvement = req.params.isApproved;
     let courseID = parseInt(req.params.courseID) || null; // Default courseID
     let specialtyID = parseInt(req.params.specialtyID) || null; // Default courseID
+    let procedureID = parseInt(req.params.procedureID) || null; // Default courseID
 
     if (!courseID) {
         // Use getCurrentCourse to get the courseID
@@ -508,14 +509,45 @@ exports.searchSentProcedureFormsWithDocIDAccordingToApproveDate = (req, res, nex
 
     } else {
         // If courseID is provided in the query, proceed directly with the main query
-        executeMainQuery(courseID, specialtyID);
+        executeMainQuery(courseID, specialtyID, procedureID);
     }
 
-    function executeMainQuery(finalCourseID, specialtyID) {
+    function executeMainQuery(finalCourseID, specialtyID, procedureID) {
         let query = '';
         let values = [];
 
-        if (specialtyID) {
+        if (specialtyID && procedureID) {
+            query = `
+            SELECT pr.*, p.description AS gettedProcedure
+            FROM procedurereports pr
+            LEFT JOIN procedures p ON pr.procedureID = p.ID
+            LEFT JOIN student std ON pr.studentID = std.ID
+            WHERE pr.attendingPhysicianID = ?
+              AND pr.isSent = 1
+              AND pr.isApproved = ?
+              AND (UPPER(std.name) LIKE ? OR UPPER(std.surname) LIKE ?)
+              AND pr.courseID = ?
+              AND pr.specialtyID = ?
+              AND pr.procedureID = ?
+              AND pr.year = ?
+              AND pr.season = ?
+            ORDER BY pr.sentEpoch DESC
+            LIMIT ? OFFSET ?;`;
+
+            values = [
+                physicianID,
+                approvement,
+                `%${input.toUpperCase()}%`,
+                `%${input.toUpperCase()}%`,
+                finalCourseID,
+                specialtyID,
+                procedureID,
+                currentYear, // You should define currentYear and currentSeason
+                currentSeason,
+                pageSize,
+                offset
+            ];
+        } else if (specialtyID) {
             query = `
             SELECT pr.*, p.description AS gettedProcedure
             FROM procedurereports pr

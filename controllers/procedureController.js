@@ -21,11 +21,11 @@ exports.getApprovedProceduresByCourseID = (req, res, next) => {
     const courseID = req.params.courseID;
 
     if (!courseID) {
-        return next(new AppError("Both studentID and localStorageID are required.", 400));
+        return next(new AppError("Course ID required.", 400));
     }
 
     conn.query(
-        "select ID,courseID,description from procedures WHERE (isApproved = 1 || ID = -1 )&& courseID = ? ORDER BY description ASC",
+        "select * from procedures WHERE isApproved = 1 && courseID = ? || ID = -1  ORDER BY description ASC;",
         [courseID],
         function (err, data, fields) {
             if (err) return next(new AppError(err, 500));
