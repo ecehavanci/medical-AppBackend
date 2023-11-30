@@ -339,12 +339,13 @@ exports.searchSentPatientFormsWithDocIDAccordingToApproveDate = (req, res, next)
     const physicianID = req.params.attendingPhysicianID;
     const approvement = req.params.isApproved;
     let courseID = parseInt(req.params.courseID) || null; // Default courseID
+    let specialtyID = parseInt(req.params.specialtyID) || null; // Default courseID
 
     if (!courseID) {
         // Use getCurrentCourse to get the courseID
         courseHelper.getCurrentCourseDoctor(physicianID)
             .then((finalCourseID) => {
-                executeMainQuery(finalCourseID);
+                executeMainQuery(finalCourseID, specialtyID);
             })
             .catch((error) => {
                 // Handle errors from getCurrentCourse
@@ -352,33 +353,69 @@ exports.searchSentPatientFormsWithDocIDAccordingToApproveDate = (req, res, next)
             });
     } else {
         // If courseID is provided in the query, proceed directly with the main query
-        executeMainQuery(courseID);
+        executeMainQuery(courseID, specialtyID);
     }
 
-    function executeMainQuery(finalCourseID) {
-        const query = `
-        SELECT pa.*
-        FROM patientreports pa
-                LEFT JOIN student std ON pa.studentID = std.ID
-        WHERE pa.attendingPhysicianID = ?
-        AND pa.isSent = 1
-        AND pa.isApproved = ?
-        AND UPPER(std.name) LIKE ?
-        AND pa.courseID = ?
-        AND pa.year = ?
-        AND pa.season = ?
-        ORDER BY pa.sentEpoch DESC
-        LIMIT ? OFFSET ?;`;
-        const values = [
-            physicianID,
-            approvement,
-            `%${input.toUpperCase()}%`,
-            finalCourseID,
-            currentYear,
-            currentSeason,
-            pageSize,
-            offset
-        ];
+    function executeMainQuery(finalCourseID, specialtyID) {
+        let query = '';
+        let values = [];
+        
+        if (specialtyID) {
+            query = `
+            SELECT pa.*
+            FROM patientreports pa
+                    LEFT JOIN student std ON pa.studentID = std.ID
+            WHERE pa.attendingPhysicianID = ?
+            AND pa.isSent = 1
+            AND pa.isApproved = ?
+            AND UPPER(std.name) LIKE ?
+            AND pa.courseID = ?
+            AND pa.specialtyID = ?
+            AND pa.year = ?
+            AND pa.season = ?
+            ORDER BY pa.sentEpoch DESC
+            LIMIT ? OFFSET ?;`;
+
+            values = [
+                physicianID,
+                approvement,
+                `%${input.toUpperCase()}%`,
+                finalCourseID,
+                specialtyID,
+                currentYear,
+                currentSeason,
+                pageSize,
+                offset
+            ];
+        }
+        else {
+            query = `
+            SELECT pa.*
+            FROM patientreports pa
+                    LEFT JOIN student std ON pa.studentID = std.ID
+            WHERE pa.attendingPhysicianID = ?
+            AND pa.isSent = 1
+            AND pa.isApproved = ?
+            AND UPPER(std.name) LIKE ?
+            AND pa.courseID = ?
+            AND pa.year = ?
+            AND pa.season = ?
+            ORDER BY pa.sentEpoch DESC
+            LIMIT ? OFFSET ?;`;
+
+            values = [
+                physicianID,
+                approvement,
+                `%${input.toUpperCase()}%`,
+                finalCourseID,
+                currentYear,
+                currentSeason,
+                pageSize,
+                offset
+            ];
+        }
+
+
 
         conn.query(
             query,

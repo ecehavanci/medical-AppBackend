@@ -457,12 +457,13 @@ exports.searchSentProcedureFormsWithDocIDAccordingToApproveDate = (req, res, nex
     const physicianID = req.params.attendingPhysicianID;
     const approvement = req.params.isApproved;
     let courseID = parseInt(req.params.courseID) || null; // Default courseID
+    let specialtyID = parseInt(req.params.specialtyID) || null; // Default courseID
 
     if (!courseID) {
         // Use getCurrentCourse to get the courseID
         courseHelper.getCurrentCourseDoctor(physicianID)
             .then((finalCourseID) => {
-                executeMainQuery(finalCourseID);
+                executeMainQuery(finalCourseID, specialtyID);
             })
             .catch((error) => {
                 // Handle errors from getCurrentCourse
@@ -470,36 +471,71 @@ exports.searchSentProcedureFormsWithDocIDAccordingToApproveDate = (req, res, nex
             });
     } else {
         // If courseID is provided in the query, proceed directly with the main query
-        executeMainQuery(courseID);
+        executeMainQuery(courseID, specialtyID);
     }
 
-    function executeMainQuery(finalCourseID) {
-        const query = `
-        SELECT pr.*, p.description AS gettedProcedure
-        FROM procedurereports pr
-        LEFT JOIN procedures p ON pr.procedureID = p.ID
-        LEFT JOIN student std ON pr.studentID = std.ID
-        WHERE pr.attendingPhysicianID = ?
-          AND pr.isSent = 1
-          AND pr.isApproved = ?
-          AND (UPPER(std.name) LIKE ? OR UPPER(std.surname) LIKE ?)
-          AND pr.courseID = ?
-          AND pr.year = ?
-          AND pr.season = ?
-        ORDER BY pr.sentEpoch DESC
-        LIMIT ? OFFSET ?;`;
+    function executeMainQuery(finalCourseID, specialtyID) {
+        let query = '';
+        let values = [];
 
-        const values = [
-            physicianID,
-            approvement,
-            `%${input.toUpperCase()}%`,
-            `%${input.toUpperCase()}%`,
-            finalCourseID,
-            currentYear, // You should define currentYear and currentSeason
-            currentSeason,
-            pageSize,
-            offset
-        ];
+        if (specialtyID) {
+            query = `
+            SELECT pr.*, p.description AS gettedProcedure
+            FROM procedurereports pr
+            LEFT JOIN procedures p ON pr.procedureID = p.ID
+            LEFT JOIN student std ON pr.studentID = std.ID
+            WHERE pr.attendingPhysicianID = ?
+              AND pr.isSent = 1
+              AND pr.isApproved = ?
+              AND (UPPER(std.name) LIKE ? OR UPPER(std.surname) LIKE ?)
+              AND pr.courseID = ?
+              AND pr.specialtyID = ?
+              AND pr.year = ?
+              AND pr.season = ?
+            ORDER BY pr.sentEpoch DESC
+            LIMIT ? OFFSET ?;`;
+
+            values = [
+                physicianID,
+                approvement,
+                `%${input.toUpperCase()}%`,
+                `%${input.toUpperCase()}%`,
+                finalCourseID,
+                specialtyID,
+                currentYear, // You should define currentYear and currentSeason
+                currentSeason,
+                pageSize,
+                offset
+            ];
+        }
+        else {
+            query = `
+            SELECT pr.*, p.description AS gettedProcedure
+            FROM procedurereports pr
+            LEFT JOIN procedures p ON pr.procedureID = p.ID
+            LEFT JOIN student std ON pr.studentID = std.ID
+            WHERE pr.attendingPhysicianID = ?
+              AND pr.isSent = 1
+              AND pr.isApproved = ?
+              AND (UPPER(std.name) LIKE ? OR UPPER(std.surname) LIKE ?)
+              AND pr.courseID = ?
+              AND pr.year = ?
+              AND pr.season = ?
+            ORDER BY pr.sentEpoch DESC
+            LIMIT ? OFFSET ?;`;
+
+            values = [
+                physicianID,
+                approvement,
+                `%${input.toUpperCase()}%`,
+                `%${input.toUpperCase()}%`,
+                finalCourseID,
+                currentYear, // You should define currentYear and currentSeason
+                currentSeason,
+                pageSize,
+                offset
+            ];
+        }
 
         conn.query(
             query,
