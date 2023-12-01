@@ -108,12 +108,13 @@ exports.getFullPhysicianInfoByID = (req, res, next) => {
             }
 
             const physicianProfile = {
-                fullName: data[0].fullName,
+                fullName: data[0].name + " " + data[0].surname,
                 phoneNumber: data[0].phoneNumber,
                 courses: data[0].courses.split(','), // Convert courses string to array
                 courseSpecialties: JSON.parse(data[0].courseSpecialties),
             };
 
+            console.log();
             res.status(200).json({
                 status: "success",
                 data: physicianProfile,
