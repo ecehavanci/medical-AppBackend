@@ -82,18 +82,23 @@ exports.getFullPhysicianInfoByID = (req, res, next) => {
     }
 
     const query = `
-    SELECT s.name AS name,
-        s.surname AS surname,
-        s.phone as phoneNumber,
-        GROUP_CONCAT(c.code) AS courses,
-        JSON_OBJECT('code', c.code, 'description', c.description) AS courseSpecialties
-    FROM attendingphysicians s
-    LEFT JOIN courses c ON c.ID = s.courseID
-    LEFT JOIN specialties spec ON spec.ID = s.speciality_ID
-    WHERE s.ID = ?
-    GROUP BY s.ID;
-    `;
-
+        SELECT
+            s.name AS name,
+            s.surname AS surname,
+            s.phone AS phoneNumber,
+            GROUP_CONCAT(c.code) AS courses,
+            JSON_ARRAYAGG(JSON_OBJECT('course', c.code, 'specialty', c.description)) AS courseSpecialties
+        FROM
+            attendingphysicians s
+        LEFT JOIN
+            courses c ON c.ID = s.courseID
+        LEFT JOIN
+            specialties spec ON spec.ID = s.speciality_ID
+        WHERE
+            s.ID = ?
+        GROUP BY
+            s.ID;
+        `;
     const params = [id];
 
     try {
