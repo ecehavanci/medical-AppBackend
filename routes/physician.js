@@ -14,6 +14,10 @@ router
     .get(physicianController.listCoursePhysicians)
 
 router
+    .route("/fullInfo/:ID")
+    .get(physicianController.getFullPhysicianInfoByID)
+
+router
     .route("/:ID")
     .get(physicianController.filterPhysician)
     .put(physicianController.updateAttendingPhysician)

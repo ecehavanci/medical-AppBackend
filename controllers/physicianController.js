@@ -74,6 +74,55 @@ exports.filterPhysician = (req, res, next) => {
     }
 };
 
+exports.getFullPhysicianInfoByID = (req, res, next) => {
+    const id = req.params.ID;
+
+    if (!id) {
+        return next(new AppError("ID is required.", 400));
+    }
+
+    const query = `
+        SELECT s.name AS fullName, 
+               s.phone AS phoneNumber, 
+               GROUP_CONCAT(c.code) AS courses,
+               JSON_OBJECT('code', c.code, 'description', c.description) AS courseSpecialties
+        FROM attendingphysicians s
+        LEFT JOIN courses c ON c.ID = s.courseID
+        LEFT JOIN specialties spec ON spec.ID = s.speciality_ID
+        WHERE s.ID = ?
+        GROUP BY s.ID;
+    `;
+
+    const params = [id];
+
+    try {
+        conn.query(query, params, (err, data, fields) => {
+            if (err) {
+                return next(new AppError(err.message, 500));
+            }
+
+            // If the result is empty, return an error or handle it appropriately
+            if (data.length === 0) {
+                return next(new AppError("Physician not found.", 404));
+            }
+
+            const physicianProfile = {
+                fullName: data[0].fullName,
+                phoneNumber: data[0].phoneNumber,
+                courses: data[0].courses.split(','), // Convert courses string to array
+                courseSpecialties: JSON.parse(data[0].courseSpecialties),
+            };
+
+            res.status(200).json({
+                status: "success",
+                data: physicianProfile,
+            });
+        });
+    } catch (error) {
+        return next(new AppError(error.message, 500));
+    }
+};
+
 
 exports.updateAttendingPhysician = (req, res, next) => {
     const { id } = req.params; // Get the ID of the attending physician to update
