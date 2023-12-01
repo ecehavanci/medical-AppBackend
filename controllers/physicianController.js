@@ -82,7 +82,8 @@ exports.getFullPhysicianInfoByID = (req, res, next) => {
     }
 
     const query = `
-        SELECT s.name AS fullName, 
+        SELECT s.name AS name,
+               s.surname AS surname
                s.phone AS phoneNumber, 
                GROUP_CONCAT(c.code) AS courses,
                JSON_OBJECT('code', c.code, 'description', c.description) AS courseSpecialties
