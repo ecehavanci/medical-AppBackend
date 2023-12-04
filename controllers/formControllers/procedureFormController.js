@@ -534,27 +534,27 @@ exports.searchSentProcedureFormsWithDocIDAccordingToApproveDate = (req, res, nex
               ${procedureID ? 'AND pr.procedureID = ?' : ''}
             ORDER BY pr.sentEpoch DESC
             LIMIT ? OFFSET ?;`;
-    
+
         values = [
             physicianID,
             approvement,
             `%${input.toUpperCase()}%`,
             `%${input.toUpperCase()}%`,
             finalCourseID,
-            currentYear, 
+            currentYear,
             currentSeason,
         ];
-    
+
         if (specialtyID) {
             values.push(specialtyID);
         }
-    
+
         if (procedureID) {
             values.push(procedureID);
         }
-    
+
         values.push(pageSize, offset);
-    
+
         conn.query(query, values, function (err, data, fields) {
             if (err) return next(new AppError(err, 500));
             res.status(200).json({
@@ -566,7 +566,7 @@ exports.searchSentProcedureFormsWithDocIDAccordingToApproveDate = (req, res, nex
             });
         });
     }
-    
+
 };
 
 
@@ -806,4 +806,54 @@ exports.getCountProcedureFormsForDashboardAccordingToApproval = (req, res, next)
             }
         );
     }
+};
+
+//for physician Student Progress Page counts student's form count for specified course, rotation && approval status
+exports.getDoctorCountProcedureFormsForDashboardAccordingToApproval = (req, res, next) => {
+    const studentID = req.params.studentID;
+    let courseID = parseInt(req.params.courseID);
+    let rotationID = parseInt(req.params.rotationID);
+
+
+
+    const query = `
+    SELECT COALESCE(COUNT(pro.ID), 0) AS count_value,
+        appr.isApproved
+    FROM (SELECT 0 AS isApproved
+        UNION
+        SELECT 1
+        UNION
+        SELECT 2) appr
+            LEFT JOIN (SELECT *
+                        FROM procedurereports
+                        WHERE studentID = ?
+                        AND isSent = 1
+                        AND year = ?
+                        AND season = ?
+                        AND courseID = ?) pro ON appr.isApproved = pro.isApproved
+            LEFT JOIN enrollment e ON e.std_id = pro.studentID AND e.rotation_id = ?
+            LEFT JOIN rotation_courses rc ON rc.course_id = pro.courseID AND rc.rotation_id = ?
+
+    GROUP BY appr.isApproved;`;
+
+    const values = [
+        studentID,
+        currentYear,
+        currentSeason,
+        courseID,
+        rotationID,
+        rotationID,
+    ];
+
+    conn.query(
+        query, values,
+        function (err, data, fields) {
+            if (err) return next(new AppError(err, 500));
+            res.status(200).json({
+                status: "success",
+                length: data?.length,
+                data: data,
+            });
+        }
+    );
 };
