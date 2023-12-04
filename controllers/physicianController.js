@@ -225,3 +225,78 @@ exports.listCoursePhysicians = (req, res, next) => {
         return next(new AppError(error, 500));
     });
 }
+
+exports.listCountsReportsPhysicians = (req, res, next) => {
+    if (!req.params.ID) {
+        return next(new AppError("No physician with this ID found", 404));
+    }
+
+    const queryAccepted = `
+    select count(pr.ID) AS counted from patientreports pr
+    where pr.attendingPhysicianID = ?
+    && isSent = 1
+    && pr.isApproved = ?
+    `;
+    const valueAccepted = [ID, 1];
+
+    const queryRejected = `
+    select count(pr.ID) AS counted from patientreports pr
+    where pr.attendingPhysicianID = ?
+    && isSent = 1
+    && pr.isApproved = ?
+    `;
+    const valueRejected = [ID, 2];
+
+    courseHelper.getCurrentCourse(req.params.stdID).then((finalCourseID) => {
+        conn.query(
+            "select ID,name,surname,speciality_ID as specialtyID from attendingphysicians where courseID = ? and is_active = 1;",
+            [finalCourseID],
+            function (err, data, fields) {
+                if (err) return next(new AppError(err, 500));
+                res.status(200).json({
+                    status: "success",
+                    length: data?.length,
+                    data: data,
+                });
+            }
+        );
+    }).catch((error) => {
+        return next(new AppError(error, 500));
+    });
+}
+
+exports.matchPhysiciandStdWithRotation = (req, res, next) => {
+    if (!req.params.physicianId) {
+        return next(new AppError("No physician with this ID found", 404));
+    }
+
+    const physicianId = req.params.physicianId;
+    const rotationNumber = req.params.rotationNumber;
+    const courseId = req.params.courseId;
+
+    const query = `
+    SELECT s.ID, s.name, s.surname, ep.rotationNo, rc.course_id
+    FROM student s
+             JOIN enrollment_physician ep ON ep.physicianID = ?
+             JOIN enrollment e ON e.rotation_id = ep.rotationNo && e.std_id = s.ID
+             JOIN rotation_courses rc ON rc.rotation_id = e.rotation_id and ep.courseID = rc.course_id
+    WHERE ep.physicianID = ?
+      AND ep.rotationNo = ?
+      AND rc.course_id = ?
+      AND s.is_active = 1;
+  `;
+
+    const values = [physicianId, physicianId, rotationNumber, courseId];
+
+    conn.query(
+        query, values,
+        function (err, data, fields) {
+            if (err) return next(new AppError(err, 500));
+            res.status(200).json({
+                status: "success",
+                length: data?.length,
+                data: data,
+            });
+        }
+    );
+}

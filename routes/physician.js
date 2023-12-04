@@ -23,4 +23,8 @@ router
     .put(physicianController.updateAttendingPhysician)
     .delete(physicianController.deletePhysicianByID);
 
+router
+    .route("/matchStdRotations/:physicianId/rotation/:rotationNumber/course/:courseId/students")
+    .get(physicianController.matchPhysiciandStdWithRotation)
+
 module.exports = router;

@@ -65,7 +65,7 @@ exports.getAllStudents = (req, res, next) => {
     );
 };
 
-exports.updateStdByID = (req, res, next) => {
+exports.updateStdByID = (req, res, next) => {                     
     const { name, surname } = req.body; 1
 
     conn.query(
