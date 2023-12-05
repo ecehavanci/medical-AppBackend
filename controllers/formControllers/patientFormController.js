@@ -857,7 +857,7 @@ exports.getDoctorCountPatientFormsForDashboardAccordingToApproval = (req, res, n
     if (!studentID || !physicianID || !courseID || !rotationID) {
         return next(new AppError("Lack of needed parameters", 404));
     }
-    
+
     const query = `
     SELECT COALESCE(COUNT(pro.ID), 0) AS count_value,
         appr.isApproved
@@ -884,7 +884,7 @@ exports.getDoctorCountPatientFormsForDashboardAccordingToApproval = (req, res, n
         currentYear,
         currentSeason,
         courseID,
-        rotationID,
+        physicianID,
         rotationID,
     ];
 
