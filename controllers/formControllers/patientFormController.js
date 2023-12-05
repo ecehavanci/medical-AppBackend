@@ -867,9 +867,10 @@ exports.getDoctorCountPatientFormsForDashboardAccordingToApproval = (req, res, n
                         AND isSent = 1
                         AND year = ?
                         AND season = ?
-                        AND courseID = ?) pro ON appr.isApproved = pro.isApproved
+                        AND courseID = ?
+                        AND attendingPhysicianID = ?) pro ON appr.isApproved = pro.isApproved
             LEFT JOIN enrollment e ON e.std_id = pro.studentID AND e.rotation_id = ?
-            LEFT JOIN rotation_courses rc ON rc.course_id = pro.courseID AND rc.rotation_id = ?
+            LEFT JOIN rotation_courses rc ON rc.course_id = pro.courseID AND rc.rotation_id = e.rotation_id
 
     GROUP BY appr.isApproved;`;
 

@@ -811,10 +811,13 @@ exports.getCountProcedureFormsForDashboardAccordingToApproval = (req, res, next)
 //for physician Student Progress Page counts student's form count for specified course, rotation && approval status
 exports.getDoctorCountProcedureFormsForDashboardAccordingToApproval = (req, res, next) => {
     const studentID = req.params.studentID;
+    const physicianID = req.params.physicianID;
     let courseID = parseInt(req.params.courseID);
     let rotationID = parseInt(req.params.rotationID);
 
-
+    if (!studentID || !physicianID || !courseID || !rotationID) {
+        return next(new AppError("Lack of needed parameters", 404));
+    }
 
     const query = `
     SELECT COALESCE(COUNT(pro.ID), 0) AS count_value,
@@ -830,9 +833,10 @@ exports.getDoctorCountProcedureFormsForDashboardAccordingToApproval = (req, res,
                         AND isSent = 1
                         AND year = ?
                         AND season = ?
-                        AND courseID = ?) pro ON appr.isApproved = pro.isApproved
+                        AND courseID = ?
+                        AND attendingPhysicianID = ?) pro ON appr.isApproved = pro.isApproved
             LEFT JOIN enrollment e ON e.std_id = pro.studentID AND e.rotation_id = ?
-            LEFT JOIN rotation_courses rc ON rc.course_id = pro.courseID AND rc.rotation_id = ?
+            LEFT JOIN rotation_courses rc ON rc.course_id = pro.courseID AND rc.rotation_id = e.rotation_id
 
     GROUP BY appr.isApproved;`;
 
@@ -841,7 +845,7 @@ exports.getDoctorCountProcedureFormsForDashboardAccordingToApproval = (req, res,
         currentYear,
         currentSeason,
         courseID,
-        rotationID,
+        physicianID,
         rotationID,
     ];
 
