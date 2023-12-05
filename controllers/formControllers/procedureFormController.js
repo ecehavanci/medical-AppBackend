@@ -812,8 +812,8 @@ exports.getCountProcedureFormsForDashboardAccordingToApproval = (req, res, next)
 exports.getDoctorCountProcedureFormsForDashboardAccordingToApproval = (req, res, next) => {
     const studentID = req.params.studentID;
     const physicianID = req.params.physicianID;
-    let courseID = parseInt(req.params.courseID);
-    let rotationID = parseInt(req.params.rotationID);
+    const courseID = parseInt(req.params.courseID);
+    const rotationID = parseInt(req.params.rotationID);
 
     if (!studentID || !physicianID || !courseID || !rotationID) {
         return next(new AppError("Lack of needed parameters", 404));

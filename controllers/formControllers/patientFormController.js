@@ -849,10 +849,15 @@ exports.getPatientFormWithID = (req, res, next) => { //returns specific patientr
 //for physician Student Progress Page counts student's form count for specified course, rotation && approval status
 exports.getDoctorCountPatientFormsForDashboardAccordingToApproval = (req, res, next) => {
     const studentID = req.params.studentID;
-    let courseID = parseInt(req.params.courseID);
-    let rotationID = parseInt(req.params.rotationID);
+    const physicianID = req.params.physicianID;
+    const courseID = parseInt(req.params.courseID);
+    const rotationID = parseInt(req.params.rotationID);
 
 
+    if (!studentID || !physicianID || !courseID || !rotationID) {
+        return next(new AppError("Lack of needed parameters", 404));
+    }
+    
     const query = `
     SELECT COALESCE(COUNT(pro.ID), 0) AS count_value,
         appr.isApproved

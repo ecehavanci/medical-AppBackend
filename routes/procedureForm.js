@@ -11,7 +11,7 @@ router
     .get(procedureFormController.getCountProcedureFormsForDashboardAccordingToApproval);
 
     router
-    .route("/get/doctor/count/dashboard/approved/:studentID/:rotationID/:courseID")
+    .route("/get/doctor/count/dashboard/approved/:studentID/:rotationID/:courseID/:physicianID")
     .get(procedureFormController.getDoctorCountProcedureFormsForDashboardAccordingToApproval);
 
 router

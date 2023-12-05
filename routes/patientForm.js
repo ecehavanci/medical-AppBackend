@@ -13,7 +13,7 @@ router
     .get(patientFormController.getCountPatientFormsForDashboardAccordingToApproval);
 
 router
-    .route("/get/doctor/count/dashboard/approved/:studentID/:rotationID/:courseID")
+    .route("/get/doctor/count/dashboard/approved/:studentID/:rotationID/:courseID/:physicianID")
     .get(patientFormController.getDoctorCountPatientFormsForDashboardAccordingToApproval);
 
 router
