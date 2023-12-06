@@ -861,3 +861,96 @@ exports.getDoctorCountProcedureFormsForDashboardAccordingToApproval = (req, res,
         }
     );
 };
+
+//for physician Student ttoal progress counts student's form count for specified course, rotation && approval status
+exports.getLinearTotalProgressBarData = (req, res, next) => {
+    const physicianID = req.params.physicianID;
+    const courseID = parseInt(req.params.courseID);
+    const rotationID = parseInt(req.params.rotationID);
+
+    if (!physicianID) {
+        return next(new AppError("Lack of needed parameters", 404));
+    }
+
+    if (!rotationID || !courseID) {//if rotation and course is not provided return all the rotation courses sum
+
+        const query = `
+        SELECT COALESCE(SUM(report_count), 0)   AS total_report_count,
+                COALESCE(SUM(approved_count), 0) AS total_approved_count,
+                COALESCE(SUM(waiting_count), 0)  AS total_waiting_count,
+                COALESCE(SUM(rejected_count), 0) AS total_rejected_count
+        FROM (SELECT COALESCE(COUNT(pr.ID), 0)           AS report_count,
+                    COALESCE(SUM(pr.isApproved = 1), 0) AS approved_count,
+                    COALESCE(SUM(pr.isApproved = 0), 0) AS waiting_count,
+                    COALESCE(SUM(pr.isApproved = 2), 0) AS rejected_count
+            FROM enrollment_physician a
+                        LEFT JOIN rotation_courses r ON a.rotationNo = r.rotation_id and a.courseID = r.course_id
+                        left join attendingphysicians att on att.ID = a.physicianID
+                        left join intervals i on r.interval_id = i.ID
+                        LEFT JOIN procedurereports pr
+                                ON a.physicianID = pr.attendingPhysicianID and a.courseID = pr.courseID and
+                                    i.year = pr.year and
+                                    i.season = pr.season
+            WHERE a.physicianID = ? && i.year = ? && i.season = ?
+            GROUP BY a.ID, r.course_id, r.rotation_id) AS subquery;
+        `;
+
+        const values = [
+            physicianID,
+            currentYear,
+            currentSeason,
+        ];
+
+        conn.query(
+            query, values,
+            function (err, data, fields) {
+                if (err) return next(new AppError(err, 500));
+                res.status(200).json({
+                    status: "success",
+                    length: data?.length,
+                    data: data,
+                });
+            }
+        );
+
+    } else { //return that rotation courses sum
+
+        const query = `
+        SELECT r.course_id                         AS courseID,
+                r.rotation_id                       AS rotationNo,
+                COALESCE(COUNT(pr.ID), 0)           AS report_count,
+                COALESCE(SUM(pr.isApproved = 1), 0) AS approved_count,
+                COALESCE(SUM(pr.isApproved = 0), 0) AS waiting_count,
+                COALESCE(SUM(pr.isApproved = 2), 0) AS rejected_count
+        FROM enrollment_physician a
+                LEFT JOIN rotation_courses r ON a.rotationNo = r.rotation_id and a.courseID = r.course_id
+                left join attendingphysicians att on att.ID = a.physicianID
+                left join intervals i on r.interval_id = i.ID
+                LEFT JOIN procedurereports pr
+                            ON a.physicianID = pr.attendingPhysicianID and a.courseID = pr.courseID and i.year = pr.year and
+                            i.season = pr.season
+        WHERE a.physicianID = ? && i.year = ? && i.season = ? && a.rotationNo = ? && a.courseID = ?
+        GROUP BY a.ID, r.course_id, r.rotation_id;`;
+
+        const values = [
+            physicianID,
+            currentYear,
+            currentSeason,
+            rotationID,
+            courseID
+        ];
+
+        conn.query(
+            query, values,
+            function (err, data, fields) {
+                if (err) return next(new AppError(err, 500));
+                res.status(200).json({
+                    status: "success",
+                    length: data?.length,
+                    data: data,
+                });
+            }
+        );
+    }
+
+};

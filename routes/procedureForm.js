@@ -10,6 +10,10 @@ router
     .route("/get/count/dashboard/approved/:studentID/:courseID/:approvalCode")
     .get(procedureFormController.getCountProcedureFormsForDashboardAccordingToApproval);
 
+router
+    .route("/get/doctor/count/linear-chart/:rotationID/:courseID/:physicianID")
+    .get(procedureFormController.getLinearTotalProgressBarData);
+
     router
     .route("/get/doctor/count/dashboard/approved/:studentID/:rotationID/:courseID/:physicianID")
     .get(procedureFormController.getDoctorCountProcedureFormsForDashboardAccordingToApproval);

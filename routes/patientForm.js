@@ -17,6 +17,10 @@ router
     .get(patientFormController.getDoctorCountPatientFormsForDashboardAccordingToApproval);
 
 router
+    .route("/get/doctor/count/linear-chart/:rotationID/:courseID/:physicianID")
+    .get(patientFormController.getLinearTotalProgressBarData);
+
+router
     .route("/get/all/:studentID/:isSent")
     .get(patientFormController.listSent5ReportForStudent);
 
