@@ -210,7 +210,7 @@ exports.listCoursePhysicians = (req, res, next) => {
 
     courseHelper.getCurrentCourse(req.params.stdID).then((finalCourseID) => {
         conn.query(
-            "select ID,name,surname,speciality_ID as specialtyID from attendingphysicians where courseID = ? and is_active = 1;",
+            "select ID,name,surname,speciality_ID from attendingphysicians where courseID = ? and is_active = 1;",
             [finalCourseID],
             function (err, data, fields) {
                 if (err) return next(new AppError(err, 500));
