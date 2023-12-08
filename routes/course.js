@@ -27,7 +27,7 @@ router
     .get(courseController.listPhysicianSemesterCourses)
 
 router
-    .route("/requiredReportCountsOfCourse/:stdID")
+    .route("/requiredReportCountsOfCourse/:stdID/:courseID")
     .get(courseController.requiredReportCountsOfCourse)
 
 module.exports = router;

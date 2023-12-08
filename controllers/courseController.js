@@ -130,27 +130,41 @@ exports.listPhysicianSemesterCourses = (req, res, next) => { //add, order by cou
 exports.requiredReportCountsOfCourse = async (req, res, next) => {
     try {
         const stdID = req.params.stdID;
+        const courseID = req.params.courseID;
         if (!stdID) {
             return next(new AppError("No student with this ID found", 404));
         }
 
-        const query = `
-        SELECT c.patient_count as patientReportCount, c.procedure_count as procedureReportCount
-        FROM enrollment e
-        LEFT JOIN rotation_courses rc ON e.rotation_id = rc.rotation_id
-        LEFT JOIN rotations ro ON rc.rotation_id = ro.rotation_id
-        LEFT JOIN intervals i ON rc.interval_id = i.ID
-        LEFT JOIN courses c ON rc.course_id = c.ID
-        WHERE ? BETWEEN i.start AND i.end
-        AND i.year = ?
-        AND i.season = ?
-        AND e.std_id = ?;
-      `;
+        let query;
+        let values;
+        if (!courseID) {
+            query = `
+            SELECT c.patient_count as patientReportCount, c.procedure_count as procedureReportCount
+            FROM enrollment e
+            LEFT JOIN rotation_courses rc ON e.rotation_id = rc.rotation_id
+            LEFT JOIN rotations ro ON rc.rotation_id = ro.rotation_id
+            LEFT JOIN intervals i ON rc.interval_id = i.ID
+            LEFT JOIN courses c ON rc.course_id = c.ID
+            WHERE ? BETWEEN i.start AND i.end
+            AND i.year = ?
+            AND i.season = ?
+            AND e.std_id = ?;
+          `;
+
+            values = [currentDate, currentYear, currentSeason, stdID];
+        }
+        else {
+            query = `SELECT c.patient_count as patientReportCount, c.procedure_count as procedureReportCount
+            from courses c
+            where ID = ?`;
+
+            values = [courseID];
+        }
 
         console.log(currentDate);
         conn.query(
             query,
-            [currentDate, currentYear, currentSeason, stdID],
+            values,
             function (err, data, fields) {
                 if (err) return next(new AppError(err, 500));
                 res.status(200).json({
