@@ -137,7 +137,7 @@ exports.requiredReportCountsOfCourse = async (req, res, next) => {
 
         let query;
         let values;
-        if (!courseID) {
+        if (courseID) {
             query = `
             SELECT c.patient_count as patientReportCount, c.procedure_count as procedureReportCount
             FROM enrollment e
