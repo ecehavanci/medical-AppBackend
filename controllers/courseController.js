@@ -130,14 +130,15 @@ exports.listPhysicianSemesterCourses = (req, res, next) => { //add, order by cou
 exports.requiredReportCountsOfCourse = async (req, res, next) => {
     try {
         const stdID = req.params.stdID;
-        const courseID = parseInt(req.params.courseID) || null;
+        let courseID = req.params.courseID !== undefined ? parseInt(req.params.courseID) : null;
+        
         if (!stdID) {
             return next(new AppError("No student with this ID found", 404));
         }
 
         let query;
         let values;
-        console.log("ID:    " + courseID);
+
         if (courseID) {
             query = `
             SELECT c.patient_count as patientReportCount, c.procedure_count as procedureReportCount
@@ -145,18 +146,6 @@ exports.requiredReportCountsOfCourse = async (req, res, next) => {
             WHERE ID = ?;
              `;
             values = [courseID];
-            conn.query(
-                query,
-                values,
-                function (err, data, fields) {
-                    if (err) return next(new AppError(err, 500));
-                    res.status(200).json({
-                        status: "success",
-                        length: data?.length,
-                        data: data,
-                    });
-                }
-            );
         } else {
 
             query = `
