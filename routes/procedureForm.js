@@ -7,7 +7,7 @@ router.route("/insert").post(procedureFormController.insertProcedureForm);
 router.route("/update/:ID").put(procedureFormController.updateProcedureForm);
 
 router
-    .route("/get/count/dashboard/approved/:studentID/:courseID/:approvalCode")
+    .route("/get/count/dashboard/approved/:studentID/:courseID")
     .get(procedureFormController.getCountProcedureFormsForDashboardAccordingToApproval);
 
 router

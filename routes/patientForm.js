@@ -9,7 +9,7 @@ router.route("/update/:ID")
     .put(patientFormController.updatePatientForm);
 
 router
-    .route("/get/count/dashboard/approved/:studentID/:courseID/:approvalCode")
+    .route("/get/count/dashboard/approved/:studentID/:courseID")
     .get(patientFormController.getCountPatientFormsForDashboardAccordingToApproval);
 
 router

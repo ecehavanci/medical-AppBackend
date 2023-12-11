@@ -760,7 +760,6 @@ exports.getIDofProcedureForm = (req, res, next) => {
 //counts student's form count for specified course && approval status
 exports.getCountProcedureFormsForDashboardAccordingToApproval = (req, res, next) => {
     const studentID = req.params.studentID;
-    const approvalCode = req.params.approvalCode;
     let courseID = parseInt(req.params.courseID) || null; // Default courseID
 
     if (!courseID) {
@@ -780,16 +779,25 @@ exports.getCountProcedureFormsForDashboardAccordingToApproval = (req, res, next)
 
     function executeMainQuery(finalCourseID) {
         const query = `
-        select count(ID) from procedurereports 
-        where studentID = ? 
-            && courseID = ? 
-            && isSent = 1
-            && isApproved = ? && year = ? && season = ?;`;
+        SELECT COALESCE(COUNT(pa.ID), 0) AS count_value,
+            appr.isApproved
+        FROM (SELECT 0 AS isApproved
+            UNION
+            SELECT 1
+            UNION
+            SELECT 2) appr
+                LEFT JOIN (select *
+                            from procedurereports
+                            where studentID = ?
+                                    && courseID = ?
+                                    && isSent = 1
+                                    && year = ?
+                                    && season = ?) pa ON appr.isApproved = pa.isApproved
+        GROUP BY appr.isApproved;`;
 
         const values = [
             studentID,
             finalCourseID,
-            approvalCode,
             currentYear,
             currentSeason
         ];
