@@ -27,7 +27,7 @@ exports.login = async (req, res, next) => {
     try {
         if (userType == 0) { //if the user is student
 
-            const query = `select * from student s where s.email = ?;`;
+            const query = `select * from student s where s.eko_id = ? && s.is_active = 1;`;
             const value = [eko_id]; //actually the mail of the std
 
             const data = await queryAsync(query, value);
@@ -42,7 +42,7 @@ exports.login = async (req, res, next) => {
 
         } else if (userType == 1) { //if the user is physician
 
-            const query = `select * from attendingphysicians att where att.eko_id = ?`;
+            const query = `select * from attendingphysicians att where att.eko_id = ? && is_active = 1`;
             const value = [eko_id];
 
             conn.query(
@@ -80,13 +80,14 @@ exports.login = async (req, res, next) => {
         });
 
         const st = response.data;
-        
+
         if (st.code == 200 && st.token) {
 
             const returnedData = {
                 fullName: st.data.displayname, //username 
                 email: st.data.email, //msil
                 ekoid: st.data.ekoid, //ekoid
+                ID: user.ID
             };
 
             res.status(200).json(returnedData);
@@ -96,7 +97,6 @@ exports.login = async (req, res, next) => {
         }
 
     } catch (error) {
-        console.error(error);
         res.status(500).json({ message: "Internal Server Error" });
     }
 
