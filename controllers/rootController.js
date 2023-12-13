@@ -87,7 +87,7 @@ exports.login = async (req, res, next) => {
                 fullName: st.data.displayname, //username 
                 email: st.data.email, //msil
                 ekoid: st.data.ekoid, //ekoid
-                ID: user.ID
+                ID: user.ID, //student or physician ID
             };
 
             res.status(200).json(returnedData);
