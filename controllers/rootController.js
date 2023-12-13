@@ -1,16 +1,11 @@
 const AppError = require("../utils/appError");
 const conn = require("../services/db");
 var https = require('follow-redirects').https;
-const crypto = require('crypto');
-var fs = require('fs');
 const axios = require('axios');
 require('dotenv').config();
 const util = require('util');
 const promisify = util.promisify;
 const queryAsync = promisify(conn.query).bind(conn);
-const CryptoJS = require("crypto-js");
-const querystring = require('querystring');
-const md5 = require('js-md5');
 
 
 exports.login = async (req, res, next) => {
