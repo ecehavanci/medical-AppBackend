@@ -28,14 +28,6 @@ router.use("/web", web);
 router.use("/procedure", procedureRoutes);
 router.use("/logs", logRouter);
 router.use("/hospitals", hospitalRouter);
-// router.route("student").get(controllers.getAllStudents)
-// // .post(controllers.insertStd);
-
-// router
-//     .route("/student:id")
-//     .get(controllers.filterStdByID)
-//     .put(controllers.updateStdByID)
-//     .delete(controllers.deleteStdByID);
 
 module.exports = router;
 

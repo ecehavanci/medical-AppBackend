@@ -254,6 +254,7 @@ exports.getCountPatientFormsForDashboardAccordingToApproval = (req, res, next) =
         // Use getCurrentCourse to get the courseID
         courseHelper.getCurrentCourse(studentID)
             .then((finalCourseID) => {
+                console.log(finalCourseID);
                 executeMainQuery(finalCourseID);
             })
             .catch((error) => {

@@ -4,183 +4,136 @@ var https = require('follow-redirects').https;
 const crypto = require('crypto');
 var fs = require('fs');
 const axios = require('axios');
-// const rootCas = require('ssl-root-cas').create();
+require('dotenv').config();
+const util = require('util');
+const promisify = util.promisify;
+const queryAsync = promisify(conn.query).bind(conn);
+const CryptoJS = require("crypto-js");
 
-exports.login = (req, res2, next) => {
-    // if (!req.body) {
-    //     return next(new AppError('Invalid credentials', 404));
-    // }
+exports.login = async (req, res, next) => {
+    const { eko_id, password, userType } = req.body;
+    //eko_id is the eko ID for physicians bu student mail for the student
+    //userTypes => 0: öğrenci,1: idari
 
-    // const { stu_id, paswd } = req.body;
-    // const apiKey = process.env.OASIS_APIKEY;
-    // const secretKey = process.env.OASIS_SECRETKEY;
-    // const epoch = calculateEpoch();
-    // const signature = calculateSignature(apiKey, secretKey, epoch);
+    var user;
 
-    // const Authusername = stu_id;
-    // const Authpassword = paswd;
+    if (!req.body) {
+        return next(new AppError("No login data found", 404));
+    }
 
-    // console.log('Username:', Authusername);
-    // console.log('Password:', Authpassword);
+    try {
+        if (userType == 0) { //if the user is student
 
-    // const basicAuth = base64Encode(Authusername + Authpassword);
-    // console.log("basicAuth: ", basicAuth);
+            const query = `select * from student s where s.email = ?;`;
+            const value = [eko_id]; //actually the mail of the std
 
-    // // const certificateFile = fs.readFileSync('ca/certificate.crt');
-    // // const privateKeyContent = fs.readFileSync('ca/private.key', 'utf-8');
-    // // const certificateContent = fs.readFileSync('ca/certificate.crt', 'utf-8');
-    // // const combinedCertAndKey = privateKeyContent + '\n' + certificateContent;
+            const data = await queryAsync(query, value);
 
-    // rootCas.addFile(path.resolve(__dirname, 'intermediate.pem'));
+            if (data && data.length > 0) {
+                user = data[0];
+                console.log(user);
+            } else {
+                return res.status(200).json("Student permissions are not setted.");
 
-    // var postData = JSON.stringify({
-    //     "signature": signature,
-    //     "epoch": epoch,
-    //     "stu_id": stu_id
-    // });
+            }
 
-    // const agent = new https.Agent({ ca: rootCas });
+        } else if (userType == 1) { //if the user is physician
 
-    // const headers = {
-    //     'Content-Type': 'application/json',
-    //     'Authorization': 'Basic ' + basicAuth,
-    // };
+            const query = `select * from attendingphysicians att where att.eko_id = ?`;
+            const value = [eko_id];
 
-    // axios.post(
-    //     "https://oasis.izmirekonomi.edu.tr/oasis_api/mobil/mobil/get-stuinfo",
-    //     postData,
-    //     {
-    //         headers, httpsAgent: agent
-    //     }
-    // ).then(response => {
-    //     // Handle the response
-    //     console.log(response.data);
-    //     res2.status(200).json({
-    //         status: "success",
-    //         data: response.data,
-    //     });
-    // }).catch(error => {
-    //     // Handle errors
-    //     console.error(error);
-    // });
+            conn.query(
+                query, value,
+                function (err, data, fields) {
+                    if (err) return next(new AppError(err, 500));
 
+                    if (data && data.length > 0) { //if user is in the db
+                        user = data[0];
 
-    // // var options = {
-    // //     'method': 'POST',
-    // //     'hostname': 'oasis.izmirekonomi.edu.tr',
-    // //     'path': '/oasis_api/mobil/mobil/get-stuinfo',
-    // //     'headers': {
-    // //         'Content-Type': 'application/json',
-    // //         'Content-Length': Buffer.byteLength(postData, 'utf8'),
-    // //         'Authorization': 'Basic ' + basicAuth,
-    // //     },
-    // //     'maxRedirects': 20,
-    // //     ca: [certificateFile],
-    // //     rejectUnauthorized: false,
-    // // };
-    // // var chunks = []; // Move the declaration outside the request callback
-    // //url,data,header
+                    } else {
+                        // User with the provided eko_id not found, return false
+                        return res.status(200).json({ "message": "Physician permissions are not setted." });
 
-    // // var req = https.request(options, function (res) {
-    // //     res.on("data", function (chunk) {
-    // //         chunks.push(chunk);
-    // //     });
+                    }
+                }
+            );
+        }
 
-    // //     res.on("end", function () {
-    // //         // No need to do anything in this block, you can handle it in the 'finish' event
-    // //     });
+        const config = {
+            siteURL: "https://emax.ieu.edu.tr/auth/default/index",
+            userAgent: "Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US) AppleWebKit/534.16 (KHTML, like Gecko) Chrome/10.0.648.204 Safari/534.16"
+        };
 
-    // //     res.on("error", function (error) {
-    // //         return next(new AppError(error, 404));
-    // //     });
-    // // });
+        const encodedPassword = encodeURIComponent(password);
+        const postFields = `username=${eko_id}&password=${encodedPassword}&user_type=${userType}&ip=0&app_token=APPMEDSIS`;
 
-    // // req.write(postData);
+        const response = await axios.post(config.siteURL, postFields, {
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'User-Agent': config.userAgent,
+                'Referer': config.siteURL
+            },
+            httpsAgent: new https.Agent({ rejectUnauthorized: false })
+        });
 
-    // // req.on('end', function () {
-    // //     // The 'finish' event indicates that the request has been sent
-    // //     var body = Buffer.concat(chunks);
-    // //     var responseBody = JSON.parse(body.toString());
+        const st = response.data;
+        // $decryptedToken = openssl_decrypt($encryptedToken, "AES-256-CBC", $secretKey, 0,generateHashSubstring());
+        if (st.code == 200 && st.token) {
+            const encryptedToken = st.token;
+            const secretKey = process.env.LDAP_SECRETKEY;
 
-    // //     res2.status(200).json({
-    // //         status: "success",
-    // //         data: responseBody,
-    // //     });
-    // // });
+            const decryptedToken = decryptToken(encryptedToken, secretKey);
 
-    // // req.on('error', function(error) {
-    // //     console.error('Error sending request:', error);
-    // //     return next(new AppError(error, 404));
-    // // });
+            const checkTokenURL = "https://emax.ieu.edu.tr/auth/default/check-token";
+            const checkTokenPostFields = `token=${decryptedToken}&appToken=APPMEDSIS&ip=0`;
 
-    // // req.end();
+            const checkTokenResponse = await axios.post(checkTokenURL, checkTokenPostFields, {
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'User-Agent': config.userAgent,
+                    'Referer': config.siteURL
+                },
+                httpsAgent: new https.Agent({ rejectUnauthorized: false })
+            });
 
-    // function calculateEpoch() {
-    //     const epoch = Math.round(new Date().getTime());
-    //     console.log(epoch);
-    //     return epoch;
-    // }
+            const userData = checkTokenResponse.data;
 
-    // function calculateSignature(apiKey, secretKey, epoch) {
-    //     const dataToHash = `${apiKey}${secretKey}${epoch}`;
-    //     const hashedData = crypto.createHash('md5').update(dataToHash).digest('hex');
-    //     console.log(hashedData.toUpperCase());
-    //     return hashedData.toUpperCase();
-    // }
+            if (userData.process && userData.user && userData.user.username) {
 
-    // function base64Encode(str) {
-    //     const buffer = Buffer.from(str, 'utf-8');
-    //     const base64Encoded = buffer.toString('base64');
-    //     return base64Encoded;
-    // }
+                console.log(userData + "aaaaaaaa");
+                res.status(200).json({
+                    ekoID: userData.user.username,
+                    fullName: userData.user.displayname,
+                    email: userData.user.mail
+                });
+            } else {
+                res.status(404).json({ message: "User information not found." });
+            }
+        } else {
+            res.status(401).json({ message: "User could not be authenticated." });
+        }
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
 
 }
 
+function generateHashSubstring(secretKey) {
+    const md5Hash = CryptoJS.MD5(secretKey).toString();
+    // Ensure the key is 32 bytes (256 bits) by repeating or padding as needed
+    const key = md5Hash.padEnd(32, '0').substring(0, 32);
+    return key;
+}
 
 
-// // var bodyData = JSON.stringify({
-// //     "signature": signature,
-// //     "epoch": epoch,
-// //     "stu_id": stu_id
-// // });
-// // axios.post(`https://${options.hostname}${options.path}`, bodyData, {
-// //     headers: options.headers,
-// //     maxRedirects: options.maxRedirects,
-// //     ca: [certificateFile],
-// //     rejectUnauthorized: options.rejectUnauthorized,
-// // })
-// //     .then(response => {
-// //         console.log('Response:', response.data);
+async function decryptToken(encryptedToken, secretKey) {
+    const decipher = crypto.createDecipheriv("aes-256-cbc", Buffer.from(generateHashSubstring(secretKey)), Buffer.alloc(16));
+    
+    let decrypted = decipher.update(encryptedToken, 'base64', 'utf-8');
+    decrypted += decipher.final('utf-8');
 
-// //         // Assuming response.data is already a string or Buffer
-// //         var responseBody = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
+    return decrypted;
+}
 
-// //         res2.status(200).json({
-// //             status: "success",
-// //             data: responseBody,
-// //         });
-// //     })
-// //     .catch(error => {
-// //         console.error('Error:', error);
-
-// //         // Better error handling, check the type of error
-// //         if (error.response) {
-// //             // The request was made and the server responded with a status code
-// //             return res2.status(error.response.status).json({
-// //                 status: "error",
-// //                 message: error.response.data.message, // Adjust this based on your API response structure
-// //             });
-// //         } else if (error.request) {
-// //             // The request was made but no response was received
-// //             return res2.status(500).json({
-// //                 status: "error",
-// //                 message: "No response received from the server.",
-// //             });
-// //         } else {
-// //             // Something happened in setting up the request that triggered an Error
-// //             return res2.status(500).json({
-// //                 status: "error",
-// //                 message: error.message,
-// //             });
-// //         }
-// //     });
