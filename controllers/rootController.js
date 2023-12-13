@@ -9,6 +9,9 @@ const util = require('util');
 const promisify = util.promisify;
 const queryAsync = promisify(conn.query).bind(conn);
 const CryptoJS = require("crypto-js");
+const querystring = require('querystring');
+const md5 = require('js-md5');
+
 
 exports.login = async (req, res, next) => {
     const { eko_id, password, userType } = req.body;
@@ -77,40 +80,19 @@ exports.login = async (req, res, next) => {
         });
 
         const st = response.data;
-        // $decryptedToken = openssl_decrypt($encryptedToken, "AES-256-CBC", $secretKey, 0,generateHashSubstring());
+        
         if (st.code == 200 && st.token) {
-            const encryptedToken = st.token;
-            const secretKey = process.env.LDAP_SECRETKEY;
 
-            const decryptedToken = decryptToken(encryptedToken, secretKey);
+            const returnedData = {
+                fullName: st.data.displayname, //username 
+                email: st.data.email, //msil
+                ekoid: st.data.ekoid, //ekoid
+            };
 
-            const checkTokenURL = "https://emax.ieu.edu.tr/auth/default/check-token";
-            const checkTokenPostFields = `token=${decryptedToken}&appToken=APPMEDSIS&ip=0`;
+            res.status(200).json(returnedData);
 
-            const checkTokenResponse = await axios.post(checkTokenURL, checkTokenPostFields, {
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'User-Agent': config.userAgent,
-                    'Referer': config.siteURL
-                },
-                httpsAgent: new https.Agent({ rejectUnauthorized: false })
-            });
-
-            const userData = checkTokenResponse.data;
-
-            if (userData.process && userData.user && userData.user.username) {
-
-                console.log(userData + "aaaaaaaa");
-                res.status(200).json({
-                    ekoID: userData.user.username,
-                    fullName: userData.user.displayname,
-                    email: userData.user.mail
-                });
-            } else {
-                res.status(404).json({ message: "User information not found." });
-            }
         } else {
-            res.status(401).json({ message: "User could not be authenticated." });
+            res.status(400).json({ message: "User could not be authenticated." });
         }
 
     } catch (error) {
@@ -119,21 +101,3 @@ exports.login = async (req, res, next) => {
     }
 
 }
-
-function generateHashSubstring(secretKey) {
-    const md5Hash = CryptoJS.MD5(secretKey).toString();
-    // Ensure the key is 32 bytes (256 bits) by repeating or padding as needed
-    const key = md5Hash.padEnd(32, '0').substring(0, 32);
-    return key;
-}
-
-
-async function decryptToken(encryptedToken, secretKey) {
-    const decipher = crypto.createDecipheriv("aes-256-cbc", Buffer.from(generateHashSubstring(secretKey)), Buffer.alloc(16));
-    
-    let decrypted = decipher.update(encryptedToken, 'base64', 'utf-8');
-    decrypted += decipher.final('utf-8');
-
-    return decrypted;
-}
-

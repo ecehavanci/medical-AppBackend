@@ -198,8 +198,9 @@ exports.updatePatientForm = async (req, res, next) => {
 
     try {
         if (req.body.isSent === 1) {
-            await logController.updatePatientFormLog(selectClauses, values);
-
+            const res3 = await logController.updatePatientFormLog(selectClauses, values);
+            console.log("res3");
+            console.log(res3);
         }
 
         conn.query(query, values, async (err, data) => {

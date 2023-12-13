@@ -7,6 +7,8 @@ const currentDate = config.app.date;
 const deepDiff = require('deep-diff');
 
 exports.updatePatientFormLog = (selectClauses, values) => { //todo fix the query and handle the case when patient_logger increments the change_no
+
+    console.log("updatePatientFormLog");
     return new Promise((resolve, reject) => {
         const valuesCopy = values.slice(); // Create a copy of the values array
         const columnNamesCopy = selectClauses.slice(); // Create a copy of the column names array
