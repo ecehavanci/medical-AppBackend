@@ -31,7 +31,7 @@ exports.login = async (req, res, next) => {
                 user = data[0];
                 console.log(user);
             } else {
-                return res.status(200).json("Student permissions are not setted.");
+                return res.status(404).json({message:"Student permissions are not setted."});
 
             }
 
@@ -50,7 +50,7 @@ exports.login = async (req, res, next) => {
 
                     } else {
                         // User with the provided eko_id not found, return false
-                        return res.status(200).json({ "message": "Physician permissions are not setted." });
+                        return res.status(404).json({ message: "Physician permissions are not setted." });
 
                     }
                 }
