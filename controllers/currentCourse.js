@@ -42,7 +42,7 @@ exports.getCurrentCourseDoctor = (physicianID) => {
             `SELECT DISTINCT rc.rotation_id, rc.course_id, c.code
             FROM enrollment_physician e
                      LEFT JOIN rotation_courses rc ON e.rotationNo = rc.rotation_id and rc.course_id = e.courseID
-                     left join rotations ro on rc.rotation_id = ro.rotation_id
+                     left join rotations ro on rc.rotation_id = ro.id
                      LEFT JOIN courses c ON rc.course_id = c.ID
                      left join intervals i on i.ID = rc.interval_id
             WHERE e.physicianID = ?

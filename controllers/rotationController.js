@@ -64,12 +64,3 @@ exports.changeRotationCourseOrder = (req, res, next) => {
         }
     );
 }
-
-
-
-
-//////////////////////////////////
-//todo
-//charts & its filtering must be in here
-
-//change rotation courses order

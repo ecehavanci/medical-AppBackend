@@ -92,7 +92,7 @@ exports.login = async (req, res, next) => {
         }
 
     } catch (error) {
-        res.status(500).json({ message: "Internal Server Error" });
+        res.status(500).json({ message: "Wrong username or password." });
     }
 
 }

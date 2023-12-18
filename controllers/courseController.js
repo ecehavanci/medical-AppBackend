@@ -48,9 +48,9 @@ exports.getCourseName = (req, res, next) => {
     SELECT c.*
     FROM student AS s
             JOIN enrollment AS e ON s.ID = e.std_id
-            JOIN rotations AS r ON e.rotation_id = r.rotation_id
+            JOIN rotations AS r ON e.rotation_id = r.id
             JOIN rotation_courses AS rc
-                ON r.rotation_id = rc.rotation_id
+                ON r.id = rc.rotation_id
             JOIN courses AS c ON rc.course_id = c.ID
             JOIN intervals AS i ON rc.interval_id = i.ID
     WHERE s.ID = ?
@@ -79,7 +79,7 @@ exports.listStudentSemesterInfos = (req, res, next) => { //add, order by courses
     SELECT DISTINCT c.*,ro.group_id,ro.class
     FROM enrollment e
              LEFT JOIN rotation_courses rc ON e.rotation_id = rc.rotation_id
-             left join rotations ro on rc.rotation_id = ro.rotation_id
+             left join rotations ro on rc.rotation_id = ro.id
              LEFT JOIN intervals i ON rc.interval_id = i.ID
              LEFT JOIN courses c ON rc.course_id = c.ID
     WHERE e.std_id = ?
@@ -104,7 +104,7 @@ exports.listPhysicianSemesterCourses = (req, res, next) => { //add, order by cou
     SELECT DISTINCT rc.rotation_id,rc.course_id as ID,c.code,c.description
     FROM enrollment_physician e
             LEFT JOIN rotation_courses rc ON e.rotationNo = rc.rotation_id and rc.course_id = e.courseID
-            left join rotations ro on rc.rotation_id = ro.rotation_id
+            left join rotations ro on rc.rotation_id = ro.id
             LEFT JOIN courses c ON rc.course_id = c.ID
             left join intervals i on i.ID = rc.interval_id
     WHERE e.physicianID = ?
@@ -152,7 +152,7 @@ exports.requiredReportCountsOfCourse = async (req, res, next) => {
             SELECT c.patient_count as patientReportCount, c.procedure_count as procedureReportCount
             FROM enrollment e
             LEFT JOIN rotation_courses rc ON e.rotation_id = rc.rotation_id
-            LEFT JOIN rotations ro ON rc.rotation_id = ro.rotation_id
+            LEFT JOIN rotations ro ON rc.rotation_id = ro.id
             LEFT JOIN intervals i ON rc.interval_id = i.ID
             LEFT JOIN courses c ON rc.course_id = c.ID
             WHERE ? BETWEEN i.start AND i.end
@@ -195,7 +195,7 @@ exports.getPeriodData = async (req, res, next) => {
         SELECT i.year, i.season, rc.course_order as courseOrderNo, i.end
         FROM enrollment e
                  LEFT JOIN rotation_courses rc ON e.rotation_id = rc.rotation_id
-                 LEFT JOIN rotations ro ON rc.rotation_id = ro.rotation_id
+                 LEFT JOIN rotations ro ON rc.rotation_id = ro.id
                  LEFT JOIN intervals i ON rc.interval_id = i.ID
                  LEFT JOIN courses c ON rc.course_id = c.ID
         WHERE ? BETWEEN i.start AND i.end
