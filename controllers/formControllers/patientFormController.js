@@ -953,6 +953,8 @@ exports.getLinearTotalProgressBarData = (req, res, next) => {
             query, values,
             function (err, data, fields) {
                 if (err) return next(new AppError(err, 500));
+
+                console.log(data);
                 res.status(200).json({
                     status: "success",
                     length: data?.length,
