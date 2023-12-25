@@ -192,7 +192,7 @@ exports.getPeriodData = async (req, res, next) => {
         }
 
         const query = `
-        SELECT i.year, i.season, rc.course_order as courseOrderNo, i.end
+        SELECT i.year, i.season, rc.course_order as courseOrderNo, i.end, c.patient_count as patientCount, c.procedure_count as procedureCount
         FROM enrollment e
                  LEFT JOIN rotation_courses rc ON e.rotation_id = rc.rotation_id
                  LEFT JOIN rotations ro ON rc.rotation_id = ro.id
