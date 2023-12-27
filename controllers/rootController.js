@@ -31,7 +31,7 @@ exports.login = async (req, res, next) => {
                 user = data[0];
                 console.log(user);
             } else {
-                return res.status(404).json({message:"Student permissions are not setted."});
+                return res.status(404).json({ message: "Student permissions are not setted." });
 
             }
 
@@ -78,14 +78,47 @@ exports.login = async (req, res, next) => {
 
         if (st.code == 200 && st.token) {
 
-            const returnedData = {
-                fullName: st.data.displayname, //username 
-                email: st.data.email, //msil
-                ekoid: st.data.ekoid, //ekoid
-                ID: user.ID, //student or physician ID
-            };
+            const query = `SELECT
+                s.ID AS student_id,
+                s.name AS student_name,
+                r.id AS rotation_id,
+                rc.course_id,
+                i.start AS interval_start,
+                i.end AS interval_end
+            FROM
+                student s
+            JOIN
+                enrollment e ON s.ID = e.std_id
+            JOIN
+                rotations r ON e.rotation_id = r.id
+            LEFT JOIN
+                rotation_courses rc ON r.id = rc.rotation_id
+            LEFT JOIN
+                intervals i ON rc.interval_id = i.ID
+            WHERE
+                s.ID = ? -- Replace your_student_id with the actual student ID you want to check
+                AND r.id IS NOT NULL -- Student is enrolled in a rotation
+                AND current_date BETWEEN i.start AND i.end;`;
+            const value = [user["student_id"]]; //actually the mail of the std
 
-            res.status(200).json(returnedData);
+            print(value + " student_id");
+
+            const data = await queryAsync(query, value);
+
+            if (data && data.length > 0) {
+
+                const returnedData = {
+                    fullName: st.data.displayname, //username 
+                    email: st.data.email, //msil
+                    ekoid: st.data.ekoid, //ekoid
+                    ID: user.ID, //student or physician ID
+                };
+
+                res.status(200).json(returnedData);
+            } else {
+                return res.status(404).json({ message: "Student currently doesn't have course in time interval or is not enrolled in any rotation." });
+
+            }
 
         } else {
             res.status(400).json({ message: "User could not be authenticated." });
