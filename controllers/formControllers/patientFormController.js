@@ -129,7 +129,7 @@ exports.insertPatientForm = (req, res, next) => {
         })
         .catch((error) => {
             // Handle errors from getCurrentCourse
-            return next(new AppError(error, 500));
+            return next(new AppError(error, 404));
         });
 };
 
@@ -589,6 +589,9 @@ exports.searchPatientFormsForStudent = (req, res, next) => { //for student sent 
     }
 };
 
+//search if student id enrolled in any course, if yes count the requ
+
+
 exports.searchPatientFormsByAcceptance = (req, res, next) => {
     const page = parseInt(req.query.page) || 1; // Current page number
     const pageSize = parseInt(req.query.pageSize) || 10; // Number of items per page
@@ -940,7 +943,7 @@ exports.getLinearTotalProgressBarData = (req, res, next) => {
                                     i.year = pr.year and
                                     i.season = pr.season
             WHERE a.physicianID = ? && i.year = ? && i.season = ?
-            GROUP BY a.ID, r.course_id, r.rotation_id) AS subquery;
+            GROUP BY a.ID, r.course_id, r.rotation_id) AS subquery;dash
         `;
 
         const values = [

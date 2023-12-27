@@ -192,16 +192,35 @@ exports.getPeriodData = async (req, res, next) => {
         }
 
         const query = `
-        SELECT i.year, i.season, rc.course_order as courseOrderNo, i.end, c.patient_count as patientCount, c.procedure_count as procedureCount
+        SELECT i.year,
+            i.season,
+            rc.course_order        as courseOrderNo,
+            i.end,
+            c.patient_count        as patientCount,
+            c.procedure_count      as procedureCount,
+            (SELECT COUNT(*)
+                FROM patientreports pr
+                WHERE pr.courseID = c.ID
+                AND pr.year = i.year
+                AND pr.season = i.season
+                AND pr.studentID = e.std_id
+                AND pr.isSent = 1)  AS patientCounter,
+            (SELECT COUNT(*)
+                FROM procedurereports pro
+                WHERE pro.courseID = c.ID
+                AND pro.year = i.year
+                AND pro.season = i.season
+                AND pro.studentID = e.std_id
+                AND pro.isSent = 1) AS procedureCounter
         FROM enrollment e
-                 LEFT JOIN rotation_courses rc ON e.rotation_id = rc.rotation_id
-                 LEFT JOIN rotations ro ON rc.rotation_id = ro.id
-                 LEFT JOIN intervals i ON rc.interval_id = i.ID
-                 LEFT JOIN courses c ON rc.course_id = c.ID
+                LEFT JOIN rotation_courses rc ON e.rotation_id = rc.rotation_id
+                LEFT JOIN rotations ro ON rc.rotation_id = ro.id
+                LEFT JOIN intervals i ON rc.interval_id = i.ID
+                LEFT JOIN courses c ON rc.course_id = c.ID
         WHERE ? BETWEEN i.start AND i.end
-          AND i.year = ?
-          AND i.season = ?
-          AND e.std_id = ?;
+        AND i.year = ?
+        AND i.season = ?
+        AND e.std_id = ?;
       `;
 
         conn.query(
