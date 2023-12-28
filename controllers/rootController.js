@@ -78,37 +78,51 @@ exports.login = async (req, res, next) => {
         const st = response.data;
 
         if (st.code == 200 && st.token) {
+            if (userType == 0) {
+                const value = [user["ID"], currentDate]; //actually the mail of the std
 
-            const value = [user["ID"], currentDate]; //actually the mail of the std
-
-            const query = `SELECT
-                s.ID AS student_id,
-                s.name AS student_name,
-                r.id AS rotation_id,
-                rc.course_id,
-                i.start AS interval_start,
-                i.end AS interval_end
-            FROM
-                student s
-            JOIN
-                enrollment e ON s.ID = e.std_id
-            JOIN
-                rotations r ON e.rotation_id = r.id
-            LEFT JOIN
-                rotation_courses rc ON r.id = rc.rotation_id
-            LEFT JOIN
-                intervals i ON rc.interval_id = i.ID
-            WHERE
-                s.ID = ? 
-                AND r.id IS NOT NULL 
-                AND ? BETWEEN i.start AND i.end;`;
+                const query = `SELECT
+                    s.ID AS student_id,
+                    s.name AS student_name,
+                    r.id AS rotation_id,
+                    rc.course_id,
+                    i.start AS interval_start,
+                    i.end AS interval_end
+                FROM
+                    student s
+                JOIN
+                    enrollment e ON s.ID = e.std_id
+                JOIN
+                    rotations r ON e.rotation_id = r.id
+                LEFT JOIN
+                    rotation_courses rc ON r.id = rc.rotation_id
+                LEFT JOIN
+                    intervals i ON rc.interval_id = i.ID
+                WHERE
+                    s.ID = ? 
+                    AND r.id IS NOT NULL 
+                    AND ? BETWEEN i.start AND i.end;`;
 
 
 
-            const controllEnrollment = await queryAsync(query, value);
+                const controllEnrollment = await queryAsync(query, value);
 
-            if (controllEnrollment && controllEnrollment.length > 0) {
+                if (controllEnrollment && controllEnrollment.length > 0) {
 
+                    const returnedData = {
+                        fullName: st.data.displayname, //username 
+                        email: st.data.email, //msil
+                        ekoid: st.data.ekoid, //ekoid
+                        ID: user.ID, //student or physician ID
+                    };
+
+                    res.status(200).json(returnedData);
+                } else {
+                    return res.status(404).json({ message: "Student currently doesn't have course in time interval or is not enrolled in any rotation." });
+
+                }
+            }
+            else {
                 const returnedData = {
                     fullName: st.data.displayname, //username 
                     email: st.data.email, //msil
@@ -117,9 +131,6 @@ exports.login = async (req, res, next) => {
                 };
 
                 res.status(200).json(returnedData);
-            } else {
-                return res.status(404).json({ message: "Student currently doesn't have course in time interval or is not enrolled in any rotation." });
-
             }
 
         } else {
