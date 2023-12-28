@@ -923,7 +923,7 @@ exports.getLinearTotalProgressBarData = (req, res, next) => {
         return next(new AppError("Lack of needed parameters", 404));
     }
 
-    if (!rotationID || !courseID) {//if rotation and course is not provided return all the rotation courses sum
+    if (!rotationID || !courseID) {//if rotation and course is not provided return all the rotation courses sums
 
         const query = `
         SELECT COALESCE(SUM(report_count), 0)   AS total_report_count,
