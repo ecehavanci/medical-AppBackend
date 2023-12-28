@@ -78,6 +78,9 @@ exports.login = async (req, res, next) => {
 
         if (st.code == 200 && st.token) {
 
+            const value = [user["student_id"]]; //actually the mail of the std
+            print(value + " student_id");
+
             const query = `SELECT
                 s.ID AS student_id,
                 s.name AS student_name,
@@ -96,12 +99,11 @@ exports.login = async (req, res, next) => {
             LEFT JOIN
                 intervals i ON rc.interval_id = i.ID
             WHERE
-                s.ID = ? -- Replace your_student_id with the actual student ID you want to check
-                AND r.id IS NOT NULL -- Student is enrolled in a rotation
+                s.ID = ? 
+                AND r.id IS NOT NULL 
                 AND current_date BETWEEN i.start AND i.end;`;
-            const value = [user["student_id"]]; //actually the mail of the std
 
-            print(value + " student_id");
+
 
             const data = await queryAsync(query, value);
 
