@@ -78,8 +78,8 @@ exports.login = async (req, res, next) => {
 
         if (st.code == 200 && st.token) {
 
-            const value = [user["student_id"]]; //actually the mail of the std
-            print(value + " student_id");
+            const value = [user["ID"]]; //actually the mail of the std
+            console.log(value);
 
             const query = `SELECT
                 s.ID AS student_id,
@@ -105,9 +105,9 @@ exports.login = async (req, res, next) => {
 
 
 
-            const data = await queryAsync(query, value);
+            const controllEnrollment = await queryAsync(query, value);
 
-            if (data && data.length > 0) {
+            if (controllEnrollment && controllEnrollment.length > 0) {
 
                 const returnedData = {
                     fullName: st.data.displayname, //username 
