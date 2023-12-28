@@ -943,7 +943,7 @@ exports.getLinearTotalProgressBarData = (req, res, next) => {
                                     i.year = pr.year and
                                     i.season = pr.season
             WHERE a.physicianID = ? && i.year = ? && i.season = ?
-            GROUP BY a.ID, r.course_id, r.rotation_id) AS subquery;dash
+            GROUP BY a.ID, r.course_id, r.rotation_id) AS subquery;
         `;
 
         const values = [
