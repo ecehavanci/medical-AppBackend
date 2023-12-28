@@ -6,7 +6,8 @@ require('dotenv').config();
 const util = require('util');
 const promisify = util.promisify;
 const queryAsync = promisify(conn.query).bind(conn);
-
+const dater = require(".././config");
+const currentDate = dater.app.date;
 
 exports.login = async (req, res, next) => {
     const { eko_id, password, userType } = req.body;
@@ -78,8 +79,7 @@ exports.login = async (req, res, next) => {
 
         if (st.code == 200 && st.token) {
 
-            const value = [user["ID"]]; //actually the mail of the std
-            console.log(value);
+            const value = [user["ID"], currentDate]; //actually the mail of the std
 
             const query = `SELECT
                 s.ID AS student_id,
@@ -101,7 +101,7 @@ exports.login = async (req, res, next) => {
             WHERE
                 s.ID = ? 
                 AND r.id IS NOT NULL 
-                AND current_date BETWEEN i.start AND i.end;`;
+                AND ? BETWEEN i.start AND i.end;`;
 
 
 
