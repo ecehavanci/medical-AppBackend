@@ -14,7 +14,7 @@ router
     .route("/get/doctor/count/linear-chart/:rotationID/:courseID/:physicianID")
     .get(procedureFormController.getLinearTotalProgressBarData);
 
-    router
+router
     .route("/get/doctor/count/dashboard/approved/:studentID/:rotationID/:courseID/:physicianID")
     .get(procedureFormController.getDoctorCountProcedureFormsForDashboardAccordingToApproval);
 
@@ -49,6 +49,10 @@ router
 router
     .route("/get/ID/:studentID/:localStorageID")
     .get(procedureFormController.getIDofProcedureForm);
+
+router
+    .route("/get/lastLocalID/:studentID")
+    .get(procedureFormController.getLastLocalStorageID);
 
 router
     .route("/delete/:ID/:localStorageID")

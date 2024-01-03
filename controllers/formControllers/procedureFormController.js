@@ -757,6 +757,24 @@ exports.getIDofProcedureForm = (req, res, next) => {
     );
 }
 
+
+exports.getLastLocalStorageID = (req, res, next) => { //returns specific patientreports with ID
+    if (!req.params.studentID) {
+        return next(new AppError("No patient with this ID found", 404));
+    }
+    conn.query(
+        "select localStorageID from procedurereports where studentID =  ? order by localStorageID DESC  limit 1;",
+        [req.params.studentID],
+        function (err, data, fields) {
+            if (err) return next(new AppError(err, 500));
+            res.status(200).json({
+                status: "success",
+                data: data,
+            });
+        }
+    );
+};
+
 //counts student's form count for specified course && approval status
 exports.getCountProcedureFormsForDashboardAccordingToApproval = (req, res, next) => {
     const studentID = req.params.studentID;
