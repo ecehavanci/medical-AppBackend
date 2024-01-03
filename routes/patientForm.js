@@ -49,6 +49,10 @@ router
     .get(patientFormController.getIDofPatientForm);
 
 router
+    .route("/get/lastLocalID/:studentID")
+    .get(patientFormController.getLastLocalStorageID);
+
+router
     .route("/delete/:stdID/:localStorageID")
     .delete(patientFormController.deletePatientFormWithID);
 
