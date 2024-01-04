@@ -937,6 +937,37 @@ exports.checkSaveEpoch = (req, res, next) => { //returns draft reports save epoc
         });
 };
 
+exports.draftReportToUpdateLocal = (req, res, next) => { //returns draft report to Update local draft
+    if (!req.params.studentID) {
+        return next(new AppError("No student with this ID found", 404));
+    }
+    const studentID = req.params.studentID;
+    const localStorageID = req.params.localStorageID;
+
+    courseHelper.getCurrentCourse(studentID)
+        .then((finalCourseID) => {
+            conn.query(
+                `select *
+                from patientreports
+                where studentID = ?
+                  and localStorageID = ?
+                  and courseID = ?;`,
+                [studentID, localStorageID, finalCourseID],
+                function (err, data, fields) {
+                    if (err) return next(new AppError(err, 500));
+                    res.status(200).json({
+                        status: "success",
+                        data: data,
+                    });
+                }
+            );
+        })
+        .catch((error) => {
+            // Handle errors from getCurrentCourse
+            return next(new AppError(error, 500));
+        });
+};
+
 
 //for physician Student Progress Page counts student's form count for specified course, rotation && approval status
 exports.getDoctorCountPatientFormsForDashboardAccordingToApproval = (req, res, next) => {

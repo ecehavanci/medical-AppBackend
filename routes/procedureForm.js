@@ -57,10 +57,14 @@ router
 router
     .route("/get/draftIsSent/:studentID/:localStorageID")
     .get(procedureFormController.checkDraftIsSent);
-    
+
 router
     .route("/get/checkSaveEpoch/:studentID/:localStorageID")
     .get(procedureFormController.checkSaveEpoch);
+
+router
+    .route("/get/draftReportToUpdateLocal/:studentID/:localStorageID")
+    .get(procedureFormController.draftReportToUpdateLocal);
 
 router
     .route("/delete/:ID/:localStorageID")

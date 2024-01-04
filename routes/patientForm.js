@@ -61,6 +61,10 @@ router
     .get(patientFormController.checkSaveEpoch);
 
 router
+    .route("/get/draftReportToUpdateLocal/:studentID/:localStorageID")
+    .get(patientFormController.draftReportToUpdateLocal);
+
+router
     .route("/delete/:stdID/:localStorageID")
     .delete(patientFormController.deletePatientFormWithID);
 
