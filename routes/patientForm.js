@@ -53,6 +53,10 @@ router
     .get(patientFormController.getLastLocalStorageID);
 
 router
+    .route("/get/draftIsSent/:studentID/:localStorageID")
+    .get(patientFormController.checkDraftIsSent);
+
+router
     .route("/delete/:stdID/:localStorageID")
     .delete(patientFormController.deletePatientFormWithID);
 

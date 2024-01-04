@@ -54,6 +54,11 @@ router
     .route("/get/lastLocalID/:studentID")
     .get(procedureFormController.getLastLocalStorageID);
 
+
+router
+    .route("/get/draftIsSent/:studentID/:localStorageID")
+    .get(patientFormController.checkDraftIsSent);
+
 router
     .route("/delete/:ID/:localStorageID")
     .delete(procedureFormController.deleteProcedureFormWithID);

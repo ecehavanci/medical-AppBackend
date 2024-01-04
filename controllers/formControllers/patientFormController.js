@@ -858,9 +858,9 @@ exports.getPatientFormWithID = (req, res, next) => { //returns specific patientr
     );
 };
 
-exports.getLastLocalStorageID = (req, res, next) => { //returns specific patientreports with ID
+exports.getLastLocalStorageID = (req, res, next) => { //returns last localstorage id of the reports
     if (!req.params.studentID) {
-        return next(new AppError("No patient with this ID found", 404));
+        return next(new AppError("No student with this ID found", 404));
     }
     conn.query(
         "select localStorageID from patientreports where studentID =  ? order by localStorageID DESC  limit 1;",
@@ -873,6 +873,37 @@ exports.getLastLocalStorageID = (req, res, next) => { //returns specific patient
             });
         }
     );
+};
+
+exports.checkDraftIsSent = (req, res, next) => { //checks if the previously drafted report is sent by LS id and std number
+    if (!req.params.studentID) {
+        return next(new AppError("No student with this ID found", 404));
+    }
+    const studentID = req.params.studentID;
+    const localStorageID = req.params.localStorageID;
+
+    courseHelper.getCurrentCourse(studentID)
+        .then((finalCourseID) => {
+            conn.query(
+                `select isSent
+                from patientreports
+                where studentID = ?
+                  and localStorageID = ?
+                  and courseID = ?;`,
+                [studentID, localStorageID, finalCourseID],
+                function (err, data, fields) {
+                    if (err) return next(new AppError(err, 500));
+                    res.status(200).json({
+                        status: "success",
+                        data: data,
+                    });
+                }
+            );
+        })
+        .catch((error) => {
+            // Handle errors from getCurrentCourse
+            return next(new AppError(error, 500));
+        });
 };
 
 
