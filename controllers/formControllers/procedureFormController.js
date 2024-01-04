@@ -850,7 +850,7 @@ exports.draftReportToUpdateLocal = (req, res, next) => { //returns draft report 
         .then((finalCourseID) => {
             conn.query(
                 `select *
-                from patientreports
+                from procedurereports
                 where studentID = ?
                   and localStorageID = ?
                   and courseID = ?;`,
