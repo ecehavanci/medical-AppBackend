@@ -848,6 +848,9 @@ exports.draftReportToUpdateLocal = (req, res, next) => { //returns draft report 
 
     courseHelper.getCurrentCourse(studentID)
         .then((finalCourseID) => {
+
+            // console.log(finalCourseID);
+            
             conn.query(
                 `select *
                 from procedurereports
