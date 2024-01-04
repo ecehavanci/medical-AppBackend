@@ -57,7 +57,7 @@ router
 
 router
     .route("/get/draftIsSent/:studentID/:localStorageID")
-    .get(patientFormController.checkDraftIsSent);
+    .get(procedureFormController.checkDraftIsSent);
 
 router
     .route("/delete/:ID/:localStorageID")
