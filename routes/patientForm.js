@@ -57,6 +57,10 @@ router
     .get(patientFormController.checkDraftIsSent);
 
 router
+    .route("/get/checkSaveEpoch/:studentID/:localStorageID")
+    .get(patientFormController.checkSaveEpoch);
+
+router
     .route("/delete/:stdID/:localStorageID")
     .delete(patientFormController.deletePatientFormWithID);
 

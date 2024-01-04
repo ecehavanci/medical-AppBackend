@@ -54,10 +54,13 @@ router
     .route("/get/lastLocalID/:studentID")
     .get(procedureFormController.getLastLocalStorageID);
 
-
 router
     .route("/get/draftIsSent/:studentID/:localStorageID")
     .get(procedureFormController.checkDraftIsSent);
+    
+router
+    .route("/get/checkSaveEpoch/:studentID/:localStorageID")
+    .get(procedureFormController.checkSaveEpoch);
 
 router
     .route("/delete/:ID/:localStorageID")
