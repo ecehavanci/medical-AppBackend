@@ -83,7 +83,7 @@ exports.listStudentSemesterInfos = (req, res, next) => { //add, order by courses
              LEFT JOIN intervals i ON rc.interval_id = i.ID
              LEFT JOIN courses c ON rc.course_id = c.ID
     WHERE e.std_id = ?
-    order by rc.course_order;`;
+    order by i.start;`;
     conn.query(
         query,
         [req.params.stdID],
@@ -111,7 +111,7 @@ exports.listPhysicianSemesterCourses = (req, res, next) => { //add, order by cou
     and i.year = ?
     
     and i.season = ?
-    order by rc.course_order;`;
+    order by i.start;`;
     conn.query(
         query,
         [req.params.physicianID, currentYear, currentSeason],
@@ -194,7 +194,7 @@ exports.getPeriodData = async (req, res, next) => {
         const query = `
         SELECT i.year,
             i.season,
-            rc.course_order        as courseOrderNo,
+            c.ID        as courseID,
             i.end,
             c.patient_count        as patientCount,
             c.procedure_count      as procedureCount,

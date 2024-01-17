@@ -49,7 +49,7 @@ exports.getCurrentCourseDoctor = (physicianID) => {
               and i.year = ?
               and i.season = ?
               and ? between i.start and i.end
-            order by rc.course_order;
+            order by i.start;
             `,
             [physicianID, currentYear, currentSeason, currentDate],
             (err, data) => {

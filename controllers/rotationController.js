@@ -41,26 +41,26 @@ exports.deleteStdRotation = (req, res, next) => {
     );
 }
 
-exports.changeRotationCourseOrder = (req, res, next) => {
-    if (!req.body.rotation_id || !req.body.course_id || !req.body.course_order || !req.body.interval_id) {
-        return next(new AppError("No required info found.", 404));
-    }
+// exports.changeRotationCourseOrder = (req, res, next) => {
+//     if (!req.body.rotation_id || !req.body.course_id || !req.body.course_order || !req.body.interval_id) {
+//         return next(new AppError("No required info found.", 404));
+//     }
 
-    const query = `UPDATE rotation_courses rc 
-    SET rc.course_order = ?, rc.interval_id = ? 
-    WHERE rc.rotation_id = ? AND rc.course_id = ?;`;
+//     const query = `UPDATE rotation_courses rc 
+//     SET rc.course_order = ?, rc.interval_id = ? 
+//     WHERE rc.rotation_id = ? AND rc.course_id = ?;`;
 
-    const { rotation_id, course_id, course_order, interval_id } = req.body;
+//     const { rotation_id, course_id, course_order, interval_id } = req.body;
 
-    conn.query(
-        query,
-        [course_order, interval_id, rotation_id, course_id],
-        function (err, fields) {
-            if (err) return next(new AppError(err, 500));
-            res.status(201).json({
-                status: "success",
-                message: "Rotation course order updated!",
-            });
-        }
-    );
-}
+//     conn.query(
+//         query,
+//         [course_order, interval_id, rotation_id, course_id],
+//         function (err, fields) {
+//             if (err) return next(new AppError(err, 500));
+//             res.status(201).json({
+//                 status: "success",
+//                 message: "Rotation course order updated!",
+//             });
+//         }
+//     );
+// }
