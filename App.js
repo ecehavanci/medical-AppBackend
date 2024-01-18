@@ -17,7 +17,7 @@ app.get("/", (req, res) => {
     res.send("working");
 });
 
-const PORT = 3000;
+const PORT = 443;
 app.listen(PORT, () => {
     console.log(`Server is listening on port ${PORT}`);
   });
