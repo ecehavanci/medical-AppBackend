@@ -47,24 +47,9 @@ exports.login = async (req, res, next) => {
                 user = data[0];
                 console.log(user);
             } else {
-                return res.status(404).json({ message: "Student permissions are not setted." });
+                return res.status(404).json({ message: "Physician permissions are not setted." });
 
             }
-            // conn.query(
-            //     query, value,
-            //     function (err, data, fields) {
-            //         if (err) return next(new AppError(err, 500));
-
-            //         if (data && data.length > 0) { //if user is in the db
-            //             user = data[0];
-
-            //         } else {
-            //             // User with the provided eko_id not found, return false
-            //             return res.status(404).json({ message: "Physician permissions are not setted." });
-
-            //         }
-            //     }
-            // );
         }
 
         const config = {
