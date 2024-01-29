@@ -14,7 +14,7 @@ app.use(errorHandler);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(api, routes);
-app.use(api, helmet);
+app.use(api, helmet());
 
 app.get("/", (req, res) => {
     res.send("working");
