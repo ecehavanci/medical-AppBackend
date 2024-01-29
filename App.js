@@ -1,4 +1,5 @@
 const express = require("express");
+const helmet = require("helmet");
 const cors = require("cors");
 const routes = require("./routes");
 const AppError = require("./utils/appError");
@@ -13,6 +14,8 @@ app.use(errorHandler);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(api, routes);
+app.use(api, helmet);
+
 app.get("/", (req, res) => {
     res.send("working");
 });
