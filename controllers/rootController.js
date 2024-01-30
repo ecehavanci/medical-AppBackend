@@ -115,6 +115,8 @@ exports.login = async (req, res, next) => {
                     const token = generateAccessToken({
                         username: stdID.toString()
                     });
+                    
+                    console.log(token);
 
                     const query = `UPDATE student SET token = ? WHERE ID = ?;`;
                     const value = [token, stdID];
@@ -146,6 +148,8 @@ exports.login = async (req, res, next) => {
                 const token = generateAccessToken({
                     username: physicianID.toString()
                 });
+
+                console.log(token);
 
                 const query = `UPDATE attendingphysicians SET token = ? WHERE ID = ?;`;
                 const value = [token, physicianID];
