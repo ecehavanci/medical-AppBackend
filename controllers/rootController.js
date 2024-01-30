@@ -129,7 +129,7 @@ exports.login = async (req, res, next) => {
                             email: st.data.email, //msil
                             ekoid: st.data.ekoid, //ekoid
                             ID: user.ID, //student ID
-                            token: token
+                            // token: token
                         };
 
                         console.log(returnedData);
