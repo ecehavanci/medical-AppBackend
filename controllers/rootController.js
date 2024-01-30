@@ -132,6 +132,7 @@ exports.login = async (req, res, next) => {
                             token: token
                         };
 
+                        console.log(returnedData);
                         res.status(200).json(returnedData);
                     }
 
