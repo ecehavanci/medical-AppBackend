@@ -133,7 +133,7 @@ exports.login = async (req, res, next) => {
                         };
 
                         console.log(returnedData);
-                        res.status(200).json(returnedData);
+                        return res.status(200).json(returnedData);
                     }
 
                 } else {
@@ -166,7 +166,7 @@ exports.login = async (req, res, next) => {
                         ID: user.ID, //physician ID
                     };
 
-                    res.status(200).json(returnedData);
+                    return res.status(200).json(returnedData);
                 }
             }
 
