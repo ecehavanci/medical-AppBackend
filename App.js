@@ -14,11 +14,11 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(api, routes);
 app.use(api, helmet());
-app.use(cors({
-  origin: 'https://medsis.izmirekonomi.edu.tr',
-  methods: ['GET', 'POST', 'DELETE', 'PUT'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+// app.use(cors({
+//   origin: 'https://medsis.izmirekonomi.edu.tr',
+//   methods: ['GET', 'POST', 'DELETE', 'PUT'],
+//   allowedHeaders: ['Content-Type', 'Authorization']
+// }));
 app.disable('x-powered-by');
 
 app.get("/", (req, res) => {
