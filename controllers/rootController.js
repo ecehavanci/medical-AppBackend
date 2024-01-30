@@ -2,12 +2,19 @@ const AppError = require("../utils/appError");
 const conn = require("../services/db");
 var https = require('follow-redirects').https;
 const axios = require('axios');
-require('dotenv').config();
+const dotenv = require('dotenv').config();
 const util = require('util');
 const promisify = util.promisify;
 const queryAsync = promisify(conn.query).bind(conn);
 const dater = require(".././config");
 const currentDate = dater.app.date;
+const jwt = require('jsonwebtoken');
+
+function generateAccessToken(username) {
+    const secretKey = process.env.TOKEN_SECRET;
+
+    return jwt.sign(username, secretKey, { expiresIn: '1800s' });
+}
 
 exports.login = async (req, res, next) => {
     const { eko_id, password, userType } = req.body;
@@ -72,7 +79,7 @@ exports.login = async (req, res, next) => {
         const st = response.data;
 
         if (st.code == 200 && st.token) {
-            if (userType == 0) {
+            if (userType == 0) { //if user is a student and required info is handled
                 const value = [user["ID"], currentDate]; //actually the mail of the std
 
                 const query = `SELECT
@@ -103,28 +110,59 @@ exports.login = async (req, res, next) => {
 
                 if (controllEnrollment && controllEnrollment.length > 0) {
 
-                    const returnedData = {
-                        fullName: st.data.displayname, //username 
-                        email: st.data.email, //msil
-                        ekoid: st.data.ekoid, //ekoid
-                        ID: user.ID, //student or physician ID
-                    };
+                    const stdID = controllEnrollment[0]["student_id"];
+                    //generate a new token to user
+                    const token = generateAccessToken({
+                        username: stdID.toString()
+                    });
 
-                    res.status(200).json(returnedData);
+                    const query = `UPDATE student SET token = ? WHERE ID = ?;`;
+                    const value = [token, stdID];
+
+                    const tokenInsertion = await queryAsync(query, value);
+
+                    if (tokenInsertion && tokenInsertion.length > 0) {
+                        const returnedData = {
+                            fullName: st.data.displayname, //username 
+                            email: st.data.email, //msil
+                            ekoid: st.data.ekoid, //ekoid
+                            ID: user.ID, //student ID
+                            token: token
+                        };
+
+                        res.status(200).json(returnedData);
+                    }
+
                 } else {
                     return res.status(404).json({ message: "Student currently doesn't have course in time interval or is not enrolled in any rotation." });
 
                 }
             }
-            else {
-                const returnedData = {
-                    fullName: st.data.displayname, //username 
-                    email: st.data.email, //msil
-                    ekoid: st.data.ekoid, //ekoid
-                    ID: user.ID, //student or physician ID
-                };
+            else {//if user is a physician and required info is handled
 
-                res.status(200).json(returnedData);
+
+                const physicianID = user["ID"];
+                //generate a new token to user
+                const token = generateAccessToken({
+                    username: physicianID.toString()
+                });
+
+                const query = `UPDATE attendingphysicians SET token = ? WHERE ID = ?;`;
+                const value = [token, physicianID];
+
+                const tokenInsertion = await queryAsync(query, value);
+
+                if (tokenInsertion && tokenInsertion.length > 0) {
+
+                    const returnedData = {
+                        fullName: st.data.displayname, //username 
+                        email: st.data.email, //mail
+                        ekoid: st.data.ekoid, //ekoid
+                        ID: user.ID, //physician ID
+                    };
+
+                    res.status(200).json(returnedData);
+                }
             }
 
         } else {
