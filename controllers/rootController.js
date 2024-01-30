@@ -110,20 +110,20 @@ exports.login = async (req, res, next) => {
 
                 if (controllEnrollment && controllEnrollment.length > 0) {
 
-                    const stdID = controllEnrollment[0]["student_id"];
-                    //generate a new token to user
-                    const token = generateAccessToken({
-                        username: stdID.toString()
-                    });
+                    // const stdID = controllEnrollment[0]["student_id"];
+                    // //generate a new token to user
+                    // const token = generateAccessToken({
+                    //     username: stdID.toString()
+                    // });
 
-                    console.log(token);
+                    // console.log(token);
 
-                    const query = `UPDATE student SET token = ? WHERE ID = ?;`;
-                    const value = [token, stdID];
+                    // const query = `UPDATE student SET token = ? WHERE ID = ?;`;
+                    // const value = [token, stdID];
 
-                    const tokenInsertion = await queryAsync(query, value);
+                    // const tokenInsertion = await queryAsync(query, value);
 
-                    if (tokenInsertion && tokenInsertion.length > 0) {
+                    // if (tokenInsertion && tokenInsertion.length > 0) {
                         const returnedData = {
                             fullName: st.data.displayname, //username 
                             email: st.data.email, //msil
@@ -134,7 +134,7 @@ exports.login = async (req, res, next) => {
 
                         console.log(returnedData);
                         return res.status(200).json(returnedData);
-                    }
+                    // }
 
                 } else {
                     return res.status(404).json({ message: "Student currently doesn't have course in time interval or is not enrolled in any rotation." });
