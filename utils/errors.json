@@ -1,0 +1,17 @@
+[
+  {
+    "error": "error",
+    "message": "Error: Student is not currently enrolled in any course.",
+    "stack": "Error: Error: Student is not currently enrolled in any course.\n    at C:\\Users\\ehavanci\\dev\\medical-AppBackend\\controllers\\physicianController.js:225:21\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)"
+  },
+  {
+    "error": "error",
+    "message": "Error: Student is not currently enrolled in any course.",
+    "stack": "Error: Error: Student is not currently enrolled in any course.\n    at C:\\Users\\ehavanci\\dev\\medical-AppBackend\\controllers\\physicianController.js:225:21\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)"
+  },
+  {
+    "error": "error",
+    "message": "Error: Student is not currently enrolled in any course.",
+    "stack": "Error: Error: Student is not currently enrolled in any course.\n    at C:\\Users\\ehavanci\\dev\\medical-AppBackend\\controllers\\physicianController.js:225:21\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)"
+  }
+]

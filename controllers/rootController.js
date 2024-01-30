@@ -115,7 +115,7 @@ exports.login = async (req, res, next) => {
                     const token = generateAccessToken({
                         username: stdID.toString()
                     });
-                    
+
                     console.log(token);
 
                     const query = `UPDATE student SET token = ? WHERE ID = ?;`;
@@ -171,11 +171,11 @@ exports.login = async (req, res, next) => {
             }
 
         } else {
-            res.status(400).json({ message: "User could not be authenticated." });
+            return res.status(400).json({ message: "User could not be authenticated." });
         }
 
     } catch (error) {
-        res.status(500).json({ message: "Wrong username or password." });
+        return res.status(500).json({ message: "Wrong username or password." });
     }
 
 }
