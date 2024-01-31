@@ -124,16 +124,16 @@ exports.login = async (req, res, next) => {
                     const tokenInsertion = await queryAsync(query, value);
 
                     if (tokenInsertion && tokenInsertion.length > 0) {
-                    const returnedData = {
-                        fullName: st.data.displayname, //username 
-                        email: st.data.email, //msil
-                        ekoid: st.data.ekoid, //ekoid
-                        ID: user.ID, //student ID
-                        // token: token
-                    };
+                        const returnedData = {
+                            fullName: st.data.displayname, //username 
+                            email: st.data.email, //msil
+                            ekoid: st.data.ekoid, //ekoid
+                            ID: user.ID, //student ID
+                            // token: token
+                        };
 
-                    console.log(returnedData);
-                    return res.status(200).json(returnedData);
+                        console.log(returnedData);
+                        return res.status(200).json(returnedData);
                     }
 
                 } else {
@@ -150,13 +150,14 @@ exports.login = async (req, res, next) => {
                     username: physicianID.toString()
                 });
 
-                console.log(token +" at line 153");
+                console.log(token + " at line 153");
 
                 const query = `UPDATE attendingphysicians SET token = ? WHERE ID = ?;`;
                 const value = [token, physicianID];
 
+                console.log(value + " at line 159");
+
                 const tokenInsertion = await queryAsync(query, value);
-                console.log(value+ " at line 159");
                 console.log(tokenInsertion);
 
                 if (tokenInsertion && tokenInsertion.length > 0) {
