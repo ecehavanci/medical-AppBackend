@@ -156,6 +156,8 @@ exports.login = async (req, res, next) => {
                 const value = [token, physicianID];
 
                 const tokenInsertion = await queryAsync(query, value);
+                console.log(value);
+                console.log(tokenInsertion);
 
                 if (tokenInsertion && tokenInsertion.length > 0) {
 
