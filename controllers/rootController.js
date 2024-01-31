@@ -158,7 +158,7 @@ exports.login = async (req, res, next) => {
                 console.log(value + " at line 159");
 
                 const tokenInsertion = await queryAsync(query, value);
-                console.log(tokenInsertion);
+                // console.log(tokenInsertion);
 
                 if (tokenInsertion && tokenInsertion.length > 0) {
 
@@ -167,7 +167,10 @@ exports.login = async (req, res, next) => {
                         email: st.data.email, //mail
                         ekoid: st.data.ekoid, //ekoid
                         ID: user.ID, //physician ID
+                        token: token, //token
                     };
+
+                    console.log(returnedData +"\n returneddata");
 
                     return res.status(200).json(returnedData);
                 }
