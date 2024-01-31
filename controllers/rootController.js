@@ -120,7 +120,12 @@ exports.login = async (req, res, next) => {
                     const value = [token, stdID];
                     const tokenInsertion = await queryAsync(query, value);
 
+                    console.log(stdID);
+                    console.log(token);
+                    console.log(tokenInsertion);
+
                     if (tokenInsertion && tokenInsertion.affectedRows > 0) {
+                        console.log("in!");
                         const returnedData = {
                             fullName: st.data.displayname, //username 
                             email: st.data.email, //msil
