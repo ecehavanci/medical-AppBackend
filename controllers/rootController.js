@@ -116,14 +116,11 @@ exports.login = async (req, res, next) => {
                         username: stdID.toString()
                     });
 
-                    console.log(token);
-
                     const query = `UPDATE student SET token = ? WHERE ID = ?;`;
                     const value = [token, stdID];
-
                     const tokenInsertion = await queryAsync(query, value);
 
-                    if (tokenInsertion && tokenInsertion.length > 0) {
+                    if (tokenInsertion && tokenInsertion.affectedRows > 0) {
                         const returnedData = {
                             fullName: st.data.displayname, //username 
                             email: st.data.email, //msil
@@ -132,7 +129,6 @@ exports.login = async (req, res, next) => {
                             // token: token
                         };
 
-                        console.log(returnedData);
                         return res.status(200).json(returnedData);
                     }
 
@@ -142,7 +138,6 @@ exports.login = async (req, res, next) => {
                 }
             }
             else {//if user is a physician and required info is handled
-                console.log("if user is a physician and required info is handled");
 
                 const physicianID = user["ID"];
                 //generate a new token to user
@@ -150,17 +145,11 @@ exports.login = async (req, res, next) => {
                     username: physicianID.toString()
                 });
 
-                console.log(token + " at line 153");
-
                 const query = `UPDATE attendingphysicians SET token = ? WHERE ID = ?;`;
                 const value = [token, physicianID];
-
-                console.log(value + " at line 159");
-
                 const tokenInsertion = await queryAsync(query, value);
-                // console.log(tokenInsertion);
 
-                if (tokenInsertion && tokenInsertion.length > 0) {
+                if (tokenInsertion && tokenInsertion.affectedRows > 0) {
 
                     const returnedData = {
                         fullName: st.data.displayname, //username 
@@ -169,8 +158,6 @@ exports.login = async (req, res, next) => {
                         ID: user.ID, //physician ID
                         token: token, //token
                     };
-
-                    console.log(returnedData +"\n returneddata");
 
                     return res.status(200).json(returnedData);
                 }
