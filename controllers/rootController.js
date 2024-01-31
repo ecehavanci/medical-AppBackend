@@ -8,13 +8,7 @@ const promisify = util.promisify;
 const queryAsync = promisify(conn.query).bind(conn);
 const dater = require(".././config");
 const currentDate = dater.app.date;
-const jwt = require('jsonwebtoken');
-
-function generateAccessToken(username) {
-    const secretKey = process.env.TOKEN_SECRET;
-
-    return jwt.sign(username, secretKey);
-}
+const generateAccessToken = require('../utils/generateToken');
 
 exports.login = async (req, res, next) => {
     const { eko_id, password, userType } = req.body;
@@ -120,12 +114,8 @@ exports.login = async (req, res, next) => {
                     const value = [token, stdID];
                     const tokenInsertion = await queryAsync(query, value);
 
-                    console.log(stdID);
-                    console.log(token);
-                    console.log(tokenInsertion);
-
                     if (tokenInsertion && tokenInsertion.affectedRows > 0) {
-                        console.log("in!");
+
                         const returnedData = {
                             fullName: st.data.displayname, //username 
                             email: st.data.email, //msil
