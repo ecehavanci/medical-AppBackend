@@ -142,7 +142,7 @@ exports.login = async (req, res, next) => {
                 }
             }
             else {//if user is a physician and required info is handled
-
+                console.log("if user is a physician and required info is handled");
 
                 const physicianID = user["ID"];
                 //generate a new token to user
@@ -150,13 +150,13 @@ exports.login = async (req, res, next) => {
                     username: physicianID.toString()
                 });
 
-                console.log(token);
+                console.log(token +" at line 153");
 
                 const query = `UPDATE attendingphysicians SET token = ? WHERE ID = ?;`;
                 const value = [token, physicianID];
 
                 const tokenInsertion = await queryAsync(query, value);
-                console.log(value);
+                console.log(value+ " at line 159");
                 console.log(tokenInsertion);
 
                 if (tokenInsertion && tokenInsertion.length > 0) {
