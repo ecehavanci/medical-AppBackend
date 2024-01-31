@@ -13,7 +13,7 @@ exports.insertStd = (req, res, next) => {
         return next(new AppError("No form data found", 404));
 
     const token = generateAccessToken({
-        username: "stdID.toString()"
+        username: req.body.name + " " + req.body.surname
     }); //temp data
     req.body.token = token;
 

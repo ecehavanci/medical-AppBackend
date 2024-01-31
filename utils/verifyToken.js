@@ -12,9 +12,14 @@ const verifyToken = (req, res, next) => {
     try {
         const decoded = jwt.verify(token, secretKey);
         req.decodedToken = decoded; // Attach the decoded token to the request object
+        // console.log(decoded);
         next(); // Call the next middleware or route handler
     } catch (err) {
-        return res.status(403).json({ message: 'Invalid token', error: err.message });
+        if (err.name === 'TokenExpiredError') {
+            return res.status(401).json({ message: 'Token has expired', error: err.message });
+        } else {
+            return res.status(403).json({ message: 'Invalid token', error: err.message });
+        }
     }
 };
 
