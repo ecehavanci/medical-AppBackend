@@ -10,8 +10,4 @@ router
     .route("/update/:stdID")
     .put(rotationController.deleteStdRotation)
 
-// router
-//     .route("/update/changeRotation")
-//     .put(rotationController.changeRotationCourseOrder)
-
 module.exports = router;

@@ -47,5 +47,5 @@ exports.getHospitalByID = (req, res, next) => {
         });
     } catch (error) {
         return next(new AppError(error.message, 500));
-    }
+    }   
 };
