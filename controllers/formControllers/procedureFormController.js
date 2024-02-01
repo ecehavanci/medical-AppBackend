@@ -12,96 +12,103 @@ const currentDate = config.app.date;
 
 exports.insertProcedureForm = (req, res, next) => {
     //we check if the client is sending an empty form "and return a 404 error message.
-    if (!req.body)
-        return next(new AppError("No form data found", 404));
-    else if (!req.body.studentID)
-        return next(new AppError("No student data provided", 404));
 
-    const studentID = req.body.studentID;
-    courseHelper.getCurrentCourse(studentID)
-        .then((finalCourseID) => {
-            const values = [
-                req.body.studentID,
-                finalCourseID,
-                req.body.specialtyID,
-                req.body.attendingPhysicianID,
-                req.body.procedureID,
-                req.body.procedureText.toLowerCase().trim(),
-                req.body.isObserved,
-                req.body.isAssisted,
-                req.body.isPerformed,
-                req.body.isSimulated,
-                req.body.setting,
-                req.body.saveEpoch,
-                req.body.sentEpoch,
-                req.body.isSent,
-                req.body.isApproved,
-                req.body.comment.trim(),
-                req.body.localStorageID,
-                currentYear,
-                currentSeason
-            ];
+    try {
+        verifyToken(req, res, () => {
+            if (!req.body)
+                return next(new AppError("No form data found", 404));
+            else if (!req.body.studentID)
+                return next(new AppError("No student data provided", 404));
 
-            console.log(req.body);
+            const studentID = req.body.studentID;
+            courseHelper.getCurrentCourse(studentID)
+                .then((finalCourseID) => {
+                    const values = [
+                        req.body.studentID,
+                        finalCourseID,
+                        req.body.specialtyID,
+                        req.body.attendingPhysicianID,
+                        req.body.procedureID,
+                        req.body.procedureText.toLowerCase().trim(),
+                        req.body.isObserved,
+                        req.body.isAssisted,
+                        req.body.isPerformed,
+                        req.body.isSimulated,
+                        req.body.setting,
+                        req.body.saveEpoch,
+                        req.body.sentEpoch,
+                        req.body.isSent,
+                        req.body.isApproved,
+                        req.body.comment.trim(),
+                        req.body.localStorageID,
+                        currentYear,
+                        currentSeason
+                    ];
 
-            conn.query(
-                "INSERT INTO procedurereports (studentID," +
-                "courseID," +
-                "specialtyID," +
-                "attendingPhysicianID," +
-                "procedureID," +
-                "procedureText," +
-                "isObserved," +
-                "isAssisted," +
-                "isPerformed," +
-                "isSimulated," +
-                "setting," +
-                "saveEpoch," +
-                "sentEpoch," +
-                "isSent," +
-                "isApproved," +
-                "comment," +
-                "localStorageID, " +
-                "year, " +
-                "season) " +
-                "VALUES(?)",
-                [values],
-                async function (err, data, fields) {
-                    if (err) {
-                        return next(new AppError(err, 500));
-                    }
+                    console.log(req.body);
 
-                    if (data.affectedRows > 0) {
+                    conn.query(
+                        "INSERT INTO procedurereports (studentID," +
+                        "courseID," +
+                        "specialtyID," +
+                        "attendingPhysicianID," +
+                        "procedureID," +
+                        "procedureText," +
+                        "isObserved," +
+                        "isAssisted," +
+                        "isPerformed," +
+                        "isSimulated," +
+                        "setting," +
+                        "saveEpoch," +
+                        "sentEpoch," +
+                        "isSent," +
+                        "isApproved," +
+                        "comment," +
+                        "localStorageID, " +
+                        "year, " +
+                        "season) " +
+                        "VALUES(?)",
+                        [values],
+                        async function (err, data, fields) {
+                            if (err) {
+                                return next(new AppError(err, 500));
+                            }
 
-                        var inserted = null;
+                            if (data.affectedRows > 0) {
 
-                        if (req.body.isSent === 1) {
-                            inserted = await checkAndUpdateProcedure(req.body.procedureID, req.body.procedureText.toLowerCase().trim(), data.insertId, res, next);
+                                var inserted = null;
+
+                                if (req.body.isSent === 1) {
+                                    inserted = await checkAndUpdateProcedure(req.body.procedureID, req.body.procedureText.toLowerCase().trim(), data.insertId, res, next);
+                                }
+
+                                const primaryID = data.insertId;
+
+                                res.status(201).json({
+                                    status: "success",
+                                    message: "Student data successfully altered",
+                                    insertedId: inserted,
+                                    primaryID: primaryID
+                                });
+                            } else {
+                                // Handle the case where no rows were updated (e.g., student data didn't change)
+                                res.status(200).json({
+                                    status: "success",
+                                    message: "No student data updated",
+                                });
+                            }
                         }
+                    );
 
-                        const primaryID = data.insertId;
-
-                        res.status(201).json({
-                            status: "success",
-                            message: "Student data successfully altered",
-                            insertedId: inserted,
-                            primaryID: primaryID
-                        });
-                    } else {
-                        // Handle the case where no rows were updated (e.g., student data didn't change)
-                        res.status(200).json({
-                            status: "success",
-                            message: "No student data updated",
-                        });
-                    }
-                }
-            );
-
+                });
         });
+    } catch (error) {
+        return next(new AppError(error.message, 500));
+    }
 
 };
 
-exports.updateProcedureForm = async (req, res, next) => {
+exports.updateProcedureForm = async (req, res, next) => { //!!!!!!!!!!!!!!!!!!!!!
     if (!req.body) {
         return next(new AppError("No form data found", 400));
     }
@@ -266,19 +273,25 @@ exports.searchProcedureReportsByAcceptance = (req, res, next) => {
 
     let courseID = parseInt(req.params.courseID) || null; // Default courseID
 
-    if (!courseID) {
-        // Use getCurrentCourse to get the courseID
-        courseHelper.getCurrentCourse(studentID)
-            .then((finalCourseID) => {
-                executeMainQuery(finalCourseID);
-            })
-            .catch((error) => {
-                // Handle errors from getCurrentCourse
-                return next(new AppError(error, 500));
-            });
-    } else {
-        // If courseID is provided in the query, proceed directly with the main query
-        executeMainQuery(courseID);
+    try {
+        verifyToken(req, res, () => {
+            if (!courseID) {
+                // Use getCurrentCourse to get the courseID
+                courseHelper.getCurrentCourse(studentID)
+                    .then((finalCourseID) => {
+                        executeMainQuery(finalCourseID);
+                    })
+                    .catch((error) => {
+                        // Handle errors from getCurrentCourse
+                        return next(new AppError(error, 500));
+                    });
+            } else {
+                // If courseID is provided in the query, proceed directly with the main query
+                executeMainQuery(courseID);
+            }
+        });
+    } catch (error) {
+        return next(new AppError(error.message, 500));
     }
 
     function executeMainQuery(finalCourseID) {
@@ -331,19 +344,25 @@ exports.searchProcedureReportsByMultipleAcceptance = (req, res, next) => {
     const isApproved2 = req.params.isApproved2;
     let courseID = parseInt(req.params.courseID) || null; // Default courseID
 
-    if (!courseID) {
-        // Use getCurrentCourse to get the courseID
-        courseHelper.getCurrentCourse(studentID)
-            .then((finalCourseID) => {
-                executeMainQuery(finalCourseID);
-            })
-            .catch((error) => {
-                // Handle errors from getCurrentCourse
-                return next(new AppError(error, 500));
-            });
-    } else {
-        // If courseID is provided in the query, proceed directly with the main query
-        executeMainQuery(courseID);
+    try {
+        verifyToken(req, res, () => {
+            if (!courseID) {
+                // Use getCurrentCourse to get the courseID
+                courseHelper.getCurrentCourse(studentID)
+                    .then((finalCourseID) => {
+                        executeMainQuery(finalCourseID);
+                    })
+                    .catch((error) => {
+                        // Handle errors from getCurrentCourse
+                        return next(new AppError(error, 500));
+                    });
+            } else {
+                // If courseID is provided in the query, proceed directly with the main query
+                executeMainQuery(courseID);
+            }
+        });
+    } catch (error) {
+        return next(new AppError(error.message, 500));
     }
 
     function executeMainQuery(finalCourseID) {
@@ -394,25 +413,31 @@ exports.list5ProcedureFormsWithStudentID = (req, res, next) => {
     const stdID = req.params.studentID;
     const isSent = req.params.isSent;
 
-    courseHelper.getCurrentCourse(stdID).then((courseID) => {
-        const query = `SELECT * FROM procedurereports 
-        WHERE studentID = ? AND isSent = ? AND courseID = ? AND year = ? AND season = ? 
-        ORDER BY saveEpoch DESC LIMIT 5`;
-        conn.query(
-            query, [stdID, isSent, courseID, currentYear, currentSeason],
-            function (err, data, fields) {
-                if (err) return next(new AppError(err, 500));
-                res.status(200).json({
-                    status: "success",
-                    length: data?.length,
-                    data: data,
-                });
-            }
-        );
+    try {
+        verifyToken(req, res, () => {
+            courseHelper.getCurrentCourse(stdID).then((courseID) => {
+                const query = `SELECT * FROM procedurereports 
+                WHERE studentID = ? AND isSent = ? AND courseID = ? AND year = ? AND season = ? 
+                ORDER BY saveEpoch DESC LIMIT 5`;
+                conn.query(
+                    query, [stdID, isSent, courseID, currentYear, currentSeason],
+                    function (err, data, fields) {
+                        if (err) return next(new AppError(err, 500));
+                        res.status(200).json({
+                            status: "success",
+                            length: data?.length,
+                            data: data,
+                        });
+                    }
+                );
 
-    }).catch((error) => {
-        return next(new AppError(error, 500));
-    });
+            }).catch((error) => {
+                return next(new AppError(error, 500));
+            });
+        });
+    } catch (error) {
+        return next(new AppError(error.message, 500));
+    }
 };
 
 //no need for filtering by course ID because it only gets *waiting reports*, lists att. physc. waiting reports
@@ -434,16 +459,22 @@ exports.listWaitingReports = (req, res, next) => {
 
     const values = [physicianID, isApproved, currentYear, currentSeason];
 
-    conn.query(query, values, (err, data, fields) => {
-        if (err) {
-            return next(new AppError(err, 500));
-        }
-        res.status(200).json({
-            status: "success",
-            length: data?.length,
-            data: data,
+    try {
+        verifyToken(req, res, () => {
+            conn.query(query, values, (err, data, fields) => {
+                if (err) {
+                    return next(new AppError(err, 500));
+                }
+                res.status(200).json({
+                    status: "success",
+                    length: data?.length,
+                    data: data,
+                });
+            });
         });
-    });
+    } catch (error) {
+        return next(new AppError(error.message, 500));
+    }
 };
 
 
@@ -460,56 +491,52 @@ exports.searchSentProcedureFormsWithDocIDAccordingToApproveDate = (req, res, nex
     let specialtyID = parseInt(req.params.specialtyID) || null; // Default courseID
     let procedureID = parseInt(req.params.procedureID) || null; // Default courseID
 
-    if (!courseID) {
-        // Use getCurrentCourse to get the courseID
-        // courseHelper.getCurrentCourseDoctor(physicianID)
-        //     .then((finalCourseID) => {
-        //         executeMainQuery(finalCourseID, specialtyID);
-        //     })
-        //     .catch((error) => {
-        //         // Handle errors from getCurrentCourse
-        //         return next(new AppError(error, 500));
-        //     });
+    try {
+        verifyToken(req, res, () => {
+            if (!courseID) {
+                conn.query(
+                    `
+                    SELECT pr.*
+                    FROM procedurereports pr
+                    LEFT JOIN procedures p ON pr.procedureID = p.ID
+                    LEFT JOIN student std ON pr.studentID = std.ID
+                    WHERE pr.attendingPhysicianID = ?
+                      AND pr.isSent = 1
+                      AND pr.isApproved = ?
+                      AND (UPPER(std.name) LIKE ? OR UPPER(std.surname) LIKE ?)
+                      AND pr.year = ?
+                      AND pr.season = ?
+                    ORDER BY pr.sentEpoch DESC
+                    LIMIT ? OFFSET ?;`,
+                    [
+                        physicianID,
+                        approvement,
+                        `%${input.toUpperCase()}%`,
+                        `%${input.toUpperCase()}%`,
+                        currentYear,
+                        currentSeason,
+                        pageSize,
+                        offset
+                    ],
+                    function (err, data, fields) {
+                        if (err) return next(new AppError(err, 500));
+                        res.status(200).json({
+                            status: "success",
+                            currentPage: page,
+                            pageSize: pageSize,
+                            length: data?.length,
+                            data: data,
+                        });
+                    }
+                );
 
-        conn.query(
-            `
-            SELECT pr.*
-            FROM procedurereports pr
-            LEFT JOIN procedures p ON pr.procedureID = p.ID
-            LEFT JOIN student std ON pr.studentID = std.ID
-            WHERE pr.attendingPhysicianID = ?
-              AND pr.isSent = 1
-              AND pr.isApproved = ?
-              AND (UPPER(std.name) LIKE ? OR UPPER(std.surname) LIKE ?)
-              AND pr.year = ?
-              AND pr.season = ?
-            ORDER BY pr.sentEpoch DESC
-            LIMIT ? OFFSET ?;`,
-            [
-                physicianID,
-                approvement,
-                `%${input.toUpperCase()}%`,
-                `%${input.toUpperCase()}%`,
-                currentYear,
-                currentSeason,
-                pageSize,
-                offset
-            ],
-            function (err, data, fields) {
-                if (err) return next(new AppError(err, 500));
-                res.status(200).json({
-                    status: "success",
-                    currentPage: page,
-                    pageSize: pageSize,
-                    length: data?.length,
-                    data: data,
-                });
+            } else {
+                // If courseID is provided in the query, proceed directly with the main query
+                executeMainQuery(courseID, specialtyID, procedureID);
             }
-        );
-
-    } else {
-        // If courseID is provided in the query, proceed directly with the main query
-        executeMainQuery(courseID, specialtyID, procedureID);
+        });
+    } catch (error) {
+        return next(new AppError(error.message, 500));
     }
 
     function executeMainQuery(finalCourseID, specialtyID, procedureID) {
@@ -581,21 +608,25 @@ exports.searchProcedureFormsForStudent = (req, res, next) => {
     const isSent = req.params.isSent;
     let courseID = parseInt(req.params.courseID) || null; // Default courseID
 
-    console.log(courseID);
-
-    if (!courseID) {
-        // Use getCurrentCourse to get the courseID
-        courseHelper.getCurrentCourse(studentID)
-            .then((finalCourseID) => {
-                executeMainQuery(finalCourseID);
-            })
-            .catch((error) => {
-                // Handle errors from getCurrentCourse
-                return next(new AppError(error, 500));
-            });
-    } else {
-        // If courseID is provided in the query, proceed directly with the main query
-        executeMainQuery(courseID);
+    try {
+        verifyToken(req, res, () => {
+            if (!courseID) {
+                // Use getCurrentCourse to get the courseID
+                courseHelper.getCurrentCourse(studentID)
+                    .then((finalCourseID) => {
+                        executeMainQuery(finalCourseID);
+                    })
+                    .catch((error) => {
+                        // Handle errors from getCurrentCourse
+                        return next(new AppError(error, 500));
+                    });
+            } else {
+                // If courseID is provided in the query, proceed directly with the main query
+                executeMainQuery(courseID);
+            }
+        });
+    } catch (error) {
+        return next(new AppError(error.message, 500));
     }
 
     function executeMainQuery(finalCourseID) {
@@ -648,19 +679,25 @@ exports.searchProcedureFormsForStudentByAcceptance = (req, res, next) => {
     const isApproved = req.params.isApproved;
     let courseID = parseInt(req.params.courseID) || null; // Default courseID
 
-    if (!courseID) {
-        // Use getCurrentCourse to get the courseID
-        courseHelper.getCurrentCourse(studentID)
-            .then((finalCourseID) => {
-                executeMainQuery(finalCourseID);
-            })
-            .catch((error) => {
-                // Handle errors from getCurrentCourse
-                return next(new AppError(error, 500));
-            });
-    } else {
-        // If courseID is provided in the query, proceed directly with the main query
-        executeMainQuery(courseID);
+    try {
+        verifyToken(req, res, () => {
+            if (!courseID) {
+                // Use getCurrentCourse to get the courseID
+                courseHelper.getCurrentCourse(studentID)
+                    .then((finalCourseID) => {
+                        executeMainQuery(finalCourseID);
+                    })
+                    .catch((error) => {
+                        // Handle errors from getCurrentCourse
+                        return next(new AppError(error, 500));
+                    });
+            } else {
+                // If courseID is provided in the query, proceed directly with the main query
+                executeMainQuery(courseID);
+            }
+        });
+    } catch (error) {
+        return next(new AppError(error.message, 500));
     }
 
     function executeMainQuery(finalCourseID) {
@@ -711,28 +748,34 @@ exports.deleteProcedureFormWithID = (req, res, next) => {
         return next(new AppError("Both studentID and localStorageID are required.", 400));
     }
 
-    conn.query(
-        "DELETE FROM procedurereports WHERE studentID = ? && localStorageID = ?",
-        [studentID, localStorageID],
-        function (err, result) {
-            if (err) {
-                console.error("Error deleting procedure form:", err);
-                return next(new AppError("Internal server error", 500));
-            }
+    try {
+        verifyToken(req, res, () => {
+            conn.query(
+                "DELETE FROM procedurereports WHERE studentID = ? && localStorageID = ?",
+                [studentID, localStorageID],
+                function (err, result) {
+                    if (err) {
+                        console.error("Error deleting procedure form:", err);
+                        return next(new AppError("Internal server error", 500));
+                    }
 
-            console.log("Delete result:", result);
+                    console.log("Delete result:", result);
 
-            // Check if any rows were affected to determine if a record was deleted
-            if (result.affectedRows === 0) {
-                return next(new AppError("Procedure form not found", 404));
-            }
+                    // Check if any rows were affected to determine if a record was deleted
+                    if (result.affectedRows === 0) {
+                        return next(new AppError("Procedure form not found", 404));
+                    }
 
-            res.status(200).json({
-                status: "success",
-                message: "Procedure form deleted!",
-            });
-        }
-    );
+                    res.status(200).json({
+                        status: "success",
+                        message: "Procedure form deleted!",
+                    });
+                }
+            );
+        });
+    } catch (error) {
+        return next(new AppError(error.message, 500));
+    }
 };
 
 //to see if there is a report in remote DB with a specified local storage ID
@@ -743,18 +786,29 @@ exports.getIDofProcedureForm = (req, res, next) => {
     if (!req.params.localStorageID) {
         return next(new AppError("No procedure with this local storage ID found", 404));
     }
-    conn.query(
-        "select ID from procedurereports WHERE studentID =  ? AND localStorageID = ?  AND year = ? AND season = ? order by ID ASC LIMIT 1",
-        [req.params.studentID, req.params.localStorageID, currentYear, currentSeason],
-        function (err, data, fields) {
-            if (err) return next(new AppError(err, 500));
-            res.status(200).json({
-                status: "success",
-                length: data?.length,
-                data: data,
-            });
-        }
-    );
+
+    const query = `select ID from procedurereports WHERE studentID =  ? AND localStorageID = ?  AND year = ? AND season = ? order by ID ASC LIMIT 1`;
+    const values = [req.params.studentID, req.params.localStorageID, currentYear, currentSeason];
+
+    try {
+        verifyToken(req, res, () => {
+
+            conn.query(
+                query,
+                values,
+                function (err, data, fields) {
+                    if (err) return next(new AppError(err, 500));
+                    res.status(200).json({
+                        status: "success",
+                        length: data?.length,
+                        data: data,
+                    });
+                }
+            );
+        });
+    } catch (error) {
+        return next(new AppError(error.message, 500));
+    }
 }
 
 
@@ -762,17 +816,23 @@ exports.getLastLocalStorageID = (req, res, next) => { //returns specific patient
     if (!req.params.studentID) {
         return next(new AppError("No patient with this ID found", 404));
     }
-    conn.query(
-        "select localStorageID from procedurereports where studentID =  ? order by localStorageID DESC  limit 1;",
-        [req.params.studentID],
-        function (err, data, fields) {
-            if (err) return next(new AppError(err, 500));
-            res.status(200).json({
-                status: "success",
-                data: data,
-            });
-        }
-    );
+    try {
+        verifyToken(req, res, () => {
+            conn.query(
+                "select localStorageID from procedurereports where studentID =  ? order by localStorageID DESC  limit 1;",
+                [req.params.studentID],
+                function (err, data, fields) {
+                    if (err) return next(new AppError(err, 500));
+                    res.status(200).json({
+                        status: "success",
+                        data: data,
+                    });
+                }
+            );
+        });
+    } catch (error) {
+        return next(new AppError(error.message, 500));
+    }
 };
 
 exports.checkDraftIsSent = (req, res, next) => { //checks if the previously drafted report is sent by LS id and std number
@@ -782,28 +842,34 @@ exports.checkDraftIsSent = (req, res, next) => { //checks if the previously draf
     const studentID = req.params.studentID;
     const localStorageID = req.params.localStorageID;
 
-    courseHelper.getCurrentCourse(studentID)
-        .then((finalCourseID) => {
-            conn.query(
-                `select isSent
-                from procedurereports
-                where studentID = ?
-                  and localStorageID = ?
-                  and courseID = ?;`,
-                [studentID, localStorageID, finalCourseID],
-                function (err, data, fields) {
-                    if (err) return next(new AppError(err, 500));
-                    res.status(200).json({
-                        status: "success",
-                        data: data,
-                    });
-                }
-            );
-        })
-        .catch((error) => {
-            // Handle errors from getCurrentCourse
-            return next(new AppError(error, 500));
+    try {
+        verifyToken(req, res, () => {
+            courseHelper.getCurrentCourse(studentID)
+                .then((finalCourseID) => {
+                    conn.query(
+                        `select isSent
+                    from procedurereports
+                    where studentID = ?
+                      and localStorageID = ?
+                      and courseID = ?;`,
+                        [studentID, localStorageID, finalCourseID],
+                        function (err, data, fields) {
+                            if (err) return next(new AppError(err, 500));
+                            res.status(200).json({
+                                status: "success",
+                                data: data,
+                            });
+                        }
+                    );
+                })
+                .catch((error) => {
+                    // Handle errors from getCurrentCourse
+                    return next(new AppError(error, 500));
+                });
         });
+    } catch (error) {
+        return next(new AppError(error.message, 500));
+    }
 };
 
 
@@ -814,28 +880,38 @@ exports.checkSaveEpoch = (req, res, next) => { //returns draft reports save epoc
     const studentID = req.params.studentID;
     const localStorageID = req.params.localStorageID;
 
-    courseHelper.getCurrentCourse(studentID)
-        .then((finalCourseID) => {
-            conn.query(
-                `select saveEpoch
-                from procedurereports
-                where studentID = ?
-                  and localStorageID = ?
-                  and courseID = ?;`,
-                [studentID, localStorageID, finalCourseID],
-                function (err, data, fields) {
-                    if (err) return next(new AppError(err, 500));
-                    res.status(200).json({
-                        status: "success",
-                        data: data,
-                    });
-                }
-            );
-        })
-        .catch((error) => {
-            // Handle errors from getCurrentCourse
-            return next(new AppError(error, 500));
+    try {
+        verifyToken(req, res, () => {
+            courseHelper.getCurrentCourse(studentID)
+                .then((finalCourseID) => {
+
+                    const query = `select saveEpoch
+                    from procedurereports
+                    where studentID = ?
+                      and localStorageID = ?
+                      and courseID = ?;`
+
+                    const values = [studentID, localStorageID, finalCourseID];
+                    conn.query(
+                        query,
+                        values,
+                        function (err, data, fields) {
+                            if (err) return next(new AppError(err, 500));
+                            res.status(200).json({
+                                status: "success",
+                                data: data,
+                            });
+                        }
+                    );
+                })
+                .catch((error) => {
+                    // Handle errors from getCurrentCourse
+                    return next(new AppError(error, 500));
+                });
         });
+    } catch (error) {
+        return next(new AppError(error.message, 500));
+    }
 };
 
 
@@ -846,31 +922,39 @@ exports.draftReportToUpdateLocal = (req, res, next) => { //returns draft report 
     const studentID = req.params.studentID;
     const localStorageID = req.params.localStorageID;
 
-    courseHelper.getCurrentCourse(studentID)
-        .then((finalCourseID) => {
+    try {
+        verifyToken(req, res, () => {
+            courseHelper.getCurrentCourse(studentID)
+                .then((finalCourseID) => {
 
-            // console.log(finalCourseID);
-            
-            conn.query(
-                `select *
-                from procedurereports
-                where studentID = ?
-                  and localStorageID = ?
-                  and courseID = ?;`,
-                [studentID, localStorageID, finalCourseID],
-                function (err, data, fields) {
-                    if (err) return next(new AppError(err, 500));
-                    res.status(200).json({
-                        status: "success",
-                        data: data,
-                    });
-                }
-            );
-        })
-        .catch((error) => {
-            // Handle errors from getCurrentCourse
-            return next(new AppError(error, 500));
+                    const query = `select *
+                    from procedurereports
+                    where studentID = ?
+                    and localStorageID = ?
+                    and courseID = ?;`
+
+                    const values = [studentID, localStorageID, finalCourseID];
+
+                    conn.query(
+                        query,
+                        values,
+                        function (err, data, fields) {
+                            if (err) return next(new AppError(err, 500));
+                            res.status(200).json({
+                                status: "success",
+                                data: data,
+                            });
+                        }
+                    );
+                })
+                .catch((error) => {
+                    // Handle errors from getCurrentCourse
+                    return next(new AppError(error, 500));
+                });
         });
+    } catch (error) {
+        return next(new AppError(error.message, 500));
+    }
 };
 
 //counts student's form count for specified course && approval status
@@ -878,19 +962,25 @@ exports.getCountProcedureFormsForDashboardAccordingToApproval = (req, res, next)
     const studentID = req.params.studentID;
     let courseID = parseInt(req.params.courseID) || null; // Default courseID
 
-    if (!courseID) {
-        // Use getCurrentCourse to get the courseID
-        courseHelper.getCurrentCourse(studentID)
-            .then((finalCourseID) => {
-                executeMainQuery(finalCourseID);
-            })
-            .catch((error) => {
-                // Handle errors from getCurrentCourse
-                return next(new AppError(error, 500));
-            });
-    } else {
-        // If courseID is provided in the query, proceed directly with the main query
-        executeMainQuery(courseID);
+    try {
+        verifyToken(req, res, () => {
+            if (!courseID) {
+                // Use getCurrentCourse to get the courseID
+                courseHelper.getCurrentCourse(studentID)
+                    .then((finalCourseID) => {
+                        executeMainQuery(finalCourseID);
+                    })
+                    .catch((error) => {
+                        // Handle errors from getCurrentCourse
+                        return next(new AppError(error, 500));
+                    });
+            } else {
+                // If courseID is provided in the query, proceed directly with the main query
+                executeMainQuery(courseID);
+            }
+        });
+    } catch (error) {
+        return next(new AppError(error.message, 500));
     }
 
     function executeMainQuery(finalCourseID) {
@@ -973,17 +1063,24 @@ exports.getDoctorCountProcedureFormsForDashboardAccordingToApproval = (req, res,
         rotationID,
     ];
 
-    conn.query(
-        query, values,
-        function (err, data, fields) {
-            if (err) return next(new AppError(err, 500));
-            res.status(200).json({
-                status: "success",
-                length: data?.length,
-                data: data,
-            });
-        }
-    );
+    try {
+        verifyToken(req, res, () => {
+            conn.query(
+                query, values,
+                function (err, data, fields) {
+                    if (err) return next(new AppError(err, 500));
+                    res.status(200).json({
+                        status: "success",
+                        length: data?.length,
+                        data: data,
+                    });
+                }
+            );
+        });
+    } catch (error) {
+        return next(new AppError(error.message, 500));
+    }
+
 };
 
 //for physician Student ttoal progress counts student's form count for specified course, rotation && approval status
@@ -996,85 +1093,91 @@ exports.getLinearTotalProgressBarData = (req, res, next) => {
         return next(new AppError("Lack of needed parameters", 404));
     }
 
-    if (!rotationID || !courseID) {//if rotation and course is not provided return all the rotation courses sum
+    try {
+        verifyToken(req, res, () => {
+            if (!rotationID || !courseID) {//if rotation and course is not provided return all the rotation courses sum
 
-        const query = `
-        SELECT COALESCE(SUM(report_count), 0)   AS total_report_count,
-                COALESCE(SUM(approved_count), 0) AS total_approved_count,
-                COALESCE(SUM(waiting_count), 0)  AS total_waiting_count,
-                COALESCE(SUM(rejected_count), 0) AS total_rejected_count
-        FROM (SELECT COALESCE(COUNT(pr.ID), 0)           AS report_count,
-                    COALESCE(SUM(pr.isApproved = 1), 0) AS approved_count,
-                    COALESCE(SUM(pr.isApproved = 0), 0) AS waiting_count,
-                    COALESCE(SUM(pr.isApproved = 2), 0) AS rejected_count
-            FROM enrollment_physician a
+                const query = `
+                SELECT COALESCE(SUM(report_count), 0)   AS total_report_count,
+                        COALESCE(SUM(approved_count), 0) AS total_approved_count,
+                        COALESCE(SUM(waiting_count), 0)  AS total_waiting_count,
+                        COALESCE(SUM(rejected_count), 0) AS total_rejected_count
+                FROM (SELECT COALESCE(COUNT(pr.ID), 0)           AS report_count,
+                            COALESCE(SUM(pr.isApproved = 1), 0) AS approved_count,
+                            COALESCE(SUM(pr.isApproved = 0), 0) AS waiting_count,
+                            COALESCE(SUM(pr.isApproved = 2), 0) AS rejected_count
+                    FROM enrollment_physician a
+                                LEFT JOIN rotation_courses r ON a.rotationNo = r.rotation_id and a.courseID = r.course_id
+                                left join attendingphysicians att on att.ID = a.physicianID
+                                left join intervals i on r.interval_id = i.ID
+                                LEFT JOIN procedurereports pr
+                                        ON a.physicianID = pr.attendingPhysicianID and a.courseID = pr.courseID and
+                                            i.year = pr.year and
+                                            i.season = pr.season
+                    WHERE a.physicianID = ? && i.year = ? && i.season = ?
+                    GROUP BY a.ID, r.course_id, r.rotation_id) AS subquery;
+                `;
+
+                const values = [
+                    physicianID,
+                    currentYear,
+                    currentSeason,
+                ];
+
+                conn.query(
+                    query, values,
+                    function (err, data, fields) {
+                        if (err) return next(new AppError(err, 500));
+                        res.status(200).json({
+                            status: "success",
+                            length: data?.length,
+                            data: data,
+                        });
+                    }
+                );
+
+            } else { //return that rotation courses sum
+
+                const query = `
+                SELECT r.course_id                         AS courseID,
+                        r.rotation_id                       AS rotationNo,
+                        COALESCE(COUNT(pr.ID), 0)           AS report_count,
+                        COALESCE(SUM(pr.isApproved = 1), 0) AS approved_count,
+                        COALESCE(SUM(pr.isApproved = 0), 0) AS waiting_count,
+                        COALESCE(SUM(pr.isApproved = 2), 0) AS rejected_count
+                FROM enrollment_physician a
                         LEFT JOIN rotation_courses r ON a.rotationNo = r.rotation_id and a.courseID = r.course_id
                         left join attendingphysicians att on att.ID = a.physicianID
                         left join intervals i on r.interval_id = i.ID
                         LEFT JOIN procedurereports pr
-                                ON a.physicianID = pr.attendingPhysicianID and a.courseID = pr.courseID and
-                                    i.year = pr.year and
+                                    ON a.physicianID = pr.attendingPhysicianID and a.courseID = pr.courseID and i.year = pr.year and
                                     i.season = pr.season
-            WHERE a.physicianID = ? && i.year = ? && i.season = ?
-            GROUP BY a.ID, r.course_id, r.rotation_id) AS subquery;
-        `;
+                WHERE a.physicianID = ? && i.year = ? && i.season = ? && a.rotationNo = ? && a.courseID = ?
+                GROUP BY a.ID, r.course_id, r.rotation_id;`;
 
-        const values = [
-            physicianID,
-            currentYear,
-            currentSeason,
-        ];
+                const values = [
+                    physicianID,
+                    currentYear,
+                    currentSeason,
+                    rotationID,
+                    courseID
+                ];
 
-        conn.query(
-            query, values,
-            function (err, data, fields) {
-                if (err) return next(new AppError(err, 500));
-                res.status(200).json({
-                    status: "success",
-                    length: data?.length,
-                    data: data,
-                });
+                conn.query(
+                    query, values,
+                    function (err, data, fields) {
+                        if (err) return next(new AppError(err, 500));
+                        res.status(200).json({
+                            status: "success",
+                            length: data?.length,
+                            data: data,
+                        });
+                    }
+                );
             }
-        );
-
-    } else { //return that rotation courses sum
-
-        const query = `
-        SELECT r.course_id                         AS courseID,
-                r.rotation_id                       AS rotationNo,
-                COALESCE(COUNT(pr.ID), 0)           AS report_count,
-                COALESCE(SUM(pr.isApproved = 1), 0) AS approved_count,
-                COALESCE(SUM(pr.isApproved = 0), 0) AS waiting_count,
-                COALESCE(SUM(pr.isApproved = 2), 0) AS rejected_count
-        FROM enrollment_physician a
-                LEFT JOIN rotation_courses r ON a.rotationNo = r.rotation_id and a.courseID = r.course_id
-                left join attendingphysicians att on att.ID = a.physicianID
-                left join intervals i on r.interval_id = i.ID
-                LEFT JOIN procedurereports pr
-                            ON a.physicianID = pr.attendingPhysicianID and a.courseID = pr.courseID and i.year = pr.year and
-                            i.season = pr.season
-        WHERE a.physicianID = ? && i.year = ? && i.season = ? && a.rotationNo = ? && a.courseID = ?
-        GROUP BY a.ID, r.course_id, r.rotation_id;`;
-
-        const values = [
-            physicianID,
-            currentYear,
-            currentSeason,
-            rotationID,
-            courseID
-        ];
-
-        conn.query(
-            query, values,
-            function (err, data, fields) {
-                if (err) return next(new AppError(err, 500));
-                res.status(200).json({
-                    status: "success",
-                    length: data?.length,
-                    data: data,
-                });
-            }
-        );
+        });
+    } catch (error) {
+        return next(new AppError(error.message, 500));
     }
 
 };
