@@ -4,7 +4,7 @@ const config = require("../config.js");
 const currentYear = config.app.year;
 const currentSeason = config.app.season;
 const currentDate = config.app.date;
-const verifyToken = require('../utils/verifyToken');
+const verifyToken = require('../utils/verifyToken.js');
 
 exports.getAllCourses = (req, res, next) => {
     try {
