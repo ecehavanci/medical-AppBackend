@@ -145,36 +145,39 @@ exports.updateProcedureForm = async (req, res, next) => { //!!!!!!!!!!!!!!!!!!!!
     values.push(parseInt(req.params.ID));
 
     try {
-        if (req.body.isSent === 1) {
-            await logController.updateProcedureFormLog(selectClauses, values);
-
-        }
-
-        conn.query(query, values, async (err, data) => {
-            if (err) {
-                console.error("Update Error:", err);
-                return next(new AppError(err.message, 500));
-            }
-
-            // Handle the case where no rows were updated
-            if (data.affectedRows === 0) {
-                return res.status(200).json({
-                    status: "success",
-                    message: "No student data updated",
-                });
-            }
-
-            let inserted = null;
+        verifyToken(req, res, async () => {
             if (req.body.isSent === 1) {
+                await logController.updateProcedureFormLog(selectClauses, values);
 
-                inserted = await checkAndUpdateProcedure(req.body.procedureID, req.body.procedureText, req.params.ID, res, next);
             }
 
-            res.status(201).json({
-                status: "success",
-                message: "Student data successfully altered222",
-                insertedId: inserted || "No new procedure data inserted",
+            conn.query(query, values, async (err, data) => {
+                if (err) {
+                    console.error("Update Error:", err);
+                    return next(new AppError(err.message, 500));
+                }
+
+                // Handle the case where no rows were updated
+                if (data.affectedRows === 0) {
+                    return res.status(200).json({
+                        status: "success",
+                        message: "No student data updated",
+                    });
+                }
+
+                let inserted = null;
+                if (req.body.isSent === 1) {
+
+                    inserted = await checkAndUpdateProcedure(req.body.procedureID, req.body.procedureText, req.params.ID, res, next);
+                }
+
+                res.status(201).json({
+                    status: "success",
+                    message: "Student data successfully altered222",
+                    insertedId: inserted || "No new procedure data inserted",
+                });
             });
+
         });
 
     } catch (err) {

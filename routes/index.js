@@ -24,7 +24,7 @@ router.use("/differentialdiagnoses", differentialdiagnoses);
 router.use("/specialties", specialties);
 router.use("/courses", course);
 router.use("/rotations", rotations);
-router.use("/web", web);
+// router.use("/web", web);
 router.use("/procedure", procedureRoutes);
 router.use("/logs", logRouter);
 router.use("/hospitals", hospitalRouter);

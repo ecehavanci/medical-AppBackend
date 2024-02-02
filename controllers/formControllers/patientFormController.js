@@ -204,48 +204,50 @@ exports.updatePatientForm = async (req, res, next) => { ////////////!!!!!!!!!!!!
     console.log(...values);
 
     try {
-        if (req.body.isSent === 1) {
-            const res3 = await logController.updatePatientFormLog(selectClauses, values);
-            console.log("res3");
-            console.log(res3);
-        }
-
-        conn.query(query, values, async (err, data) => {
-            if (err) {
-                console.error("Update Error:", err);
-                return next(new AppError(err.message, 500));
-            }
-
-            // Handle the case where no rows were updated
-            if (data.affectedRows === 0) {
-                return res.status(200).json({
-                    status: "success",
-                    message: "No patient form data updated",
-                });
-            }
-
-            const insertedIds = [];
+        verifyToken(req, res, async () => {
             if (req.body.isSent === 1) {
-                for (let i = 1; i <= 4; i++) {
-                    const tierID = req.body[`tier${i}ID`];
-                    const tierValue = req.body[`tier${i}`];
-                    console.log(tierID, tierValue);
-
-                    const insertedTier = await checkAndInsertTierData(
-                        tierID,
-                        tierValue,
-                        req.params.ID,
-                        res,
-                        next
-                    );
-                    insertedIds.push(insertedTier);
-                }
+                const res3 = await logController.updatePatientFormLog(selectClauses, values);
+                console.log("res3");
+                console.log(res3);
             }
 
-            res.status(200).json({
-                status: "success",
-                message: "Form data successfully altered",
-                insertedId: insertedIds || "No new tier data inserted",
+            conn.query(query, values, async (err, data) => {
+                if (err) {
+                    console.error("Update Error:", err);
+                    return next(new AppError(err.message, 500));
+                }
+
+                // Handle the case where no rows were updated
+                if (data.affectedRows === 0) {
+                    return res.status(200).json({
+                        status: "success",
+                        message: "No patient form data updated",
+                    });
+                }
+
+                const insertedIds = [];
+                if (req.body.isSent === 1) {
+                    for (let i = 1; i <= 4; i++) {
+                        const tierID = req.body[`tier${i}ID`];
+                        const tierValue = req.body[`tier${i}`];
+                        console.log(tierID, tierValue);
+
+                        const insertedTier = await checkAndInsertTierData(
+                            tierID,
+                            tierValue,
+                            req.params.ID,
+                            res,
+                            next
+                        );
+                        insertedIds.push(insertedTier);
+                    }
+                }
+
+                res.status(200).json({
+                    status: "success",
+                    message: "Form data successfully altered",
+                    insertedId: insertedIds || "No new tier data inserted",
+                });
             });
         });
     } catch (err) {
