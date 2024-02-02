@@ -1,5 +1,6 @@
 const AppError = require("../utils/appError");
 const conn = require("../services/db");
+const verifyToken = require('../utils/verifyToken');
 
 exports.getAllHospitals = (req, res, next) => {
     try {

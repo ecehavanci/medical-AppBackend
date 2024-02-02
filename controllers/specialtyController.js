@@ -4,6 +4,7 @@ const config = require("../config.js");
 const currentYear = config.app.year;
 const currentSeason = config.app.season;
 const currentDate = config.app.date;
+const verifyToken = require('../utils/verifyToken');
 
 exports.getAllSpecialties = (req, res, next) => { //all specialties in DB
     try {

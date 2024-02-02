@@ -5,6 +5,7 @@ const logController = require("../logController");
 const courseHelper = require("../currentCourse");
 const config = require("../../config");
 const { Console } = require("console");
+const verifyToken = require('../../utils/verifyToken');
 const currentYear = config.app.year;
 const currentSeason = config.app.season;
 const currentDate = config.app.date;

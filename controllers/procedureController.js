@@ -1,6 +1,7 @@
 const AppError = require("../utils/appError");
 const conn = require("../services/db");
 const courseHelper = require("./currentCourse");
+const verifyToken = require('../utils/verifyToken');
 
 exports.getApprovedProcedures = (req, res, next) => {
     try {

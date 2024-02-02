@@ -7,6 +7,7 @@ const courseHelper = require("../currentCourse");
 const currentYear = config['app']["year"];
 const currentSeason = config.app.season;
 const currentDate = config.app.date;
+const verifyToken = require('../../utils/verifyToken');
 
 exports.insertPatientForm = (req, res, next) => {
     //we check if the client is sending an empty form "and return a 404 error message.
