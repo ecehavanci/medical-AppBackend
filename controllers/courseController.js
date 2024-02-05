@@ -131,7 +131,7 @@ exports.listPhysicianSemesterCourses = (req, res, next) => { //add, order by cou
         verifyToken(req, res, () => {
             //if needed make it *SELECT DISTINCT rc.rotation_id ...
             const query = `
-            SELECT DISTINCT rc.course_id as ID,c.code,c.description
+            SELECT DISTINCT rc.rotation_id,rc.course_id as ID,c.code,c.description
             FROM enrollment_physician e
                     LEFT JOIN rotation_courses rc ON e.rotationNo = rc.rotation_id and rc.course_id = e.courseID
                     left join rotations ro on rc.rotation_id = ro.id
