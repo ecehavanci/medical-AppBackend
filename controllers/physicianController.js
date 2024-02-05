@@ -109,19 +109,19 @@ exports.getFullPhysicianInfoByID = (req, res, next) => {
             }
 
             const query = `
-                SELECT
+            SELECT
                 s.name AS name,
                 s.surname AS surname,
                 s.phone AS phoneNumber,
-                GROUP_CONCAT(c.code) AS courses,
-                JSON_ARRAYAGG(JSON_OBJECT('course', c.code, 'specialty', c.description,'rotationNo',en.rotationNo)) AS courseSpecialties
+                GROUP_CONCAT(DISTINCT c.code) AS courses,
+                JSON_ARRAYAGG(
+                    JSON_OBJECT('course', c.code, 'specialty', c.description, 'rotationNo', en.rotationNo)
+                ) AS courseSpecialties
             FROM
                 attendingphysicians s
-            LEFT JOIN
-                courses c ON c.ID = s.courseID
-            LEFT JOIN
-                specialties spec ON spec.ID = s.speciality_ID
-            left join enrollment_physician en on en.physicianID = s.ID
+                LEFT JOIN courses c ON c.ID = s.courseID
+                LEFT JOIN specialties spec ON spec.ID = s.speciality_ID
+                LEFT JOIN enrollment_physician en ON en.physicianID = s.ID
             WHERE
                 s.ID = ?
             GROUP BY
