@@ -174,7 +174,7 @@ exports.listPhysicianSemesterCoursesWithRotation = (req, res, next) => { //add, 
             and i.year = ?
             
             and i.season = ?
-            order by i.start;`;
+            order by rc.rotation_id;`;
             conn.query(
                 query,
                 [req.params.physicianID, currentYear, currentSeason],
