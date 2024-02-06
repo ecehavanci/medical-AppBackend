@@ -1133,21 +1133,22 @@ exports.getLinearTotalProgressBarData = (req, res, next) => {
             } else { //return that rotation courses sum
 
                 const query = `
-                SELECT r.course_id                         AS courseID,
-                        r.rotation_id                       AS rotationNo,
-                        COALESCE(COUNT(pr.ID), 0)           AS report_count,
+                SELECT COUNT(pr.ID)           AS report_count,
                         COALESCE(SUM(pr.isApproved = 1), 0) AS approved_count,
-                        COALESCE(SUM(pr.isApproved = 0), 0) AS waiting_count,
-                        COALESCE(SUM(pr.isApproved = 2), 0) AS rejected_count
-                FROM enrollment_physician a
-                        LEFT JOIN rotation_courses r ON a.rotationNo = r.rotation_id and a.courseID = r.course_id
-                        left join attendingphysicians att on att.ID = a.physicianID
-                        left join intervals i on r.interval_id = i.ID
-                        LEFT JOIN procedurereports pr
-                                    ON a.physicianID = pr.attendingPhysicianID and a.courseID = pr.courseID and i.year = pr.year and
-                                    i.season = pr.season
-                WHERE a.physicianID = ? && i.year = ? && i.season = ? && a.rotationNo = ? && a.courseID = ?
-                GROUP BY a.ID, r.course_id, r.rotation_id;`;
+                        COALESCE(SUM(pr.isApproved = 2), 0) AS rejected_count,
+                        COALESCE(SUM(pr.isApproved = 0), 0) AS waiting_count
+                FROM enrollment e
+                        INNER JOIN
+                    rotation_courses rc ON e.rotation_id = rc.rotation_id
+                        LEFT JOIN
+                    attendingphysicians att ON att.courseID = rc.course_id
+                        LEFT JOIN
+                    procedurereports pr ON pr.attendingPhysicianID = att.ID AND pr.studentID = e.std_id AND pr.courseID = rc.course_id
+                WHERE rc.rotation_id = ?
+                AND rc.course_id = ?
+                AND att.ID = ?
+                and pr.year = ?
+                and pr.season = ?;`;
 
                 const values = [
                     physicianID,
