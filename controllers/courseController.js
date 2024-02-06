@@ -129,7 +129,40 @@ exports.listStudentSemesterInfos = (req, res, next) => { //add, order by courses
 exports.listPhysicianSemesterCourses = (req, res, next) => { //add, order by courses end date
     try {
         verifyToken(req, res, () => {
-            //if needed make it *SELECT DISTINCT rc.rotation_id ...
+            const query = `
+            SELECT DISTINCT rc.course_id as ID,c.code,c.description
+            FROM enrollment_physician e
+                    LEFT JOIN rotation_courses rc ON e.rotationNo = rc.rotation_id and rc.course_id = e.courseID
+                    left join rotations ro on rc.rotation_id = ro.id
+                    LEFT JOIN courses c ON rc.course_id = c.ID
+                    left join intervals i on i.ID = rc.interval_id
+            WHERE e.physicianID = ?
+            and i.year = ?
+            
+            and i.season = ?
+            order by i.start;`;
+            conn.query(
+                query,
+                [req.params.physicianID, currentYear, currentSeason],
+                function (err, data, fields) {
+                    if (err) return next(new AppError(err, 500));
+                    res.status(200).json({
+                        status: "success",
+                        length: data?.length,
+                        data: data,
+                    });
+                }
+            );
+        });
+    } catch (error) {
+        return next(new AppError(error.message, 500));
+    }
+}
+
+//doktorun bağlı olduğu rotasyonların şimdiki ve ve geçmişteki kurs bilgileri gösterir
+exports.listPhysicianSemesterCoursesWithRotation = (req, res, next) => { //add, order by courses end date
+    try {
+        verifyToken(req, res, () => {
             const query = `
             SELECT DISTINCT rc.rotation_id,rc.course_id as ID,c.code,c.description
             FROM enrollment_physician e

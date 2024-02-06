@@ -27,6 +27,10 @@ router
     .get(courseController.listPhysicianSemesterCourses)
 
 router
+    .route("/get/all/psy/course_and_rot/:physicianID")
+    .get(courseController.listPhysicianSemesterCoursesWithRotation)
+
+router
     .route("/requiredReportCountsOfCourse/:stdID/:courseID")
     .get(courseController.requiredReportCountsOfCourse)
 
