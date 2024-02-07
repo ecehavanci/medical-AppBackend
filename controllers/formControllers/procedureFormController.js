@@ -492,12 +492,13 @@ exports.searchSentProcedureFormsWithDocIDAccordingToApproveDate = (req, res, nex
     const physicianID = req.params.attendingPhysicianID;
     const approvement = req.params.isApproved;
     let courseID = parseInt(req.params.courseID) || null; // Default courseID
+    let rotationID = parseInt(req.params.rotationID) || null; // Default rotationID
     let specialtyID = parseInt(req.params.specialtyID) || null; // Default courseID
     let procedureID = parseInt(req.params.procedureID) || null; // Default courseID
 
     try {
         verifyToken(req, res, () => {
-            if (!courseID) {
+            if (!rotationID && !courseID) {  //if rotation and course NOT is provided
                 conn.query(
                     `
                     SELECT pr.*
@@ -536,42 +537,44 @@ exports.searchSentProcedureFormsWithDocIDAccordingToApproveDate = (req, res, nex
 
             } else {
                 // If courseID is provided in the query, proceed directly with the main query
-                executeMainQuery(courseID, specialtyID, procedureID);
+                executeMainQuery(rotationID, courseID, specialtyID, procedureID);
             }
         });
     } catch (error) {
         return next(new AppError(error.message, 500));
     }
 
-    function executeMainQuery(finalCourseID, specialtyID, procedureID) {
+    function executeMainQuery(rotationID, finalCourseID, specialtyID, procedureID) {
         let query = '';
         let values = [];
 
-        console.log(procedureID);
-
         query = `
-            SELECT pr.*, p.description AS gettedProcedure
-            FROM procedurereports pr
-            LEFT JOIN procedures p ON pr.procedureID = p.ID
-            LEFT JOIN student std ON pr.studentID = std.ID
-            WHERE pr.attendingPhysicianID = ?
-              AND pr.isSent = 1
-              AND pr.isApproved = ?
-              AND (UPPER(std.name) LIKE ? OR UPPER(std.surname) LIKE ?)
-              AND pr.courseID = ?
-              AND pr.year = ?
-              AND pr.season = ?
-              ${specialtyID ? 'AND pr.specialtyID = ?' : ''}
-              ${procedureID ? 'AND pr.procedureID = ?' : ''}
-            ORDER BY pr.sentEpoch DESC
-            LIMIT ? OFFSET ?;`;
+        SELECT pr.*, p.description AS gettedProcedure
+        FROM procedurereports pr
+                LEFT JOIN enrollment e ON e.std_id = pr.studentID
+                LEFT JOIN rotation_courses r ON r.rotation_id = e.rotation_id AND r.course_id = pr.courseID
+                LEFT JOIN student std ON std.ID = e.std_id AND std.ID = pr.studentID
+                LEFT JOIN procedures p ON pr.procedureID = p.ID
+        WHERE r.rotation_id = ?
+            AND r.course_id = ?
+            AND pr.attendingPhysicianID = ?
+            AND pr.isSent = 1
+            AND pr.isApproved = ?
+            AND (UPPER(std.name) LIKE ? OR UPPER(std.surname) LIKE ?)
+            AND pr.year = ?
+            AND pr.season = ?
+            ${specialtyID ? 'AND pr.specialtyID = ?' : ''}
+            ${procedureID ? 'AND pr.procedureID = ?' : ''}
+        ORDER BY pr.sentEpoch DESC
+        LIMIT ? OFFSET ?;`
 
         values = [
+            rotationID,
+            finalCourseID,
             physicianID,
             approvement,
             `%${input.toUpperCase()}%`,
             `%${input.toUpperCase()}%`,
-            finalCourseID,
             currentYear,
             currentSeason,
         ];

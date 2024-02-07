@@ -31,7 +31,7 @@ router
     .get(procedureFormController.listWaitingReports);
 
 router
-    .route("/get/all/by/approveDate/:attendingPhysicianID/:searchInput/:isApproved/:courseID/:specialtyID/:procedureID")
+    .route("/get/all/by/approveDate/:attendingPhysicianID/:searchInput/:isApproved/:rotationID/:courseID/:specialtyID/:procedureID")
     .get(procedureFormController.searchSentProcedureFormsWithDocIDAccordingToApproveDate);
 
 router

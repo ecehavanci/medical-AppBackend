@@ -371,11 +371,12 @@ exports.searchSentPatientFormsWithDocIDAccordingToApproveDate = (req, res, next)
     const physicianID = req.params.attendingPhysicianID;
     const approvement = req.params.isApproved;
     let courseID = parseInt(req.params.courseID) || null; // Default courseID
+    let rotationID = parseInt(req.params.rotationID) || null; // Default rotationID
     let specialtyID = parseInt(req.params.specialtyID) || null; // Default courseID
 
     try {
         verifyToken(req, res, () => {
-            if (!courseID) {
+            if (!rotationID && !courseID) { //if course id and retation no is NOT specified return physians all coming reports
                 conn.query(
                     `
                     SELECT pa.*
@@ -412,70 +413,82 @@ exports.searchSentPatientFormsWithDocIDAccordingToApproveDate = (req, res, next)
                 );
             } else {
                 // If courseID is provided in the query, proceed directly with the main query
-                executeMainQuery(courseID, specialtyID);
+                executeMainQuery(rotationID, courseID, specialtyID);
             }
         });
     } catch (error) {
         return next(new AppError(error.message, 500));
     }
 
-    function executeMainQuery(finalCourseID, specialtyID) {
+    function executeMainQuery(rotationID, finalCourseID, specialtyID) {
         let query = '';
         let values = [];
 
-        if (specialtyID) {
+        if (specialtyID) { //if rotation and course and also *specialty* is provided
             query = `
             SELECT pa.*
             FROM patientreports pa
-                    LEFT JOIN student std ON pa.studentID = std.ID
-            WHERE pa.attendingPhysicianID = ?
-            AND pa.isSent = 1
-            AND pa.isApproved = ?
-            AND UPPER(std.name) LIKE ?
-            AND pa.courseID = ?
-            AND pa.specialtyID = ?
-            AND pa.year = ?
-            AND pa.season = ?
+                     LEFT JOIN enrollment e ON e.std_id = pa.studentID
+                     LEFT JOIN rotation_courses r ON r.rotation_id = e.rotation_id AND r.course_id = pa.courseID
+                     LEFT JOIN student std ON std.ID = e.std_id AND std.ID = pa.studentID
+            WHERE r.rotation_id = ?
+              AND r.course_id = ?
+              AND pa.specialtyID = ?
+              AND pa.attendingPhysicianID = ?
+              AND pa.isSent = 1
+              AND pa.isApproved = ?
+              AND (UPPER(std.name) LIKE ? OR UPPER(std.surname) LIKE ?)
+              AND pa.year = ?
+              AND pa.season = ?
             ORDER BY pa.sentEpoch DESC
             LIMIT ? OFFSET ?;`;
 
             values = [
+                rotationID,
+                finalCourseID,
+                specialtyID,
                 physicianID,
                 approvement,
                 `%${input.toUpperCase()}%`,
-                finalCourseID,
-                specialtyID,
+                `%${input.toUpperCase()}%`,
                 currentYear,
                 currentSeason,
                 pageSize,
                 offset
             ];
+
         }
         else {
             query = `
             SELECT pa.*
             FROM patientreports pa
-                    LEFT JOIN student std ON pa.studentID = std.ID
-            WHERE pa.attendingPhysicianID = ?
-            AND pa.isSent = 1
-            AND pa.isApproved = ?
-            AND UPPER(std.name) LIKE ?
-            AND pa.courseID = ?
-            AND pa.year = ?
-            AND pa.season = ?
+                     LEFT JOIN enrollment e ON e.std_id = pa.studentID
+                     LEFT JOIN rotation_courses r ON r.rotation_id = e.rotation_id AND r.course_id = pa.courseID
+                     LEFT JOIN student std ON std.ID = e.std_id AND std.ID = pa.studentID
+            WHERE r.rotation_id = ?
+              AND r.course_id = ?
+              AND pa.attendingPhysicianID = ?
+              AND pa.isSent = 1
+              AND pa.isApproved = ?
+              AND (UPPER(std.name) LIKE ? OR UPPER(std.surname) LIKE ?)
+              AND pa.year = ?
+              AND pa.season = ?
             ORDER BY pa.sentEpoch DESC
             LIMIT ? OFFSET ?;`;
 
             values = [
+                rotationID,
+                finalCourseID,
                 physicianID,
                 approvement,
                 `%${input.toUpperCase()}%`,
-                finalCourseID,
+                `%${input.toUpperCase()}%`,
                 currentYear,
                 currentSeason,
                 pageSize,
                 offset
             ];
+
         }
 
         conn.query(
