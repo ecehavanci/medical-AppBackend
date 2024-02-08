@@ -106,7 +106,7 @@ exports.login = async (req, res, next) => {
 
                     const stdID = controllEnrollment[0]["student_id"];
                     //generate a new token to user
-                    const token = generateAccessToken({
+                    const { token, expirationDate } = generateAccessToken({
                         username: stdID.toString()
                     });
 
@@ -121,7 +121,8 @@ exports.login = async (req, res, next) => {
                             email: st.data.email, //msil
                             ekoid: st.data.ekoid, //ekoid
                             ID: user.ID, //student ID
-                            token: token
+                            token: token,
+                            expirationDate: expirationDate
                         };
 
                         return res.status(200).json(returnedData);
@@ -136,7 +137,7 @@ exports.login = async (req, res, next) => {
 
                 const physicianID = user["ID"];
                 //generate a new token to user
-                const token = generateAccessToken({
+                const { token, expirationDate } = generateAccessToken({
                     username: physicianID.toString()
                 });
 
@@ -152,6 +153,7 @@ exports.login = async (req, res, next) => {
                         ekoid: st.data.ekoid, //ekoid
                         ID: user.ID, //physician ID
                         token: token, //token
+                        expirationDate: expirationDate, //token
                     };
 
                     return res.status(200).json(returnedData);
