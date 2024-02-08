@@ -1,4 +1,4 @@
-import { sign, decode } from 'jsonwebtoken';
+const { sign, decode } = require('jsonwebtoken');
 
 function generateAccessToken(username) {
     const secretKey = process.env.TOKEN_SECRET;
@@ -16,4 +16,4 @@ function generateAccessToken(username) {
     };
 }
 
-export default generateAccessToken;
+module.exports = generateAccessToken;
