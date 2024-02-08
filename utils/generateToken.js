@@ -1,4 +1,4 @@
-import { sign } from 'jsonwebtoken';
+import { sign, decode } from 'jsonwebtoken';
 
 function generateAccessToken(username) {
     const secretKey = process.env.TOKEN_SECRET;
