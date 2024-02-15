@@ -4,69 +4,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home Page</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f0f0f0;
-        }
-
-        header {
-            background-color: #333;
-            color: #fff;
-            padding: 10px 20px;
-            text-align: center;
-        }
-
-        .container {
-            max-width: 800px;
-            margin: 20px auto;
-            padding: 20px;
-            background-color: #fff;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-
-        h1 {
-            color: #333;
-            text-align: center;
-        }
-
-        p {
-            line-height: 1.6;
-        }
-
-        footer {
-            background-color: #333;
-            color: #fff;
-            padding: 10px 20px;
-            text-align: center;
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-        }
-    </style>
+    <title>MedSIS IEU</title>
+    <link rel="stylesheet" href="home.style.css">
 </head>
 
 <body>
-
     <header>
-        <h1>Welcome to our website!</h1>
+        <img type="image/x-icon" src="images\logo-tr.png" alt="IEU logo">
     </header>
 
     <div class="container">
+
         <h2>About Us</h2>
         <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla luctus libero vitae nulla consectetur, nec
             ullamcorper nisl luctus. Nulla facilisi.</p>
         <p>Vestibulum convallis purus ac tincidunt pretium. Morbi ultrices mi non urna vehicula, vel sodales quam
             feugiat. Duis quis hendrerit neque. Pellentesque habitant morbi tristique senectus et netus et malesuada
             fames ac turpis egestas.</p>
+
+        <section>
+            <!-- <div class="device-photos">
+                <img src="utils/images/device1.jpg" alt="Device 1">
+                <img src="utils/images/device2.jpg" alt="Device 2">
+                <img src="utils/images/device3.jpg" alt="Device 3">
+            </div> -->
+            <div class="app-links">
+                <h3>Get Our App</h3>
+                <p>Download our app from the following stores:</p>
+                <a href="https://play.google.com/store/apps/details?id=your_app_id" target="_blank">
+                    <img type="image/x-icon" src="images\App_Store.png" alt="Google Play Store">
+                    <p>Google Play Store</p>
+                </a>
+                <a href="https://apps.apple.com/us/app/your-app/id1234567890" target="_blank">
+                    <img type="image/x-icon" src="images\Play_Store.png" alt="App Store" >
+                    <p>App Store</p>
+                </a>
+            </div>
+        </section>
+
     </div>
 
     <footer>
-        <p>&copy; 2024 Your Website Name. All rights reserved.</p>
+        <p>&copy; 2024 YBS @ IEU. All rights reserved.</p>
+        <div class="contact-us">
+            <p>For any inquiries, please email us <a href="mailto:mobile@ieu.edu.tr">mobile@ieu.edu.tr</a> or <a href="mailto:ybs@ieu.edu.tr">ybs@ieu.edu.tr</a> </p>
+        </div>
     </footer>
 
 </body>
