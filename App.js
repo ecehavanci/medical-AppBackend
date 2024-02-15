@@ -21,8 +21,9 @@ app.use(cors({
 }));
 app.disable('x-powered-by');
 
+app.use(express.static('public'));
 app.get("/", (req, res) => {
-  res.send("working");
+  res.sendFile(path.join(__dirname, 'utils/home.html'));
 });
 
 const server = http.createServer(app);
