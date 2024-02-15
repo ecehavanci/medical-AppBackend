@@ -19,12 +19,22 @@ header {
     background-color: #fff;
     border-radius: 5px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
 }
 
 .container h2 {
     text-align: center;
     margin: 0;
     padding: 0;
+}
+
+.center-img {
+    width: 150px;
+    /* transition: transform 0.3s ease; */
+    border-radius: 30px;
+    display: inline-block;
+    margin: 0 auto;
+    /* padding: 15px; */
 }
 
 h1 {
@@ -93,6 +103,7 @@ h2 {
     display: inline-block;
     margin-right: 10px;
 }
+
 .app-links a {
     text-decoration: none;
 }
