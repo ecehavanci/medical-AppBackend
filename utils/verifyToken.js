@@ -7,6 +7,7 @@ const verifyToken = (req, res, next) => {
     const token = authHeader && authHeader.split(' ')[1];
 
     if (!token) {
+        res.redirect('https://www.ieu.edu.tr/tr');
         return res.status(401).json({ message: 'No token provided' });
     }
     try {
