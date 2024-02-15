@@ -21,6 +21,12 @@ header {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
+.container h2 {
+    text-align: center;
+    margin: 0;
+    padding: 0;
+}
+
 h1 {
     color: #333;
     text-align: center;
@@ -38,6 +44,11 @@ footer {
     position: fixed;
     bottom: 0;
     width: 100%;
+}
+
+.contact-us a {
+    color: rgba(255, 151, 60, 0.938);
+    text-decoration: none;
 }
 
 section {
@@ -81,6 +92,13 @@ h2 {
 .app-links a {
     display: inline-block;
     margin-right: 10px;
+}
+.app-links a {
+    text-decoration: none;
+}
+
+.app-links a p {
+    color: hsl(180, 7%, 16%);
 }
 
 .app-links img {
