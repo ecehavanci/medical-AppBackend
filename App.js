@@ -8,6 +8,7 @@ const api = "/";
 var bodyParser = require('body-parser');
 const http = require('http');
 const PORT = 8080;
+const path = require('path');
 
 app.use(errorHandler);
 app.use(bodyParser.json());
