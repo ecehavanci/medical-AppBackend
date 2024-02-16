@@ -72,6 +72,9 @@ exports.login = async (req, res, next) => {
 
         const st = response.data;
 
+        console.log(st);
+        console.log("from mamié!!!!!");
+
         if (st.code == 200 && st.token) {
             if (userType == 0) { //if user is a student and required info is handled
                 const value = [user["ID"], currentDate]; //actually the mail of the std
