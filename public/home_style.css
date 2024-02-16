@@ -30,11 +30,9 @@ header {
 
 .center-img {
     width: 150px;
-    /* transition: transform 0.3s ease; */
     border-radius: 30px;
     display: inline-block;
     margin: 0 auto;
-    /* padding: 15px; */
 }
 
 h1 {
