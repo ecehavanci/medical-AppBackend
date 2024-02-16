@@ -8,7 +8,7 @@ exports.getAllPhysicians = (req, res, next) => {//SELECT * FROM attendingphysici
     try {
         verifyToken(req, res, () => {
             conn.query(
-                "SELECT ID, name, surname FROM attendingphysicians order by ID ASC",
+                "SELECT ID, name, surname,speciality_ID FROM attendingphysicians order by ID ASC",
                 function (err, data, fields) {
                     if (err) return next(new AppError(err, 500));
                     res.status(200).json({
