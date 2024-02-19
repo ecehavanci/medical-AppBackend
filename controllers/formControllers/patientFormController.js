@@ -517,45 +517,33 @@ exports.listWaitingReports = (req, res, next) => {
 
     try {
         verifyToken(req, res, () => {
-            // Check if courseID is not specified, then find the current course for the physician
-            if (!courseID) {
-                courseHelper.getCurrentCourseDoctor(attPhysicianID).then((courseResults) => {
-                    const finalCourseID = courseResults[0].course_id;
-                    executeMainQuery(finalCourseID);
-                })
-                    .catch((error) => {
-                        // Handle errors from getCurrentCourse
-                        return next(new AppError(error, 500));
-                    });
-            } else {
-                // If courseID is provided in the query, proceed directly with the main query
-                executeMainQuery();
-            }
-        });
-    } catch (error) {
-        return next(new AppError(error.message, 500));
-    }
 
-    function executeMainQuery(finalCourseID) { //now query doesnt have courseID filter
-        conn.query(
-            `SELECT pa.*
+            const query = `SELECT pa.*
             FROM patientreports pa
             WHERE pa.attendingPhysicianID = ?
               AND pa.isSent = 1
               AND pa.isApproved = ?
               AND pa.year = ?
               AND pa.season = ?
-            ORDER BY saveEpoch DESC;`,
-            [attPhysicianID, isApproved, currentYear, currentSeason],
-            function (err, data, fields) {
-                if (err) return next(new AppError(err, 500));
-                res.status(200).json({
-                    status: "success",
-                    length: data.length,
-                    data: data,
-                });
-            }
-        );
+            ORDER BY saveEpoch DESC;`;
+
+            const values = [attPhysicianID, isApproved, currentYear, currentSeason];
+
+            conn.query(
+                query,
+                values,
+                function (err, data, fields) {
+                    if (err) return next(new AppError(err, 500));
+                    res.status(200).json({
+                        status: "success",
+                        length: data.length,
+                        data: data,
+                    });
+                }
+            );
+        });
+    } catch (error) {
+        return next(new AppError(error.message, 500));
     }
 };
 
