@@ -519,7 +519,7 @@ exports.listWaitingReports = (req, res, next) => {
         verifyToken(req, res, () => {
             // Check if courseID is not specified, then find the current course for the physician
             if (!courseID) {
-                courseHelper.getCurrentCourseDoctor(attPhysicianID).then((finalCourseID) => {
+                courseHelper.getCurrentCourseDoctor(attPhysicianID).then((courseResults) => {
                     const finalCourseID = courseResults[0].course_id;
                     executeMainQuery(finalCourseID);
                 })
@@ -536,7 +536,7 @@ exports.listWaitingReports = (req, res, next) => {
         return next(new AppError(error.message, 500));
     }
 
-    function executeMainQuery() { //now query doesnt have courseID filter
+    function executeMainQuery(finalCourseID) { //now query doesnt have courseID filter
         conn.query(
             `SELECT pa.*
             FROM patientreports pa
