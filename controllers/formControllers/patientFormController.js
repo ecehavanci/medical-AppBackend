@@ -520,6 +520,7 @@ exports.listWaitingReports = (req, res, next) => {
             // Check if courseID is not specified, then find the current course for the physician
             if (!courseID) {
                 courseHelper.getCurrentCourseDoctor(attPhysicianID).then((finalCourseID) => {
+                    const finalCourseID = courseResults[0].course_id;
                     executeMainQuery(finalCourseID);
                 })
                     .catch((error) => {
