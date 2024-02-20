@@ -18,7 +18,7 @@ const router = express();
 
 router.use((req, res, next) => {
     // Middleware to exclude certain routes from token verification
-    if (req.path === '/root' ||
+    if (req.path === '/root/login' ||
         (req.path === "/student/all" && req.method === 'POST') ||
         (req.path === "/attendingphysician/all" && req.method === 'POST')) {
         next(); // Pass through without token verification
@@ -36,7 +36,6 @@ router.use("/differentialdiagnoses", differentialdiagnoses);
 router.use("/specialties", specialties);
 router.use("/courses", course);
 router.use("/rotations", rotations);
-// router.use("/web", web);
 router.use("/procedure", procedureRoutes);
 router.use("/logs", logRouter);
 router.use("/hospitals", hospitalRouter);
