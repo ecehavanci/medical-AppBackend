@@ -12,8 +12,20 @@ const web = require("./web");
 const procedureRoutes = require("./procedure");
 const logRouter = require("./log");
 const hospitalRouter = require("./hospital");
+const verifyToken = require('../utils/verifyToken');
 const router = express();
 
+
+router.use((req, res, next) => {
+    // Middleware to exclude certain routes from token verification
+    if (req.path === '/root' ||
+        (req.path === "/student/all" && req.method === 'POST') ||
+        (req.path === "/attendingphysician/all" && req.method === 'POST')) {
+        next(); // Pass through without token verification
+    } else {
+        verifyToken(req, res, next); // Verify token for other routes
+    }
+});
 
 router.use("/root", rootRoutes);
 router.use("/student", stdRoutes);

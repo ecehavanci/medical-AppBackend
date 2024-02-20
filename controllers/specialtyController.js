@@ -4,24 +4,21 @@ const config = require("../config.js");
 const currentYear = config.app.year;
 const currentSeason = config.app.season;
 const currentDate = config.app.date;
-const verifyToken = require('../utils/verifyToken');
 
 exports.getAllSpecialties = (req, res, next) => { //all specialties in DB
     try {
-        verifyToken(req, res, () => {
-            conn.query(
-                "select * from specialties",
-                [req.params.studentID],
-                function (err, data, fields) {
-                    if (err) return next(new AppError(err, 500));
-                    res.status(200).json({
-                        status: "success",
-                        length: data?.length,
-                        data: data,
-                    });
-                }
-            );
-        });
+        conn.query(
+            "select * from specialties",
+            [req.params.studentID],
+            function (err, data, fields) {
+                if (err) return next(new AppError(err, 500));
+                res.status(200).json({
+                    status: "success",
+                    length: data?.length,
+                    data: data,
+                });
+            }
+        );
     } catch (error) {
         return next(new AppError(error.message, 500));
     }
@@ -29,8 +26,7 @@ exports.getAllSpecialties = (req, res, next) => { //all specialties in DB
 
 exports.getCourseSpecialties = (req, res, next) => { //current course specialty
     try {
-        verifyToken(req, res, () => {
-            const queryString = `
+        const queryString = `
             select sp.ID, sp.description
             from student s
                     left join enrollment e on e.std_id = s.ID
@@ -43,50 +39,47 @@ exports.getCourseSpecialties = (req, res, next) => { //current course specialty
             and current_date between i.start and i.end;
             `;
 
-            conn.query(
-                queryString,
-                [currentYear, currentSeason, req.params.studentID, currentDate],
-                function (err, data, fields) {
-                    if (err) return next(new AppError(err, 500));
-                    res.status(200).json({
-                        status: "success",
-                        length: data?.length,
-                        data: data,
-                    });
-                }
-            );
-        });
+        conn.query(
+            queryString,
+            [currentYear, currentSeason, req.params.studentID, currentDate],
+            function (err, data, fields) {
+                if (err) return next(new AppError(err, 500));
+                res.status(200).json({
+                    status: "success",
+                    length: data?.length,
+                    data: data,
+                });
+            }
+        );
     } catch (error) {
         return next(new AppError(error.message, 500));
     }
 }
 exports.getCourseSpecialtiesByCourseID = (req, res, next) => { //current course specialty by course ID
     try {
-        verifyToken(req, res, () => {
-            if (!req.params.courseID)
-                return next(new AppError("Course ID specified", 404));
+        if (!req.params.courseID)
+            return next(new AppError("Course ID specified", 404));
 
-            const courseID = req.params.courseID;
+        const courseID = req.params.courseID;
 
-            const queryString = `
+        const queryString = `
             select sp.ID, sp.description
             from specialties sp
             where sp.course_ID = ?;
             `;
 
-            conn.query(
-                queryString,
-                [courseID],
-                function (err, data, fields) {
-                    if (err) return next(new AppError(err, 500));
-                    res.status(200).json({
-                        status: "success",
-                        length: data?.length,
-                        data: data,
-                    });
-                }
-            );
-        });
+        conn.query(
+            queryString,
+            [courseID],
+            function (err, data, fields) {
+                if (err) return next(new AppError(err, 500));
+                res.status(200).json({
+                    status: "success",
+                    length: data?.length,
+                    data: data,
+                });
+            }
+        );
     } catch (error) {
         return next(new AppError(error.message, 500));
     }
@@ -94,19 +87,17 @@ exports.getCourseSpecialtiesByCourseID = (req, res, next) => { //current course 
 
 exports.getSpecialtyName = (req, res, next) => { //specialty description according to its ID
     try {
-        verifyToken(req, res, () => {
-            conn.query("SELECT * from specialties where ID = ?;",
-                [req.params.specialtyNo],
-                function (err, data, fields) {
-                    if (err) return next(new AppError(err, 500));
-                    res.status(200).json({
-                        status: "success",
-                        length: data?.length,
-                        data: data,
-                    });
-                }
-            );
-        });
+        conn.query("SELECT * from specialties where ID = ?;",
+            [req.params.specialtyNo],
+            function (err, data, fields) {
+                if (err) return next(new AppError(err, 500));
+                res.status(200).json({
+                    status: "success",
+                    length: data?.length,
+                    data: data,
+                });
+            }
+        );
     } catch (error) {
         return next(new AppError(error.message, 500));
     }

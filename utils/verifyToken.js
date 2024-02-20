@@ -15,7 +15,7 @@ const verifyToken = (req, res, next) => {
         const decoded = jwt.verify(token, secretKey);
         req.decodedToken = decoded; // Attach the decoded token to the request object
         // console.log(decoded);
-        // next(); // Call the next middleware or route handler
+        next(); // Call the next middleware or route handler
         return;
     } catch (err) {
         if (err.name === 'TokenExpiredError') {

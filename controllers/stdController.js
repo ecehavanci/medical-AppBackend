@@ -4,7 +4,6 @@ var axios = require('axios');
 var qs = require('qs');
 const https = require('https');
 require('dotenv').config();
-const verifyToken = require('../utils/verifyToken');
 const generateAccessToken = require('../utils/generateToken');
 
 exports.insertStd = (req, res, next) => {
@@ -44,25 +43,23 @@ exports.insertStd = (req, res, next) => {
 exports.filterStdByID = async (req, res, next) => {
     try {
         // Verify the token using the middleware
-        verifyToken(req, res, () => {
-            if (!req.params.ID) {
-                return next(new AppError("No student found with the ID: " + req.params.ID, 404));
+        if (!req.params.ID) {
+            return next(new AppError("No student found with the ID: " + req.params.ID, 404));
+        }
+
+        conn.query(
+            "SELECT ID, name, surname FROM student WHERE ID = ?",
+            [req.params.ID],
+            function (err, data, fields) {
+                if (err) return next(new AppError(err, 500));
+
+                res.status(200).json({
+                    status: "success",
+                    length: data?.length,
+                    data: data,
+                });
             }
-
-            conn.query(
-                "SELECT ID, name, surname FROM student WHERE ID = ?",
-                [req.params.ID],
-                function (err, data, fields) {
-                    if (err) return next(new AppError(err, 500));
-
-                    res.status(200).json({
-                        status: "success",
-                        length: data?.length,
-                        data: data,
-                    });
-                }
-            );
-        });
+        );
     } catch (error) {
         return next(new AppError(error.message, 500));
     }
@@ -71,21 +68,19 @@ exports.filterStdByID = async (req, res, next) => {
 
 exports.getAllStudents = (req, res, next) => {
     try {
-        verifyToken(req, res, () => {
 
-            conn.query(
-                "SELECT ID, name, surname FROM student",
-                [req.params.ID],
-                function (err, data, fields) {
-                    if (err) return next(new AppError(err, 500));
-                    res.status(200).json({
-                        status: "success",
-                        length: data?.length,
-                        data: data,
-                    });
-                }
-            );
-        });
+        conn.query(
+            "SELECT ID, name, surname FROM student",
+            [req.params.ID],
+            function (err, data, fields) {
+                if (err) return next(new AppError(err, 500));
+                res.status(200).json({
+                    status: "success",
+                    length: data?.length,
+                    data: data,
+                });
+            }
+        );
     } catch (error) {
         return next(new AppError(error.message, 500));
     }
@@ -93,21 +88,19 @@ exports.getAllStudents = (req, res, next) => {
 
 exports.updateStdByID = (req, res, next) => {
     try {
-        verifyToken(req, res, () => {
-            const { name, surname } = req.body;
+        const { name, surname } = req.body;
 
-            conn.query(
-                'UPDATE student SET name = ?, surname = ? WHERE ID = ?',
-                [name, surname, req.params.ID],
-                function (err, data, fields) {
-                    if (err) return next(new AppError(err, 500));
-                    res.status(201).json({
-                        status: "success",
-                        message: "Student updated!",
-                    });
-                }
-            );
-        });
+        conn.query(
+            'UPDATE student SET name = ?, surname = ? WHERE ID = ?',
+            [name, surname, req.params.ID],
+            function (err, data, fields) {
+                if (err) return next(new AppError(err, 500));
+                res.status(201).json({
+                    status: "success",
+                    message: "Student updated!",
+                });
+            }
+        );
     } catch (error) {
         return next(new AppError(error.message, 500));
     }
@@ -117,23 +110,21 @@ exports.updateStdByID = (req, res, next) => {
 exports.deleteStdByID = (req, res, next) => {
 
     try {
-        verifyToken(req, res, () => {
-            if (!req.params.ID) {
-                return next(new AppError("No todo id found", 404));
-            }
+        if (!req.params.ID) {
+            return next(new AppError("No todo id found", 404));
+        }
 
-            conn.query(
-                "DELETE FROM student WHERE ID=?",
-                [req.params.ID],
-                function (err, fields) {
-                    if (err) return next(new AppError(err, 500));
-                    res.status(201).json({
-                        status: "success",
-                        message: "student deleted!",
-                    });
-                }
-            );
-        });
+        conn.query(
+            "DELETE FROM student WHERE ID=?",
+            [req.params.ID],
+            function (err, fields) {
+                if (err) return next(new AppError(err, 500));
+                res.status(201).json({
+                    status: "success",
+                    message: "student deleted!",
+                });
+            }
+        );
     } catch (error) {
         return next(new AppError(error.message, 500));
     }

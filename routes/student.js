@@ -4,7 +4,7 @@ const router = express.Router();
 
 router
     .route("/all")
-    .get(stdController.getAllStudents).post(stdController.insertStd);;
+    .get(stdController.getAllStudents).post(stdController.insertStd);
 
 router
     .route("/:ID")

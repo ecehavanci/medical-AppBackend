@@ -4,23 +4,20 @@ const config = require("../config.js");
 const currentYear = config.app.year;
 const currentSeason = config.app.season;
 const currentDate = config.app.date;
-const verifyToken = require('../utils/verifyToken');
 
 exports.getAllCourses = (req, res, next) => {
     try {
-        verifyToken(req, res, () => {
-            conn.query(
-                "SELECT * FROM courses order by code ASC",
-                function (err, data, fields) {
-                    if (err) return next(new AppError(err, 500));
-                    res.status(200).json({
-                        status: "success",
-                        length: data?.length,
-                        data: data,
-                    });
-                }
-            );
-        });
+        conn.query(
+            "SELECT * FROM courses order by code ASC",
+            function (err, data, fields) {
+                if (err) return next(new AppError(err, 500));
+                res.status(200).json({
+                    status: "success",
+                    length: data?.length,
+                    data: data,
+                });
+            }
+        );
     } catch (error) {
         return next(new AppError(error.message, 500));
     }
@@ -29,24 +26,22 @@ exports.getAllCourses = (req, res, next) => {
 exports.filterCourseByID = (req, res, next) => {
 
     try {
-        verifyToken(req, res, () => {
-            //check if the id is specified in the request parameter,
-            if (!req.params.ID) {
-                return next(new AppError("No course with this ID found", 404));
+        //check if the id is specified in the request parameter,
+        if (!req.params.ID) {
+            return next(new AppError("No course with this ID found", 404));
+        }
+        conn.query(
+            "SELECT * FROM courses WHERE ID = ?",
+            [req.params.ID],
+            function (err, data, fields) {
+                if (err) return next(new AppError(err, 500));
+                res.status(200).json({
+                    status: "success",
+                    length: data?.length,
+                    data: data,
+                });
             }
-            conn.query(
-                "SELECT * FROM courses WHERE ID = ?",
-                [req.params.ID],
-                function (err, data, fields) {
-                    if (err) return next(new AppError(err, 500));
-                    res.status(200).json({
-                        status: "success",
-                        length: data?.length,
-                        data: data,
-                    });
-                }
-            );
-        });
+        );
     } catch (error) {
         return next(new AppError(error.message, 500));
     }
@@ -56,12 +51,11 @@ exports.filterCourseByID = (req, res, next) => {
 exports.getCourseName = (req, res, next) => {
 
     try {
-        verifyToken(req, res, () => {
-            if (!req.params.stdID) {
-                return next(new AppError("Blank student ID", 404));
-            }
+        if (!req.params.stdID) {
+            return next(new AppError("Blank student ID", 404));
+        }
 
-            const queryString = `
+        const queryString = `
             SELECT c.*
             FROM student AS s
                     JOIN enrollment AS e ON s.ID = e.std_id
@@ -76,19 +70,18 @@ exports.getCourseName = (req, res, next) => {
             AND ? BETWEEN i.start AND i.end;
                 `;
 
-            conn.query(
-                queryString,
-                [req.params.stdID, currentYear, currentSeason, currentDate],
-                function (err, data, fields) {
-                    if (err) return next(new AppError(err, 500));
-                    res.status(200).json({
-                        status: "success",
-                        length: data?.length,
-                        data: data,
-                    });
-                }
-            );
-        });
+        conn.query(
+            queryString,
+            [req.params.stdID, currentYear, currentSeason, currentDate],
+            function (err, data, fields) {
+                if (err) return next(new AppError(err, 500));
+                res.status(200).json({
+                    status: "success",
+                    length: data?.length,
+                    data: data,
+                });
+            }
+        );
     } catch (error) {
         return next(new AppError(error.message, 500));
     }
@@ -97,8 +90,7 @@ exports.getCourseName = (req, res, next) => {
 //öğrencinin bağlı olduğu rotasyonların ders, sınıf ve grup bilgilerini getirir
 exports.listStudentSemesterInfos = (req, res, next) => { //add, order by courses end date
     try {
-        verifyToken(req, res, () => {
-            const query = `
+        const query = `
             SELECT DISTINCT c.*,ro.group_id,ro.class
             FROM enrollment e
                     LEFT JOIN rotation_courses rc ON e.rotation_id = rc.rotation_id
@@ -107,19 +99,18 @@ exports.listStudentSemesterInfos = (req, res, next) => { //add, order by courses
                     LEFT JOIN courses c ON rc.course_id = c.ID
             WHERE e.std_id = ?
             order by i.start;`;
-            conn.query(
-                query,
-                [req.params.stdID],
-                function (err, data, fields) {
-                    if (err) return next(new AppError(err, 500));
-                    res.status(200).json({
-                        status: "success",
-                        length: data?.length,
-                        data: data,
-                    });
-                }
-            );
-        });
+        conn.query(
+            query,
+            [req.params.stdID],
+            function (err, data, fields) {
+                if (err) return next(new AppError(err, 500));
+                res.status(200).json({
+                    status: "success",
+                    length: data?.length,
+                    data: data,
+                });
+            }
+        );
     } catch (error) {
         return next(new AppError(error.message, 500));
     }
@@ -128,8 +119,7 @@ exports.listStudentSemesterInfos = (req, res, next) => { //add, order by courses
 //doktorun bağlı olduğu rotasyonların şimdiki ve ve geçmişteki kurs bilgileri gösterir
 exports.listPhysicianSemesterCourses = (req, res, next) => { //add, order by courses end date
     try {
-        verifyToken(req, res, () => {
-            const query = `
+        const query = `
             SELECT DISTINCT rc.course_id as ID,c.code,c.description
             FROM enrollment_physician e
                     LEFT JOIN rotation_courses rc ON e.rotationNo = rc.rotation_id and rc.course_id = e.courseID
@@ -141,19 +131,18 @@ exports.listPhysicianSemesterCourses = (req, res, next) => { //add, order by cou
             
             and i.season = ?
             order by i.start;`;
-            conn.query(
-                query,
-                [req.params.physicianID, currentYear, currentSeason],
-                function (err, data, fields) {
-                    if (err) return next(new AppError(err, 500));
-                    res.status(200).json({
-                        status: "success",
-                        length: data?.length,
-                        data: data,
-                    });
-                }
-            );
-        });
+        conn.query(
+            query,
+            [req.params.physicianID, currentYear, currentSeason],
+            function (err, data, fields) {
+                if (err) return next(new AppError(err, 500));
+                res.status(200).json({
+                    status: "success",
+                    length: data?.length,
+                    data: data,
+                });
+            }
+        );
     } catch (error) {
         return next(new AppError(error.message, 500));
     }
@@ -162,8 +151,7 @@ exports.listPhysicianSemesterCourses = (req, res, next) => { //add, order by cou
 //doktorun bağlı olduğu rotasyonların şimdiki ve ve geçmişteki kurs bilgileri gösterir
 exports.listPhysicianSemesterCoursesWithRotation = (req, res, next) => { //add, order by courses end date
     try {
-        verifyToken(req, res, () => {
-            const query = `
+        const query = `
             SELECT DISTINCT rc.rotation_id,rc.course_id as ID,c.code,c.description
             FROM enrollment_physician e
                     LEFT JOIN rotation_courses rc ON e.rotationNo = rc.rotation_id and rc.course_id = e.courseID
@@ -175,19 +163,18 @@ exports.listPhysicianSemesterCoursesWithRotation = (req, res, next) => { //add, 
             
             and i.season = ?
             order by rc.rotation_id;`;
-            conn.query(
-                query,
-                [req.params.physicianID, currentYear, currentSeason],
-                function (err, data, fields) {
-                    if (err) return next(new AppError(err, 500));
-                    res.status(200).json({
-                        status: "success",
-                        length: data?.length,
-                        data: data,
-                    });
-                }
-            );
-        });
+        conn.query(
+            query,
+            [req.params.physicianID, currentYear, currentSeason],
+            function (err, data, fields) {
+                if (err) return next(new AppError(err, 500));
+                res.status(200).json({
+                    status: "success",
+                    length: data?.length,
+                    data: data,
+                });
+            }
+        );
     } catch (error) {
         return next(new AppError(error.message, 500));
     }
@@ -197,27 +184,26 @@ exports.listPhysicianSemesterCoursesWithRotation = (req, res, next) => { //add, 
 exports.requiredReportCountsOfCourse = async (req, res, next) => {
 
     try {
-        verifyToken(req, res, () => {
-            const stdID = req.params.stdID;
-            let courseID = req.params.courseID !== undefined ? parseInt(req.params.courseID) : null;
+        const stdID = req.params.stdID;
+        let courseID = req.params.courseID !== undefined ? parseInt(req.params.courseID) : null;
 
-            if (!stdID) {
-                return next(new AppError("No student with this ID found", 404));
-            }
+        if (!stdID) {
+            return next(new AppError("No student with this ID found", 404));
+        }
 
-            let query;
-            let values;
+        let query;
+        let values;
 
-            if (courseID) {
-                query = `
+        if (courseID) {
+            query = `
             SELECT c.patient_count as patientReportCount, c.procedure_count as procedureReportCount
             FROM courses c
             WHERE ID = ?;
              `;
-                values = [courseID];
-            } else {
+            values = [courseID];
+        } else {
 
-                query = `
+            query = `
             SELECT c.patient_count as patientReportCount, c.procedure_count as procedureReportCount
             FROM enrollment e
             LEFT JOIN rotation_courses rc ON e.rotation_id = rc.rotation_id
@@ -230,24 +216,23 @@ exports.requiredReportCountsOfCourse = async (req, res, next) => {
             AND e.std_id = ?;
             `;
 
-                values = [currentDate, currentYear, currentSeason, stdID];
+            values = [currentDate, currentYear, currentSeason, stdID];
+        }
+
+        conn.query(
+            query,
+            values,
+            function (err, data, fields) {
+                if (err) return next(new AppError(err, 500));
+
+                console.log(data);
+                res.status(200).json({
+                    status: "success",
+                    length: data?.length,
+                    data: data,
+                });
             }
-
-            conn.query(
-                query,
-                values,
-                function (err, data, fields) {
-                    if (err) return next(new AppError(err, 500));
-
-                    console.log(data);
-                    res.status(200).json({
-                        status: "success",
-                        length: data?.length,
-                        data: data,
-                    });
-                }
-            );
-        });
+        );
     } catch (error) {
         return next(new AppError(error.message, 500));
     }
@@ -257,13 +242,12 @@ exports.requiredReportCountsOfCourse = async (req, res, next) => {
 
 exports.getPeriodData = async (req, res, next) => {
     try {
-        verifyToken(req, res, () => {
-            const stdID = req.params.stdID;
-            if (!stdID) {
-                return next(new AppError("No student with this ID found", 404));
-            }
+        const stdID = req.params.stdID;
+        if (!stdID) {
+            return next(new AppError("No student with this ID found", 404));
+        }
 
-            const query = `
+        const query = `
             SELECT i.year,
                 i.season,
                 c.ID        as courseID,
@@ -295,19 +279,18 @@ exports.getPeriodData = async (req, res, next) => {
             AND e.std_id = ?;
           `;
 
-            conn.query(
-                query,
-                [currentDate, currentYear, currentSeason, stdID],
-                function (err, data, fields) {
-                    if (err) return next(new AppError(err, 500));
-                    res.status(200).json({
-                        status: "success",
-                        length: data?.length,
-                        data: data,
-                    });
-                }
-            );
-        });
+        conn.query(
+            query,
+            [currentDate, currentYear, currentSeason, stdID],
+            function (err, data, fields) {
+                if (err) return next(new AppError(err, 500));
+                res.status(200).json({
+                    status: "success",
+                    length: data?.length,
+                    data: data,
+                });
+            }
+        );
     } catch (error) {
         return next(new AppError(error.message, 500));
     }
