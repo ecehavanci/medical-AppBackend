@@ -13,7 +13,6 @@ const currentDate = config.app.date;
 
 exports.insertProcedureForm = (req, res, next) => {
     //we check if the client is sending an empty form "and return a 404 error message.
-
     try {
         verifyToken(req, res, () => {
             if (!req.body)
