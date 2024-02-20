@@ -16,6 +16,7 @@ const verifyToken = (req, res, next) => {
         req.decodedToken = decoded; // Attach the decoded token to the request object
         // console.log(decoded);
         // next(); // Call the next middleware or route handler
+        return;
     } catch (err) {
         if (err.name === 'TokenExpiredError') {
             return res.status(401).json({ message: 'Token has expired', error: err.message });
