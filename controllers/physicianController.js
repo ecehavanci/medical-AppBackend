@@ -136,7 +136,7 @@ exports.getFullPhysicianInfoByID = async (req, res, next) => {
         const [results] = await connection.execute(query, values);
         connection.release();
 
-        if (data.length === 0) {
+        if (results.length === 0) {
             return next(new AppError("Physician not found.", 404));
         }
 
