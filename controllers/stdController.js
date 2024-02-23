@@ -71,10 +71,9 @@ exports.getAllStudents = async (req, res, next) => {
     try {
 
         const query = "SELECT ID, name, surname FROM student";
-        const values = [req.params.ID];
 
         const connection = await conn.getConnection();
-        const [results] = await connection.execute(query, values);
+        const [results] = await connection.execute(query);
         connection.release();
 
         res.status(200).json({
