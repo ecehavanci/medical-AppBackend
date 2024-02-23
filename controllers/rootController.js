@@ -4,8 +4,8 @@ var https = require('follow-redirects').https;
 const axios = require('axios');
 const dotenv = require('dotenv').config();
 const util = require('util');
-const promisify = util.promisify;
-const queryAsync = promisify(conn.query).bind(conn);
+// const promisify = util.promisify;
+// const queryAsync = promisify(conn.query).bind(conn);
 const dater = require(".././config");
 const currentDate = dater.app.date;
 const generateAccessToken = require('../utils/generateToken');
@@ -22,15 +22,17 @@ exports.login = async (req, res, next) => {
     }
 
     try {
+        const connection = await conn.getConnection();
+
         if (userType == 0) { //if the user is student
 
             const query = `select * from student s where s.eko_id = ? && s.is_active = 1;`;
             const value = [eko_id]; //actually the mail of the std
 
-            const data = await queryAsync(query, value);
+            const [results] = await connection.execute(query, value);
 
-            if (data && data.length > 0) {
-                user = data[0];
+            if (results && results.length > 0) {
+                user = results[0];
                 console.log(user);
             } else {
                 return res.status(404).json({ message: "Student permissions are not setted." });
@@ -42,10 +44,10 @@ exports.login = async (req, res, next) => {
             const query = `select * from attendingphysicians att where att.eko_id = ? && is_active = 1`;
             const value = [eko_id];
 
-            const data = await queryAsync(query, value);
+            const [results] = await connection.execute(query, value);
 
-            if (data && data.length > 0) {
-                user = data[0];
+            if (results && results.length > 0) {
+                user = results[0];
                 console.log(user);
             } else {
                 return res.status(404).json({ message: "Physician permissions are not setted." });
@@ -99,8 +101,7 @@ exports.login = async (req, res, next) => {
                     AND ? BETWEEN i.start AND i.end;`;
 
 
-
-                const controllEnrollment = await queryAsync(query, value);
+                const [controllEnrollment] = await connection.execute(query, value);
 
                 if (controllEnrollment && controllEnrollment.length > 0) {
 
@@ -112,7 +113,7 @@ exports.login = async (req, res, next) => {
 
                     const query = `UPDATE student SET token = ? WHERE ID = ?;`;
                     const value = [token, stdID];
-                    const tokenInsertion = await queryAsync(query, value);
+                    const [tokenInsertion] = await connection.execute(query, value);
 
                     if (tokenInsertion && tokenInsertion.affectedRows > 0) {
 
@@ -143,7 +144,7 @@ exports.login = async (req, res, next) => {
 
                 const query = `UPDATE attendingphysicians SET token = ? WHERE ID = ?;`;
                 const value = [token, physicianID];
-                const tokenInsertion = await queryAsync(query, value);
+                const [tokenInsertion] = await connection.execute(query, value);
 
                 if (tokenInsertion && tokenInsertion.affectedRows > 0) {
 
@@ -164,7 +165,9 @@ exports.login = async (req, res, next) => {
             return res.status(400).json({ message: "User could not be authenticated." });
         }
 
+        connection.release();
     } catch (error) {
+        connection.release();
         return res.status(500).json({ message: "Wrong username or password." });
     }
 
