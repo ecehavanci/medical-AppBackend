@@ -35,7 +35,7 @@ exports.getCourseSpecialties = async (req, res, next) => { //current course spec
             where i.year = ?
             and i.season = ?
             and s.ID = ?
-            and current_date between i.start and i.end;
+            and ? between i.start and i.end;
             `;
 
         const values = [currentYear, currentSeason, req.params.studentID, currentDate];
@@ -44,6 +44,7 @@ exports.getCourseSpecialties = async (req, res, next) => { //current course spec
         const [results] = await connection.execute(query, values);
         connection.release();
 
+        console.log(results);
         res.status(200).json({
             status: "success",
             length: results?.length,
