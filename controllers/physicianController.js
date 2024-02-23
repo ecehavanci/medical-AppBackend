@@ -67,16 +67,12 @@ exports.filterPhysician = async (req, res, next) => {
         }
 
         const id = req.params.ID;
-        const name = req.params.name;
-        const surname = req.params.surname;
-        const phone = req.params.phone;
-
-        if (!id && !name && !surname && !phone) {
-            return next(new AppError("At least one search criterion is required.", 400));
+        if (!id) {
+            return next(new AppError("ID is required.", 400));
         }
 
-        const query = "SELECT * FROM attendingphysicians WHERE ID = ? OR phone = ? OR name = ? OR surname = ?";
-        const values = [id, phone, name, surname];
+        const query = "SELECT * FROM attendingphysicians WHERE ID = ?;";
+        const values = [id];
 
         const connection = await conn.getConnection();
         const [results] = await connection.execute(query, values);
@@ -260,7 +256,6 @@ exports.listCoursePhysicians = (req, res, next) => {
         courseHelper.getCurrentCourse(req.params.stdID).then(async (finalCourseID) => {
             const query = "select ID,name,surname,speciality_ID from attendingphysicians where courseID = ? and is_active = 1;";
             const values = [finalCourseID];
-
 
             const connection = await conn.getConnection();
             const [results] = await connection.execute(query, values);
