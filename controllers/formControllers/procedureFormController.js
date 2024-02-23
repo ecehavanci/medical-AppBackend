@@ -64,7 +64,7 @@ exports.insertProcedureForm = (req, res, next) => {
                     "localStorageID, " +
                     "year, " +
                     "season) " +
-                    "VALUES(?)";
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
                 const connection = await conn.getConnection();
                 const [results] = await connection.execute(query, values);

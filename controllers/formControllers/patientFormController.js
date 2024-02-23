@@ -89,7 +89,7 @@ exports.insertPatientForm = (req, res, next) => {
                     "localStorageID, " +
                     "year, " +
                     "season) " +
-                    "VALUES(?)";
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
                 const connection = await conn.getConnection();
                 const [results] = await connection.execute(query, values);
@@ -102,10 +102,10 @@ exports.insertPatientForm = (req, res, next) => {
                     var insertedTier4 = null;
 
                     if (req.body.isSent === 1) {
-                        insertedTier1 = await checkAndInsertTierData(req.body.tier1ID, req.body.tier1.toLowerCase().trim(), data.insertId, res, next);
-                        insertedTier2 = await checkAndInsertTierData(req.body.tier2ID, req.body.tier2.toLowerCase().trim(), data.insertId, res, next);
-                        insertedTier3 = await checkAndInsertTierData(req.body.tier3ID, req.body.tier3.toLowerCase().trim(), data.insertId, res, next);
-                        insertedTier4 = await checkAndInsertTierData(req.body.tier4ID, req.body.tier4.toLowerCase().trim(), data.insertId, res, next);
+                        insertedTier1 = await checkAndInsertTierData(req.body.tier1ID, req.body.tier1.toLowerCase().trim(), results.insertId, res, next);
+                        insertedTier2 = await checkAndInsertTierData(req.body.tier2ID, req.body.tier2.toLowerCase().trim(), results.insertId, res, next);
+                        insertedTier3 = await checkAndInsertTierData(req.body.tier3ID, req.body.tier3.toLowerCase().trim(), results.insertId, res, next);
+                        insertedTier4 = await checkAndInsertTierData(req.body.tier4ID, req.body.tier4.toLowerCase().trim(), results.insertId, res, next);
                     }
 
                     const primaryID = results.insertId;

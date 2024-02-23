@@ -26,7 +26,6 @@ exports.getAllSpecialties = async (req, res, next) => { //all specialties in DB
 exports.getCourseSpecialties = async (req, res, next) => { //current course specialty
     try {
         const query = `
-            select sp.ID, sp.description
             from student s
                     left join enrollment e on e.std_id = s.ID
                     left join rotation_courses rc on rc.rotation_id = e.rotation_id
@@ -44,7 +43,6 @@ exports.getCourseSpecialties = async (req, res, next) => { //current course spec
         const [results] = await connection.execute(query, values);
         connection.release();
 
-        console.log(results);
         res.status(200).json({
             status: "success",
             length: results?.length,
