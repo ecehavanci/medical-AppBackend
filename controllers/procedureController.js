@@ -2,25 +2,27 @@ const AppError = require("../utils/appError");
 const conn = require("../services/db");
 const courseHelper = require("./currentCourse");
 
-exports.getApprovedProcedures = (req, res, next) => {
+exports.getApprovedProcedures = async (req, res, next) => {
     try {
-        conn.query(
-            "select * from procedures WHERE isApproved = 1 ORDER BY description ASC",
-            function (err, data, fields) {
-                if (err) return next(new AppError(err, 500));
-                res.status(200).json({
-                    status: "success",
-                    length: data?.length,
-                    data: data,
-                });
-            }
-        );
+
+        const query = "select * from procedures WHERE isApproved = 1 ORDER BY description ASC";
+
+        const connection = await conn.getConnection();
+        const [results] = await connection.execute(query);
+        connection.release();
+
+        res.status(200).json({
+            status: "success",
+            length: results?.length,
+            data: results,
+        });
+
     } catch (error) {
         return next(new AppError(error.message, 500));
     }
 }
 
-exports.getApprovedProceduresByCourseID = (req, res, next) => {
+exports.getApprovedProceduresByCourseID = async (req, res, next) => {
     try {
         const courseID = req.params.courseID;
 
@@ -28,58 +30,62 @@ exports.getApprovedProceduresByCourseID = (req, res, next) => {
             return next(new AppError("Course ID required.", 400));
         }
 
-        conn.query(
-            "select * from procedures WHERE isApproved = 1 && courseID = ? || ID = -1  ORDER BY description ASC;",
-            [courseID],
-            function (err, data, fields) {
-                if (err) return next(new AppError(err, 500));
-                res.status(200).json({
-                    status: "success",
-                    length: data?.length,
-                    data: data,
-                });
-            }
-        );
+        const query = "select * from procedures WHERE isApproved = 1 && courseID = ? || ID = -1  ORDER BY description ASC;";
+        const values = [courseID];
+
+        const connection = await conn.getConnection();
+        const [results] = await connection.execute(query, values);
+        connection.release();
+
+        res.status(200).json({
+            status: "success",
+            length: results?.length,
+            data: results,
+        });
+
     } catch (error) {
         return next(new AppError(error.message, 500));
     }
 
 }
 
-exports.getProceduresByID = (req, res, next) => {
+exports.getProceduresByID = async (req, res, next) => {
     try {
-        conn.query(
-            "select * from procedures WHERE ID = ?",
-            [req.params.procedureID],
-            function (err, data, fields) {
-                if (err) return next(new AppError(err, 500));
-                res.status(200).json({
-                    status: "success",
-                    length: data?.length,
-                    data: data,
-                });
-            }
-        );
+
+        const query = "select * from procedures WHERE ID = ?";
+        const values = [req.params.procedureID];
+
+        const connection = await conn.getConnection();
+        const [results] = await connection.execute(query, values);
+        connection.release();
+
+        res.status(200).json({
+            status: "success",
+            length: results?.length,
+            data: results,
+        });
+
     } catch (error) {
         return next(new AppError(error.message, 500));
     }
 
 }
 
-exports.getProcedureByRelatedReportID = (req, res, next) => {
+exports.getProcedureByRelatedReportID = async (req, res, next) => {
     try {
-        conn.query(
-            "SELECT * FROM procedures WHERE relatedReport = ?",
-            [req.params.relatedReport],
-            function (err, data, fields) {
-                if (err) return next(new AppError(err, 500));
-                res.status(200).json({
-                    status: "success",
-                    length: data?.length,
-                    data: data,
-                });
-            }
-        );
+        const query = "SELECT * FROM procedures WHERE relatedReport = ?";
+        const values = [req.params.relatedReport];
+
+        const connection = await conn.getConnection();
+        const [results] = await connection.execute(query, values);
+        connection.release();
+
+        res.status(200).json({
+            status: "success",
+            length: results?.length,
+            data: results,
+        });
+
     } catch (error) {
         return next(new AppError(error.message, 500));
     }
@@ -94,19 +100,20 @@ exports.currentCourseProcedures = (req, res, next) => {
         }
 
         courseHelper.getCurrentCourse(studentID)
-            .then((finalCourseID) => {
-                conn.query(
-                    "select * from procedures where courseID = ? && procedures.isApproved = 1 || ID = -1 order by description;",
-                    [finalCourseID],
-                    function (err, data, fields) {
-                        if (err) return next(new AppError(err, 500));
-                        res.status(200).json({
-                            status: "success",
-                            length: data?.length,
-                            data: data,
-                        });
-                    }
-                );
+            .then(async (finalCourseID) => {
+
+                const query = "select * from procedures where courseID = ? && procedures.isApproved = 1 || ID = -1 order by description;";
+                const values = [finalCourseID];
+
+                const connection = await conn.getConnection();
+                const [results] = await connection.execute(query, values);
+                connection.release();
+
+                res.status(200).json({
+                    status: "success",
+                    length: results?.length,
+                    data: results,
+                });
             })
             .catch((error) => {
                 return next(new AppError(error, 500));
@@ -116,7 +123,7 @@ exports.currentCourseProcedures = (req, res, next) => {
     }
 }
 
-exports.updateProcedure = (req, res, next) => {
+exports.updateProcedure = async (req, res, next) => {
 
     try {
         const ID = req.params.procedureID;
@@ -138,27 +145,31 @@ exports.updateProcedure = (req, res, next) => {
         }
 
         const query = "UPDATE procedures SET ? WHERE ID = ?";
+        const values = [updateValues, ID];
 
-        conn.query(query, [updateValues, ID], (err, data) => {
-            if (err) {
-                console.error("Update Error:", err);
-                return next(new AppError(err.message, 500));
-            }
+        const connection = await conn.getConnection();
+        const [results] = await connection.execute(query, values);
+        connection.release();
 
-            console.log("Updated Data:", data);
-
+        if (results.affectedRows > 0) {
             res.status(201).json({
                 status: "success",
                 message: "Procedure data successfully updated",
             });
-        });
+        } else {
+            res.status(404).json({
+                status: "error",
+                message: "Procedure not found or no changes made",
+            });
+        }
+
     } catch (error) {
         return next(new AppError(error.message, 500));
     }
 };
 
 
-exports.insertProcedure = (req, res, next) => {
+exports.insertProcedure = async (req, res, next) => {
     try {
         if (!req.body || !req.body.description || !req.body.relatedReport) {
             return next(new AppError("Invalid data provided", 400));
@@ -166,26 +177,26 @@ exports.insertProcedure = (req, res, next) => {
 
         const { description, relatedReport } = req.body;
 
+        const query = "INSERT INTO procedures (description, relatedReport) VALUES (LOWER(?), ?)";
         const values = [description, relatedReport];
 
-        conn.query(
-            "INSERT INTO procedures (description, relatedReport) VALUES (LOWER(?), ?)",
-            values,
-            function (err, data, fields) {
-                if (err) {
-                    console.error("INSERT Error:", err);
-                    return next(new AppError(err.message, 500));
-                }
+        const connection = await conn.getConnection();
+        const [results] = await connection.execute(query, values);
+        connection.release();
 
-                console.log("Inserted Data:", data);
+        if (results.insertId) {
+            res.status(201).json({
+                status: "success",
+                message: "New procedure added!",
+                insertedId: results.insertId,
+            });
+        } else {
+            res.status(500).json({
+                status: "error",
+                message: "Failed to add new procedure",
+            });
+        }
 
-                res.status(201).json({
-                    status: "success",
-                    message: "New procedure added!",
-                    insertedId: data.insertId,
-                });
-            }
-        );
     } catch (error) {
         return next(new AppError(error.message, 500));
     }

@@ -21,7 +21,7 @@ exports.insertPatientForm = (req, res, next) => {
         const studentID = req.body.studentID;
 
         courseHelper.getCurrentCourse(studentID)
-            .then((finalCourseID) => {
+            .then(async (finalCourseID) => {
                 const values = [
                     req.body.studentID,
                     finalCourseID,
@@ -58,8 +58,7 @@ exports.insertPatientForm = (req, res, next) => {
 
                 console.log(req.body);
 
-                conn.query(
-                    "INSERT INTO patientreports (studentID," +
+                const query = "INSERT INTO patientreports (studentID," +
                     "courseID," +
                     "specialtyID," +
                     "attendingPhysicianID," +
@@ -90,43 +89,40 @@ exports.insertPatientForm = (req, res, next) => {
                     "localStorageID, " +
                     "year, " +
                     "season) " +
-                    "VALUES(?)",
-                    [values],
-                    async function (err, data, fields) {
-                        if (err) {
-                            return next(new AppError(err, 500));
-                        }
+                    "VALUES(?)";
 
-                        if (data.affectedRows > 0) {
-                            var insertedTier1 = null;
-                            var insertedTier2 = null;
-                            var insertedTier3 = null;
-                            var insertedTier4 = null;
+                const connection = await conn.getConnection();
+                const [results] = await connection.execute(query, values);
+                connection.release();
 
-                            if (req.body.isSent === 1) {
-                                insertedTier1 = await checkAndInsertTierData(req.body.tier1ID, req.body.tier1.toLowerCase().trim(), data.insertId, res, next);
-                                insertedTier2 = await checkAndInsertTierData(req.body.tier2ID, req.body.tier2.toLowerCase().trim(), data.insertId, res, next);
-                                insertedTier3 = await checkAndInsertTierData(req.body.tier3ID, req.body.tier3.toLowerCase().trim(), data.insertId, res, next);
-                                insertedTier4 = await checkAndInsertTierData(req.body.tier4ID, req.body.tier4.toLowerCase().trim(), data.insertId, res, next);
-                            }
+                if (results.affectedRows > 0) {
+                    var insertedTier1 = null;
+                    var insertedTier2 = null;
+                    var insertedTier3 = null;
+                    var insertedTier4 = null;
 
-                            const primaryID = data.insertId;
-
-                            res.status(200).json({
-                                status: "success",
-                                message: "Patient form data successfully inserted",
-                                insertedIds: [insertedTier1, insertedTier2, insertedTier3, insertedTier4],
-                                primaryID: primaryID
-                            });
-                        } else {
-                            // Handle the case where no rows were updated (e.g., student data didn't change)
-                            res.status(200).json({
-                                status: "success",
-                                message: "No patient form data inserted",
-                            });
-                        }
+                    if (req.body.isSent === 1) {
+                        insertedTier1 = await checkAndInsertTierData(req.body.tier1ID, req.body.tier1.toLowerCase().trim(), data.insertId, res, next);
+                        insertedTier2 = await checkAndInsertTierData(req.body.tier2ID, req.body.tier2.toLowerCase().trim(), data.insertId, res, next);
+                        insertedTier3 = await checkAndInsertTierData(req.body.tier3ID, req.body.tier3.toLowerCase().trim(), data.insertId, res, next);
+                        insertedTier4 = await checkAndInsertTierData(req.body.tier4ID, req.body.tier4.toLowerCase().trim(), data.insertId, res, next);
                     }
-                );
+
+                    const primaryID = results.insertId;
+
+                    res.status(200).json({
+                        status: "success",
+                        message: "Patient form data successfully inserted",
+                        insertedIds: [insertedTier1, insertedTier2, insertedTier3, insertedTier4],
+                        primaryID: primaryID
+                    });
+                } else {
+                    // Handle the case where no rows were updated (e.g., student data didn't change)
+                    res.status(200).json({
+                        status: "success",
+                        message: "No patient form data inserted",
+                    });
+                }
 
             })
             .catch((error) => {
@@ -204,55 +200,52 @@ exports.updatePatientForm = async (req, res, next) => { ////////////!!!!!!!!!!!!
     try {
         if (req.body.isSent === 1) {
             const res3 = await logController.updatePatientFormLog(selectClauses, values);
-            console.log("res3");
+            // console.log("res3");
             console.log(res3);
         }
 
-        conn.query(query, values, async (err, data) => {
-            if (err) {
-                console.error("Update Error:", err);
-                return next(new AppError(err.message, 500));
-            }
+        const connection = await conn.getConnection();
+        const [results] = await connection.execute(query, values);
+        connection.release();
 
-            // Handle the case where no rows were updated
-            if (data.affectedRows === 0) {
-                return res.status(200).json({
-                    status: "success",
-                    message: "No patient form data updated",
-                });
-            }
-
-            const insertedIds = [];
-            if (req.body.isSent === 1) {
-                for (let i = 1; i <= 4; i++) {
-                    const tierID = req.body[`tier${i}ID`];
-                    const tierValue = req.body[`tier${i}`];
-                    console.log(tierID, tierValue);
-
-                    const insertedTier = await checkAndInsertTierData(
-                        tierID,
-                        tierValue,
-                        req.params.ID,
-                        res,
-                        next
-                    );
-                    insertedIds.push(insertedTier);
-                }
-            }
-
-            res.status(200).json({
+        if (results.affectedRows === 0) {
+            return res.status(200).json({
                 status: "success",
-                message: "Form data successfully altered",
-                insertedId: insertedIds || "No new tier data inserted",
+                message: "No patient form data updated",
             });
+        }
+
+        const insertedIds = [];
+        if (req.body.isSent === 1) {
+            for (let i = 1; i <= 4; i++) {
+                const tierID = req.body[`tier${i}ID`];
+                const tierValue = req.body[`tier${i}`];
+                console.log(tierID, tierValue);
+
+                const insertedTier = await checkAndInsertTierData(
+                    tierID,
+                    tierValue,
+                    req.params.ID,
+                    res,
+                    next
+                );
+                insertedIds.push(insertedTier);
+            }
+        }
+
+        res.status(200).json({
+            status: "success",
+            message: "Form data successfully altered",
+            insertedId: insertedIds || "No new tier data inserted",
         });
+
     } catch (err) {
         return next(new AppError(err, 500));
     }
 };
 
 //counts student's form count for specified course && approval status
-exports.getCountPatientFormsForDashboardAccordingToApproval = (req, res, next) => {
+exports.getCountPatientFormsForDashboardAccordingToApproval = async (req, res, next) => {
     try {
         const studentID = req.params.studentID;
         let courseID = parseInt(req.params.courseID) || null; // Default courseID
@@ -260,9 +253,9 @@ exports.getCountPatientFormsForDashboardAccordingToApproval = (req, res, next) =
         if (!courseID) {
             // Use getCurrentCourse to get the courseID
             courseHelper.getCurrentCourse(studentID)
-                .then((finalCourseID) => {
+                .then(async (finalCourseID) => {
                     console.log(finalCourseID);
-                    executeMainQuery(finalCourseID);
+                    await executeMainQuery(finalCourseID);
                 })
                 .catch((error) => {
                     // Handle errors from getCurrentCourse
@@ -270,10 +263,10 @@ exports.getCountPatientFormsForDashboardAccordingToApproval = (req, res, next) =
                 });
         } else {
             // If courseID is provided in the query, proceed directly with the main query
-            executeMainQuery(courseID);
+            await executeMainQuery(courseID);
         }
 
-        function executeMainQuery(finalCourseID) {
+        async function executeMainQuery(finalCourseID) {
             const query = `
                 SELECT COALESCE(COUNT(pa.ID), 0) AS count_value,
                     appr.isApproved
@@ -298,17 +291,16 @@ exports.getCountPatientFormsForDashboardAccordingToApproval = (req, res, next) =
                 currentSeason
             ];
 
-            conn.query(
-                query, values,
-                function (err, data, fields) {
-                    if (err) return next(new AppError(err, 500));
-                    res.status(200).json({
-                        status: "success",
-                        length: data?.length,
-                        data: data,
-                    });
-                }
-            );
+            const connection = await conn.getConnection();
+            const [results] = await connection.execute(query, values);
+            connection.release();
+
+            res.status(200).json({
+                status: "success",
+                length: results?.length,
+                data: results,
+            });
+
         }
     } catch (error) {
         return next(new AppError(error.message, 500));
@@ -322,7 +314,7 @@ exports.listSent5ReportForStudent = (req, res, next) => {
         const studentID = req.params.studentID;
         const isSent = req.params.isSent;
 
-        courseHelper.getCurrentCourse(studentID).then((courseID) => {
+        courseHelper.getCurrentCourse(studentID).then(async (courseID) => {
             const query = `SELECT *
                 FROM patientreports
                 WHERE studentID = ?
@@ -332,17 +324,18 @@ exports.listSent5ReportForStudent = (req, res, next) => {
                   AND season = ?
                 ORDER BY saveEpoch DESC
                 LIMIT 5;`;
-            conn.query(
-                query, [studentID, isSent, courseID, currentYear, currentSeason],
-                function (err, data, fields) {
-                    if (err) return next(new AppError(err, 500));
-                    res.status(200).json({
-                        status: "success",
-                        length: data?.length,
-                        data: data,
-                    });
-                }
-            );
+
+            const values = [studentID, isSent, courseID, currentYear, currentSeason];
+
+            const connection = await conn.getConnection();
+            const [results] = await connection.execute(query, values);
+            connection.release();
+
+            res.status(200).json({
+                status: "success",
+                length: results?.length,
+                data: results,
+            });
 
         }).catch((error) => {
             return next(new AppError(error, 500));
@@ -353,7 +346,7 @@ exports.listSent5ReportForStudent = (req, res, next) => {
 };
 
 //list sent forms for doctor accepted & rejected page with filtering fuctionality with student name
-exports.searchSentPatientFormsWithDocIDAccordingToApproveDate = (req, res, next) => {
+exports.searchSentPatientFormsWithDocIDAccordingToApproveDate = async (req, res, next) => {
     const page = parseInt(req.query.page) || 1; // Current page number
     const pageSize = parseInt(req.query.pageSize) || 10; // Number of items per page
     const offset = (page - 1) * pageSize;
@@ -367,49 +360,52 @@ exports.searchSentPatientFormsWithDocIDAccordingToApproveDate = (req, res, next)
 
     try {
         if (!rotationID && !courseID) { //if course id and retation no is NOT specified return physians all coming reports
-            conn.query(
-                `
-                    SELECT pa.*
-                    FROM patientreports pa
-                            LEFT JOIN student std ON pa.studentID = std.ID
-                    WHERE pa.attendingPhysicianID = ?
-                    AND pa.isSent = 1
-                    AND pa.isApproved = ?
-                    AND (UPPER(std.name) LIKE ? OR UPPER(std.surname) LIKE ?)
-                    AND pa.year = ?
-                    AND pa.season = ?
-                    ORDER BY pa.sentEpoch DESC
-                    LIMIT ? OFFSET ?;`,
-                [
-                    physicianID,
-                    approvement,
-                    `%${input.toUpperCase()}%`,
-                    `%${input.toUpperCase()}%`,
-                    currentYear,
-                    currentSeason,
-                    pageSize,
-                    offset
-                ],
-                function (err, data, fields) {
-                    if (err) return next(new AppError(err, 500));
-                    res.status(200).json({
-                        status: "success",
-                        currentPage: page,
-                        pageSize: pageSize,
-                        length: data?.length,
-                        data: data,
-                    });
-                }
-            );
+
+            const query = `
+            SELECT pa.*
+            FROM patientreports pa
+                    LEFT JOIN student std ON pa.studentID = std.ID
+            WHERE pa.attendingPhysicianID = ?
+            AND pa.isSent = 1
+            AND pa.isApproved = ?
+            AND (UPPER(std.name) LIKE ? OR UPPER(std.surname) LIKE ?)
+            AND pa.year = ?
+            AND pa.season = ?
+            ORDER BY pa.sentEpoch DESC
+            LIMIT ? OFFSET ?;`
+
+            const values = [
+                physicianID,
+                approvement,
+                `%${input.toUpperCase()}%`,
+                `%${input.toUpperCase()}%`,
+                currentYear,
+                currentSeason,
+                pageSize,
+                offset
+            ];
+
+            const connection = await conn.getConnection();
+            const [results] = await connection.execute(query, values);
+            connection.release();
+
+            res.status(200).json({
+                status: "success",
+                currentPage: page,
+                pageSize: pageSize,
+                length: results?.length,
+                data: results,
+            });
+
         } else {
             // If courseID is provided in the query, proceed directly with the main query
-            executeMainQuery(rotationID, courseID, specialtyID);
+            await executeMainQuery(rotationID, courseID, specialtyID);
         }
     } catch (error) {
         return next(new AppError(error.message, 500));
     }
 
-    function executeMainQuery(rotationID, finalCourseID, specialtyID) {
+    async function executeMainQuery(rotationID, finalCourseID, specialtyID) {
         let query = '';
         let values = [];
 
@@ -480,25 +476,23 @@ exports.searchSentPatientFormsWithDocIDAccordingToApproveDate = (req, res, next)
 
         }
 
-        conn.query(
-            query,
-            values,
-            function (err, data, fields) {
-                if (err) return next(new AppError(err, 500));
-                res.status(200).json({
-                    status: "success",
-                    currentPage: page,
-                    pageSize: pageSize,
-                    length: data?.length,
-                    data: data,
-                });
-            }
-        );
+        const connection = await conn.getConnection();
+        const [results] = await connection.execute(query, values);
+        connection.release();
+
+        res.status(200).json({
+            status: "success",
+            currentPage: page,
+            pageSize: pageSize,
+            length: results?.length,
+            data: results,
+        });
+
     }
 };
 
 //no need for filtering by course ID because it only gets *waiting reports*, lists att. physc. waiting reports
-exports.listWaitingReports = (req, res, next) => {
+exports.listWaitingReports = async (req, res, next) => {
     const attPhysicianID = req.params.physicianID;
     const isApproved = 0;
 
@@ -517,25 +511,23 @@ exports.listWaitingReports = (req, res, next) => {
 
         const values = [attPhysicianID, isApproved, currentYear, currentSeason];
 
-        conn.query(
-            query,
-            values,
-            function (err, data, fields) {
-                if (err) return next(new AppError(err, 500));
-                res.status(200).json({
-                    status: "success",
-                    length: data.length,
-                    data: data,
-                });
-            }
-        );
+        const connection = await conn.getConnection();
+        const [results] = await connection.execute(query, values);
+        connection.release();
+
+        res.status(200).json({
+            status: "success",
+            length: results.length,
+            data: results,
+        });
+
     } catch (error) {
         return next(new AppError(error.message, 500));
     }
 };
 
 //list sent forms for student to show on student sent page with ability to filter by procedure name & an input
-exports.searchPatientFormsForStudent = (req, res, next) => { //for student sent page pagination && filtering
+exports.searchPatientFormsForStudent = async (req, res, next) => { //for student sent page pagination && filtering
     const page = parseInt(req.query.page) || 1; // Current page number
     const pageSize = parseInt(req.query.pageSize) || 10; // Number of items per page
     const offset = (page - 1) * pageSize;
@@ -552,8 +544,8 @@ exports.searchPatientFormsForStudent = (req, res, next) => { //for student sent 
         if (!courseID) {
             // Use getCurrentCourse to get the courseID
             courseHelper.getCurrentCourse(studentID)
-                .then((finalCourseID) => {
-                    executeMainQuery(finalCourseID);
+                .then(async (finalCourseID) => {
+                    await executeMainQuery(finalCourseID);
                 })
                 .catch((error) => {
                     // Handle errors from getCurrentCourse
@@ -561,13 +553,13 @@ exports.searchPatientFormsForStudent = (req, res, next) => { //for student sent 
                 });
         } else {
             // If courseID is provided in the query, proceed directly with the main query
-            executeMainQuery(courseID);
+            await executeMainQuery(courseID);
         }
     } catch (error) {
         return next(new AppError(error.message, 500));
     }
 
-    function executeMainQuery(finalCourseID) {
+    async function executeMainQuery(finalCourseID) {
         const query = `
         SELECT *
         FROM patientreports
@@ -591,27 +583,25 @@ exports.searchPatientFormsForStudent = (req, res, next) => { //for student sent 
             offset
         ];
 
-        conn.query(
-            query,
-            values,
-            function (err, data, fields) {
-                if (err) return next(new AppError(err, 500));
-                res.status(200).json({
-                    status: "success",
-                    currentPage: page,
-                    pageSize: pageSize,
-                    length: data.length,
-                    data: data,
-                });
-            }
-        );
+        const connection = await conn.getConnection();
+        const [results] = await connection.execute(query, values);
+        connection.release();
+
+        res.status(200).json({
+            status: "success",
+            currentPage: page,
+            pageSize: pageSize,
+            length: results.length,
+            data: results,
+        });
+
     }
 };
 
 //search if student id enrolled in any course, if yes count the requ
 
 
-exports.searchPatientFormsByAcceptance = (req, res, next) => {
+exports.searchPatientFormsByAcceptance = async (req, res, next) => {
     const page = parseInt(req.query.page) || 1; // Current page number
     const pageSize = parseInt(req.query.pageSize) || 10; // Number of items per page
     const offset = (page - 1) * pageSize;
@@ -628,8 +618,8 @@ exports.searchPatientFormsByAcceptance = (req, res, next) => {
         if (!courseID) {
             // Use getCurrentCourse to get the courseID
             courseHelper.getCurrentCourse(studentID)
-                .then((finalCourseID) => {
-                    executeMainQuery(finalCourseID);
+                .then(async (finalCourseID) => {
+                    await executeMainQuery(finalCourseID);
                 })
                 .catch((error) => {
                     // Handle errors from getCurrentCourse
@@ -637,13 +627,13 @@ exports.searchPatientFormsByAcceptance = (req, res, next) => {
                 });
         } else {
             // If courseID is provided in the query, proceed directly with the main query
-            executeMainQuery(courseID);
+            await executeMainQuery(courseID);
         }
     } catch (error) {
         return next(new AppError(error.message, 500));
     }
 
-    function executeMainQuery(finalCourseID) {
+    async function executeMainQuery(finalCourseID) {
         const query = `
         SELECT *
         FROM patientreports
@@ -659,24 +649,21 @@ exports.searchPatientFormsByAcceptance = (req, res, next) => {
 
         const values = [studentID, isSent, finalCourseID, isApproved, currentYear, currentSeason, `%${searchInput.toUpperCase()}%`, pageSize, offset];
 
-        conn.query(
-            query,
-            values,
-            function (err, data, fields) {
-                if (err) return next(new AppError(err, 500));
-                res.status(200).json({
-                    status: "success",
-                    currentPage: page,
-                    pageSize: pageSize,
-                    length: data.length,
-                    data: data,
-                });
-            }
-        );
+        const connection = await conn.getConnection();
+        const [results] = await connection.execute(query, values);
+        connection.release();
+
+        res.status(200).json({
+            status: "success",
+            currentPage: page,
+            pageSize: pageSize,
+            length: results.length,
+            data: results,
+        });
     }
 };
 
-exports.searchPatientFormsByMultipleAcceptance = (req, res, next) => {
+exports.searchPatientFormsByMultipleAcceptance = async (req, res, next) => {
     const page = parseInt(req.query.page) || 1; // Current page number
     const pageSize = parseInt(req.query.pageSize) || 10; // Number of items per page
     const offset = (page - 1) * pageSize;
@@ -693,8 +680,8 @@ exports.searchPatientFormsByMultipleAcceptance = (req, res, next) => {
         if (!courseID) {
             // Use getCurrentCourse to get the courseID
             courseHelper.getCurrentCourse(studentID)
-                .then((finalCourseID) => {
-                    executeMainQuery(finalCourseID);
+                .then(async (finalCourseID) => {
+                    await executeMainQuery(finalCourseID);
                 })
                 .catch((error) => {
                     // Handle errors from getCurrentCourse
@@ -702,13 +689,13 @@ exports.searchPatientFormsByMultipleAcceptance = (req, res, next) => {
                 });
         } else {
             // If courseID is provided in the query, proceed directly with the main query
-            executeMainQuery(courseID);
+            await executeMainQuery(courseID);
         }
     } catch (error) {
         return next(new AppError(error.message, 500));
     }
 
-    function executeMainQuery(finalCourseID) {
+    async function executeMainQuery(finalCourseID) {
         const query = `
         SELECT *
         FROM patientreports
@@ -726,25 +713,23 @@ exports.searchPatientFormsByMultipleAcceptance = (req, res, next) => {
             isApproved1, isApproved2, currentYear, currentSeason,
             `%${searchInput.toUpperCase()}%`, pageSize, offset];
 
-        conn.query(
-            query,
-            values,
-            function (err, data, fields) {
-                if (err) return next(new AppError(err, 500));
-                res.status(200).json({
-                    status: "success",
-                    currentPage: page,
-                    pageSize: pageSize,
-                    length: data.length,
-                    data: data,
-                });
-            }
-        );
+        const connection = await conn.getConnection();
+        const [results] = await connection.execute(query, values);
+        connection.release();
+
+        res.status(200).json({
+            status: "success",
+            currentPage: page,
+            pageSize: pageSize,
+            length: results.length,
+            data: results,
+        });
+
     }
 };
 
 //to see if there is a report in remote DB with a specified local storage ID
-exports.getIDofPatientForm = (req, res, next) => {
+exports.getIDofPatientForm = async (req, res, next) => {
     if (!req.params.studentID) {
         return next(new AppError("No patient with this student ID found", 404));
     }
@@ -757,25 +742,23 @@ exports.getIDofPatientForm = (req, res, next) => {
         const values = [req.params.studentID, req.params.localStorageID, currentYear, currentSeason];
         const query = "select ID from patientreports WHERE studentID =  ? AND localStorageID = ? AND year = ? AND season = ? order by ID ASC LIMIT 1";
 
-        conn.query(
-            query,
-            values,
-            function (err, data, fields) {
-                if (err) return next(new AppError(err, 500));
-                res.status(200).json({
-                    status: "success",
-                    length: data?.length,
-                    data: data,
-                });
-            }
-        );
+        const connection = await conn.getConnection();
+        const [results] = await connection.execute(query, values);
+        connection.release();
+
+        res.status(200).json({
+            status: "success",
+            length: results?.length,
+            data: results,
+        });
+
     } catch (error) {
         return next(new AppError(error.message, 500));
     }
 }
 
 
-exports.deletePatientFormWithID = (req, res, next) => { //find the form by local storage ID && related student and delete that form
+exports.deletePatientFormWithID = async (req, res, next) => { //find the form by local storage ID && related student and delete that form
     const studentID = req.params.stdID;
     const localStorageID = req.params.localStorageID;
 
@@ -787,38 +770,32 @@ exports.deletePatientFormWithID = (req, res, next) => { //find the form by local
         const query = "DELETE FROM patientreports WHERE studentID = ? && localStorageID = ?";
         const values = [studentID, localStorageID];
 
-        conn.query(
-            query,
-            values,
-            function (err, result) {
-                if (err) {
-                    console.error("Error deleting patient form:", err);
-                    return next(new AppError("Internal server error", 500));
-                }
-                // Check if any rows were affected to determine if a record was deleted
-                if (result.affectedRows === 0) {
-                    return next(new AppError("Patient form not found", 404));
-                }
-                res.status(200).json({
-                    status: "success",
-                    message: "Patient form deleted!",
-                });
-            }
-        );
+        const connection = await conn.getConnection();
+        const [results] = await connection.execute(query, values);
+        connection.release();
+
+        if (results.affectedRows === 0) {
+            return next(new AppError("Patient form not found", 404));
+        }
+        res.status(200).json({
+            status: "success",
+            message: "Patient form deleted!",
+        });
+
     } catch (error) {
         return next(new AppError(error.message, 500));
     }
 
 };
 
-const checkAndInsertTierData = (
+const checkAndInsertTierData = ( ///????????????????
     tierID,
     tierText,
     relatedReport,
     res,
     next
 ) => {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
         // Check if tierID is -1, the "other" choice
         if (tierID === -1) {
             // find the most similar tier description to a given input string by calculating the Levenshtein 
@@ -830,52 +807,43 @@ const checkAndInsertTierData = (
             HAVING similarity < 20
             ORDER BY similarity DESC
             LIMIT 1`;
+            const values = [tierText, tierText];
 
-            conn.query(
-                similarProcedureQuery,
-                [tierText, tierText],
-                (err, results) => {
-                    if (err) {
-                        console.error("Error searching for similar procedure:", err);
-                        reject(err);
-                    }
+            const connection = await conn.getConnection();
+            const [results] = await connection.execute(similarProcedureQuery, values);
+            connection.release();
 
-                    console.log("result " + results[0].similarity);
+            console.log("result " + results[0].similarity);
 
-                    // If a similar tier is found with a similarity percentage <20 , insert the tier text coming from the form
-                    if (results[0].similarity < 20) {
-                        const similarProcedure = results[0];
-                        console.log("most similar tier", similarProcedure.description);
+            // If a similar tier is found with a similarity percentage <20 , insert the tier text coming from the form
+            if (results[0].similarity < 20) {
+                const similarProcedure = results[0];
+                console.log("most similar tier", similarProcedure.description);
 
-                        // Handle the insertion logic here
-                        console.log(tierText);
-                        console.log(relatedReport);
-                        if (!tierText || !relatedReport) {
-                            reject(new AppError("Invalid data provided", 400));
-                        }
-
-                        const values = [tierText, relatedReport];
-
-                        conn.query(
-                            "INSERT INTO differentialdiagnoses (description, relatedReport) VALUES (?, ?)",
-                            values,
-                            function (err, data, fields) {
-                                if (err) {
-                                    console.error("INSERT procedure Error:", err);
-                                    reject(err);
-                                }
-
-                                console.log("Inserted Data2222:", data);
-                                resolve(data.insertId);
-                            }
-                        );
-                    } else {
-                        resolve(null); // Indicate that no insertion was needed
-                        console.log("No insertion was needed.");
-
-                    }
+                // Handle the insertion logic here
+                console.log(tierText);
+                console.log(relatedReport);
+                if (!tierText || !relatedReport) {
+                    reject(new AppError("Invalid data provided", 400));
                 }
-            );
+
+                const values = [tierText, relatedReport];
+                const query2 = "INSERT INTO differentialdiagnoses (description, relatedReport) VALUES (?, ?)";
+
+                const connection = await conn.getConnection();
+                const [result2] = await connection.execute(query2, values);
+                connection.release();
+                if (result2) {
+                    console.log("Inserted Data2222:", result2);
+
+                    resolve(result2.insertId);
+                }
+
+            } else {
+                resolve(null); // Indicate that no insertion was needed
+                console.log("No insertion was needed.");
+
+            }
         } else {
             resolve(null); // If tierID is not -1, resolve with null to indicate no insertion was needed
             console.log("Related Tier is not -1");
@@ -884,46 +852,48 @@ const checkAndInsertTierData = (
     });
 };
 
-exports.getPatientFormWithID = (req, res, next) => { //returns specific patientreports with ID
+exports.getPatientFormWithID = async (req, res, next) => { //returns specific patientreports with ID
     if (!req.params.ID) {
         return next(new AppError("No patient with this ID found", 404));
     }
 
     try {
-        conn.query(
-            "SELECT * FROM patientreports WHERE ID = ?",
-            [req.params.ID],
-            function (err, data, fields) {
-                if (err) return next(new AppError(err, 500));
-                res.status(200).json({
-                    status: "success",
-                    length: data?.length,
-                    data: data,
-                });
-            }
-        );
+        const query = "SELECT * FROM patientreports WHERE ID = ?";
+        const values = [req.params.ID];
+
+        const connection = await conn.getConnection();
+        const [results] = await connection.execute(query, values);
+        connection.release();
+
+        res.status(200).json({
+            status: "success",
+            length: results?.length,
+            data: results,
+        });
+
     } catch (error) {
         return next(new AppError(error.message, 500));
     }
 };
 
-exports.getLastLocalStorageID = (req, res, next) => { //returns last localstorage id of the reports
+exports.getLastLocalStorageID = async (req, res, next) => { //returns last localstorage id of the reports
     if (!req.params.studentID) {
         return next(new AppError("No student with this ID found", 404));
     }
 
     try {
-        conn.query(
-            "select localStorageID from patientreports where studentID =  ? order by localStorageID DESC  limit 1;",
-            [req.params.studentID],
-            function (err, data, fields) {
-                if (err) return next(new AppError(err, 500));
-                res.status(200).json({
-                    status: "success",
-                    data: data,
-                });
-            }
-        );
+        const query = "select localStorageID from patientreports where studentID =  ? order by localStorageID DESC  limit 1;";
+        const values = [req.params.studentID];
+
+        const connection = await conn.getConnection();
+        const [results] = await connection.execute(query, values);
+        connection.release();
+
+        res.status(200).json({
+            status: "success",
+            data: results,
+        });
+
     } catch (error) {
         return next(new AppError(error.message, 500));
     }
@@ -945,19 +915,18 @@ exports.checkDraftIsSent = (req, res, next) => { //checks if the previously draf
 
 
         courseHelper.getCurrentCourse(studentID)
-            .then((finalCourseID) => {
+            .then(async (finalCourseID) => {
                 const values = [studentID, localStorageID, finalCourseID];
 
-                conn.query(
-                    query, values,
-                    function (err, data, fields) {
-                        if (err) return next(new AppError(err, 500));
-                        res.status(200).json({
-                            status: "success",
-                            data: data,
-                        });
-                    }
-                );
+                const connection = await conn.getConnection();
+                const [results] = await connection.execute(query, values);
+                connection.release();
+
+                res.status(200).json({
+                    status: "success",
+                    data: results,
+                });
+
             })
             .catch((error) => {
                 // Handle errors from getCurrentCourse
@@ -984,20 +953,18 @@ exports.checkSaveEpoch = (req, res, next) => { //returns draft reports save epoc
               and courseID = ?;`;
 
         courseHelper.getCurrentCourse(studentID)
-            .then((finalCourseID) => {
+            .then(async (finalCourseID) => {
                 const values = [studentID, localStorageID, finalCourseID];
 
-                conn.query(
-                    query,
-                    values,
-                    function (err, data, fields) {
-                        if (err) return next(new AppError(err, 500));
-                        res.status(200).json({
-                            status: "success",
-                            data: data,
-                        });
-                    }
-                );
+                const connection = await conn.getConnection();
+                const [results] = await connection.execute(query, values);
+                connection.release();
+
+                res.status(200).json({
+                    status: "success",
+                    data: results,
+                });
+
             })
             .catch((error) => {
                 // Handle errors from getCurrentCourse
@@ -1023,20 +990,18 @@ exports.draftReportToUpdateLocal = (req, res, next) => { //returns draft report 
               and courseID = ?;`;
 
         courseHelper.getCurrentCourse(studentID)
-            .then((finalCourseID) => {
+            .then(async (finalCourseID) => {
                 const values = [studentID, localStorageID, finalCourseID];
 
-                conn.query(
-                    query,
-                    values,
-                    function (err, data, fields) {
-                        if (err) return next(new AppError(err, 500));
-                        res.status(200).json({
-                            status: "success",
-                            data: data,
-                        });
-                    }
-                );
+                const connection = await conn.getConnection();
+                const [results] = await connection.execute(query, values);
+                connection.release();
+
+                res.status(200).json({
+                    status: "success",
+                    data: results,
+                });
+
             })
             .catch((error) => {
                 // Handle errors from getCurrentCourse
@@ -1049,7 +1014,7 @@ exports.draftReportToUpdateLocal = (req, res, next) => { //returns draft report 
 
 
 //for physician Student Progress Page counts student's form count for specified course, rotation && approval status
-exports.getDoctorCountPatientFormsForDashboardAccordingToApproval = (req, res, next) => {
+exports.getDoctorCountPatientFormsForDashboardAccordingToApproval = async (req, res, next) => {
     const studentID = req.params.studentID;
     const physicianID = req.params.physicianID;
     const courseID = parseInt(req.params.courseID);
@@ -1091,24 +1056,24 @@ exports.getDoctorCountPatientFormsForDashboardAccordingToApproval = (req, res, n
     ];
 
     try {
-        conn.query(
-            query, values,
-            function (err, data, fields) {
-                if (err) return next(new AppError(err, 500));
-                res.status(200).json({
-                    status: "success",
-                    length: data?.length,
-                    data: data,
-                });
-            }
-        );
+
+        const connection = await conn.getConnection();
+        const [results] = await connection.execute(query, values);
+        connection.release();
+
+        res.status(200).json({
+            status: "success",
+            length: results?.length,
+            data: results,
+        });
+
     } catch (error) {
         return next(new AppError(error.message, 500));
     }
 };
 
 //for physician Student ttoal progress counts student's form count for specified course, rotation && approval status
-exports.getLinearTotalProgressBarData = (req, res, next) => {
+exports.getLinearTotalProgressBarData = async (req, res, next) => {
     const physicianID = req.params.physicianID;
     const courseID = parseInt(req.params.courseID);
     const rotationID = parseInt(req.params.rotationID);
@@ -1137,19 +1102,15 @@ exports.getLinearTotalProgressBarData = (req, res, next) => {
                 currentSeason,
             ];
 
-            conn.query(
-                query, values,
-                function (err, data, fields) {
-                    if (err) return next(new AppError(err, 500));
+            const connection = await conn.getConnection();
+            const [results] = await connection.execute(query, values);
+            connection.release();
 
-                    console.log(data);
-                    res.status(200).json({
-                        status: "success",
-                        length: data?.length,
-                        data: data,
-                    });
-                }
-            );
+            res.status(200).json({
+                status: "success",
+                length: results?.length,
+                data: results,
+            });
 
         } else { //return that rotation courses sum
 
@@ -1179,17 +1140,16 @@ exports.getLinearTotalProgressBarData = (req, res, next) => {
                 currentSeason,
             ];
 
-            conn.query(
-                query, values,
-                function (err, data, fields) {
-                    if (err) return next(new AppError(err, 500));
-                    res.status(200).json({
-                        status: "success",
-                        length: data?.length,
-                        data: data,
-                    });
-                }
-            );
+            const connection = await conn.getConnection();
+            const [results] = await connection.execute(query, values);
+            connection.release();
+
+            res.status(200).json({
+                status: "success",
+                length: results?.length,
+                data: results,
+            });
+
         }
     } catch (error) {
         return next(new AppError(error.message, 500));

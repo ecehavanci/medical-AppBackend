@@ -5,28 +5,27 @@ const currentYear = config.app.year;
 const currentSeason = config.app.season;
 const currentDate = config.app.date;
 
-exports.getAllSpecialties = (req, res, next) => { //all specialties in DB
+exports.getAllSpecialties = async (req, res, next) => { //all specialties in DB
     try {
-        conn.query(
-            "select * from specialties",
-            [req.params.studentID],
-            function (err, data, fields) {
-                if (err) return next(new AppError(err, 500));
-                res.status(200).json({
-                    status: "success",
-                    length: data?.length,
-                    data: data,
-                });
-            }
-        );
+        const query = "select * from specialties";
+        const connection = await conn.getConnection();
+        const [results] = await connection.execute(query);
+        connection.release();
+
+        res.status(200).json({
+            status: "success",
+            length: results?.length,
+            data: results,
+        });
+
     } catch (error) {
         return next(new AppError(error.message, 500));
     }
 }
 
-exports.getCourseSpecialties = (req, res, next) => { //current course specialty
+exports.getCourseSpecialties = async (req, res, next) => { //current course specialty
     try {
-        const queryString = `
+        const query = `
             select sp.ID, sp.description
             from student s
                     left join enrollment e on e.std_id = s.ID
@@ -39,65 +38,67 @@ exports.getCourseSpecialties = (req, res, next) => { //current course specialty
             and current_date between i.start and i.end;
             `;
 
-        conn.query(
-            queryString,
-            [currentYear, currentSeason, req.params.studentID, currentDate],
-            function (err, data, fields) {
-                if (err) return next(new AppError(err, 500));
-                res.status(200).json({
-                    status: "success",
-                    length: data?.length,
-                    data: data,
-                });
-            }
-        );
+        const values = [currentYear, currentSeason, req.params.studentID, currentDate];
+
+        const connection = await conn.getConnection();
+        const [results] = await connection.execute(query, values);
+        connection.release();
+
+        res.status(200).json({
+            status: "success",
+            length: results?.length,
+            data: results,
+        });
+
     } catch (error) {
         return next(new AppError(error.message, 500));
     }
 }
-exports.getCourseSpecialtiesByCourseID = (req, res, next) => { //current course specialty by course ID
+exports.getCourseSpecialtiesByCourseID = async (req, res, next) => { //current course specialty by course ID
     try {
         if (!req.params.courseID)
             return next(new AppError("Course ID specified", 404));
 
         const courseID = req.params.courseID;
 
-        const queryString = `
+        const query = `
             select sp.ID, sp.description
             from specialties sp
             where sp.course_ID = ?;
             `;
+        const values = [courseID];
 
-        conn.query(
-            queryString,
-            [courseID],
-            function (err, data, fields) {
-                if (err) return next(new AppError(err, 500));
-                res.status(200).json({
-                    status: "success",
-                    length: data?.length,
-                    data: data,
-                });
-            }
-        );
+        const connection = await conn.getConnection();
+        const [results] = await connection.execute(query, values);
+        connection.release();
+
+        res.status(200).json({
+            status: "success",
+            length: results?.length,
+            data: results,
+        });
+
     } catch (error) {
         return next(new AppError(error.message, 500));
     }
 }
 
-exports.getSpecialtyName = (req, res, next) => { //specialty description according to its ID
+exports.getSpecialtyName = async (req, res, next) => { //specialty description according to its ID
     try {
-        conn.query("SELECT * from specialties where ID = ?;",
-            [req.params.specialtyNo],
-            function (err, data, fields) {
-                if (err) return next(new AppError(err, 500));
-                res.status(200).json({
-                    status: "success",
-                    length: data?.length,
-                    data: data,
-                });
-            }
-        );
+
+        const query = "SELECT * from specialties where ID = ?;";
+        const values = [req.params.specialtyNo];
+
+        const connection = await conn.getConnection();
+        const [results] = await connection.execute(query, values);
+        connection.release();
+
+        res.status(200).json({
+            status: "success",
+            length: results?.length,
+            data: results,
+        });
+
     } catch (error) {
         return next(new AppError(error.message, 500));
     }

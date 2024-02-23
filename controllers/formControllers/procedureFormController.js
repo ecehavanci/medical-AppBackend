@@ -20,7 +20,7 @@ exports.insertProcedureForm = (req, res, next) => {
 
         const studentID = req.body.studentID;
         courseHelper.getCurrentCourse(studentID)
-            .then((finalCourseID) => {
+            .then(async (finalCourseID) => {
                 const values = [
                     req.body.studentID,
                     finalCourseID,
@@ -45,8 +45,7 @@ exports.insertProcedureForm = (req, res, next) => {
 
                 console.log(req.body);
 
-                conn.query(
-                    "INSERT INTO procedurereports (studentID," +
+                const query = "INSERT INTO procedurereports (studentID," +
                     "courseID," +
                     "specialtyID," +
                     "attendingPhysicianID," +
@@ -65,39 +64,35 @@ exports.insertProcedureForm = (req, res, next) => {
                     "localStorageID, " +
                     "year, " +
                     "season) " +
-                    "VALUES(?)",
-                    [values],
-                    async function (err, data, fields) {
-                        if (err) {
-                            return next(new AppError(err, 500));
-                        }
+                    "VALUES(?)";
 
-                        if (data.affectedRows > 0) {
+                const connection = await conn.getConnection();
+                const [results] = await connection.execute(query, values);
+                connection.release();
 
-                            var inserted = null;
+                if (results.affectedRows > 0) {
 
-                            if (req.body.isSent === 1) {
-                                inserted = await checkAndUpdateProcedure(req.body.procedureID, req.body.procedureText.toLowerCase().trim(), data.insertId, res, next);
-                            }
+                    var inserted = null;
 
-                            const primaryID = data.insertId;
-
-                            res.status(201).json({
-                                status: "success",
-                                message: "Student data successfully altered",
-                                insertedId: inserted,
-                                primaryID: primaryID
-                            });
-                        } else {
-                            // Handle the case where no rows were updated (e.g., student data didn't change)
-                            res.status(200).json({
-                                status: "success",
-                                message: "No student data updated",
-                            });
-                        }
+                    if (req.body.isSent === 1) {
+                        inserted = await checkAndUpdateProcedure(req.body.procedureID, req.body.procedureText.toLowerCase().trim(), data.insertId, res, next);
                     }
-                );
 
+                    const primaryID = data.insertId;
+
+                    res.status(201).json({
+                        status: "success",
+                        message: "Student data successfully altered",
+                        insertedId: inserted,
+                        primaryID: primaryID
+                    });
+                } else {
+                    // Handle the case where no rows were updated (e.g., student data didn't change)
+                    res.status(200).json({
+                        status: "success",
+                        message: "No student data updated",
+                    });
+                }
             });
     } catch (error) {
         return next(new AppError(error.message, 500));
@@ -147,33 +142,29 @@ exports.updateProcedureForm = async (req, res, next) => { //!!!!!!!!!!!!!!!!!!!!
 
         }
 
-        conn.query(query, values, async (err, data) => {
-            if (err) {
-                console.error("Update Error:", err);
-                return next(new AppError(err.message, 500));
-            }
+        const connection = await conn.getConnection();
+        const [results] = await connection.execute(query, values);
+        connection.release();
 
-            // Handle the case where no rows were updated
-            if (data.affectedRows === 0) {
-                return res.status(200).json({
-                    status: "success",
-                    message: "No student data updated",
-                });
-            }
-
-            let inserted = null;
-            if (req.body.isSent === 1) {
-
-                inserted = await checkAndUpdateProcedure(req.body.procedureID, req.body.procedureText, req.params.ID, res, next);
-            }
-
-            res.status(201).json({
+        // Handle the case where no rows were updated
+        if (results.affectedRows === 0) {
+            return res.status(200).json({
                 status: "success",
-                message: "Student data successfully altered222",
-                insertedId: inserted || "No new procedure data inserted",
+                message: "No student data updated",
             });
-        });
+        }
 
+        let inserted = null;
+        if (req.body.isSent === 1) {
+
+            inserted = await checkAndUpdateProcedure(req.body.procedureID, req.body.procedureText, req.params.ID, res, next);
+        }
+
+        res.status(201).json({
+            status: "success",
+            message: "Student data successfully altered222",
+            insertedId: inserted || "No new procedure data inserted",
+        });
 
     } catch (err) {
         return next(new AppError(err, 500));
@@ -181,14 +172,14 @@ exports.updateProcedureForm = async (req, res, next) => { //!!!!!!!!!!!!!!!!!!!!
 };
 
 
-const checkAndUpdateProcedure = (
+const checkAndUpdateProcedure = ( //??????????????
     procedureID,
     procedureText,
     relatedReport,
     res,
     next
 ) => {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
         // Check if procedureID is -1, the "other" choice
         if (procedureID === -1 && procedureText != undefined) {
             // find the most similar procedure description to a given input string by calculating the Levenshtein 
@@ -206,51 +197,46 @@ const checkAndUpdateProcedure = (
                     similarity DESC
                 LIMIT 1`;
 
-            conn.query(
-                similarProcedureQuery,
-                [procedureText, procedureText],
-                (err, results) => {
-                    if (err) {
-                        console.error("Error searching for similar procedure:", err);
-                        reject(err);
-                    }
+            const values = [procedureText, procedureText];
 
-                    console.log("result " + results[0].similarity);
+            const connection = await conn.getConnection();
+            const [results] = await connection.execute(similarProcedureQuery, values);
+            connection.release();
 
-                    // If a similar procedure is found with a similarity percentage <20 , insert the procedure text coming from the form
-                    if (results[0].similarity < 20) {
-                        const similarProcedure = results[0];
-                        console.log("most similar procedure", similarProcedure.description);
+            // if (err) {
+            //     console.error("Error searching for similar procedure:", err);
+            //     reject(err);
+            // }
 
-                        // Handle the insertion logic here
-                        console.log(procedureText);
-                        console.log(relatedReport);
-                        if (!procedureText || !relatedReport) {
-                            reject(new AppError("Invalid data provided", 400));
-                        }
+            console.log("result " + results[0].similarity);
 
-                        const values = [procedureText, relatedReport];
+            // If a similar procedure is found with a similarity percentage <20 , insert the procedure text coming from the form
+            if (results[0].similarity < 20) {
+                const similarProcedure = results[0];
+                console.log("most similar procedure", similarProcedure.description);
 
-                        conn.query(
-                            "INSERT INTO procedures (description, relatedReport) VALUES (?, ?)",
-                            values,
-                            function (err, data, fields) {
-                                if (err) {
-                                    console.error("INSERT procedure Error:", err);
-                                    reject(err);
-                                }
-
-                                console.log("Inserted Data2222:", data);
-                                resolve(data.insertId);
-                            }
-                        );
-                    } else {
-                        resolve(null); // Indicate that no insertion was needed
-                        console.log("No insertion was needed.");
-
-                    }
+                // Handle the insertion logic here
+                console.log(procedureText);
+                console.log(relatedReport);
+                if (!procedureText || !relatedReport) {
+                    reject(new AppError("Invalid data provided", 400));
                 }
-            );
+
+                const query2 = "INSERT INTO procedures (description, relatedReport) VALUES (?, ?)";
+                const values2 = [procedureText, relatedReport];
+
+                const connection = await conn.getConnection();
+                const [results2] = await connection.execute(query2, values2);
+                connection.release();
+
+                console.log("Inserted Data2222:", data);
+                resolve(results2.insertId);
+            } else {
+                resolve(null); // Indicate that no insertion was needed
+                console.log("No insertion was needed.");
+
+            }
+
         } else {
             resolve(null); // If procedureID is not -1, resolve with null to indicate no insertion was needed
             console.log("ProcedureID is not -1");
@@ -259,7 +245,7 @@ const checkAndUpdateProcedure = (
     });
 };
 
-exports.searchProcedureReportsByAcceptance = (req, res, next) => {
+exports.searchProcedureReportsByAcceptance = async (req, res, next) => {
     const page = parseInt(req.query.page) || 1; // Current page number
     const pageSize = parseInt(req.query.pageSize) || 10; // Number of items per page
     const offset = (page - 1) * pageSize;
@@ -275,8 +261,8 @@ exports.searchProcedureReportsByAcceptance = (req, res, next) => {
         if (!courseID) {
             // Use getCurrentCourse to get the courseID
             courseHelper.getCurrentCourse(studentID)
-                .then((finalCourseID) => {
-                    executeMainQuery(finalCourseID);
+                .then(async (finalCourseID) => {
+                    await executeMainQuery(finalCourseID);
                 })
                 .catch((error) => {
                     // Handle errors from getCurrentCourse
@@ -284,13 +270,13 @@ exports.searchProcedureReportsByAcceptance = (req, res, next) => {
                 });
         } else {
             // If courseID is provided in the query, proceed directly with the main query
-            executeMainQuery(courseID);
+            await executeMainQuery(courseID);
         }
     } catch (error) {
         return next(new AppError(error.message, 500));
     }
 
-    function executeMainQuery(finalCourseID) {
+    async function executeMainQuery(finalCourseID) {
         const query = `
         SELECT pr.*
         FROM procedurereports pr
@@ -308,27 +294,24 @@ exports.searchProcedureReportsByAcceptance = (req, res, next) => {
 
         const values = [studentID, isSent, finalCourseID, isApproved, `%${input.toUpperCase()}%`, `%${input.toUpperCase()}%`, currentYear, currentSeason, pageSize, offset];
 
-        conn.query(
-            query,
-            values,
-            (err, data) => {
-                if (err) return next(new AppError(err, 500));
-                res.status(200).json({
-                    status: "success",
-                    currentPage: page,
-                    pageSize: pageSize,
-                    length: data?.length,
-                    data: data,
-                });
-            }
-        );
+        const connection = await conn.getConnection();
+        const [results] = await connection.execute(query, values);
+        connection.release();
+
+        res.status(200).json({
+            status: "success",
+            currentPage: page,
+            pageSize: pageSize,
+            length: results?.length,
+            data: results,
+        });
     }
 };
 
 
 
 //list sent forms for student to show on student sent page with ability to filter by procedure name & 2 approvements & input
-exports.searchProcedureReportsByMultipleAcceptance = (req, res, next) => {
+exports.searchProcedureReportsByMultipleAcceptance = async (req, res, next) => {
     const page = parseInt(req.query.page) || 1; // Current page number
     const pageSize = parseInt(req.query.pageSize) || 10; // Number of items per page
     const offset = (page - 1) * pageSize;
@@ -344,8 +327,8 @@ exports.searchProcedureReportsByMultipleAcceptance = (req, res, next) => {
         if (!courseID) {
             // Use getCurrentCourse to get the courseID
             courseHelper.getCurrentCourse(studentID)
-                .then((finalCourseID) => {
-                    executeMainQuery(finalCourseID);
+                .then(async (finalCourseID) => {
+                    await executeMainQuery(finalCourseID);
                 })
                 .catch((error) => {
                     // Handle errors from getCurrentCourse
@@ -353,13 +336,13 @@ exports.searchProcedureReportsByMultipleAcceptance = (req, res, next) => {
                 });
         } else {
             // If courseID is provided in the query, proceed directly with the main query
-            executeMainQuery(courseID);
+            await executeMainQuery(courseID);
         }
     } catch (error) {
         return next(new AppError(error.message, 500));
     }
 
-    function executeMainQuery(finalCourseID) {
+    async function executeMainQuery(finalCourseID) {
         const query = `
         SELECT pr.*
         FROM procedurereports pr
@@ -385,20 +368,18 @@ exports.searchProcedureReportsByMultipleAcceptance = (req, res, next) => {
             offset
         ];
 
-        conn.query(
-            query,
-            values,
-            function (err, data, fields) {
-                if (err) return next(new AppError(err, 500));
-                res.status(200).json({
-                    status: "success",
-                    currentPage: page,
-                    pageSize: pageSize,
-                    length: data?.length,
-                    data: data,
-                });
-            }
-        );
+        const connection = await conn.getConnection();
+        const [results] = await connection.execute(query, values);
+        connection.release();
+
+        res.status(200).json({
+            status: "success",
+            currentPage: page,
+            pageSize: pageSize,
+            length: results?.length,
+            data: results,
+        });
+
     }
 };
 
@@ -408,21 +389,22 @@ exports.list5ProcedureFormsWithStudentID = (req, res, next) => {
     const isSent = req.params.isSent;
 
     try {
-        courseHelper.getCurrentCourse(stdID).then((courseID) => {
+        courseHelper.getCurrentCourse(stdID).then(async (courseID) => {
             const query = `SELECT * FROM procedurereports 
                 WHERE studentID = ? AND isSent = ? AND courseID = ? AND year = ? AND season = ? 
                 ORDER BY saveEpoch DESC LIMIT 5`;
-            conn.query(
-                query, [stdID, isSent, courseID, currentYear, currentSeason],
-                function (err, data, fields) {
-                    if (err) return next(new AppError(err, 500));
-                    res.status(200).json({
-                        status: "success",
-                        length: data?.length,
-                        data: data,
-                    });
-                }
-            );
+
+            const values = [stdID, isSent, courseID, currentYear, currentSeason];
+
+            const connection = await conn.getConnection();
+            const [results] = await connection.execute(query, values);
+            connection.release();
+
+            res.status(200).json({
+                status: "success",
+                length: results?.length,
+                data: results,
+            });
 
         }).catch((error) => {
             return next(new AppError(error, 500));
@@ -433,7 +415,7 @@ exports.list5ProcedureFormsWithStudentID = (req, res, next) => {
 };
 
 //no need for filtering by course ID because it only gets *waiting reports*, lists att. physc. waiting reports
-exports.listWaitingReports = (req, res, next) => {
+exports.listWaitingReports = async (req, res, next) => {
     const physicianID = req.params.physicianID;
     const isApproved = 0;
 
@@ -452,16 +434,16 @@ exports.listWaitingReports = (req, res, next) => {
     const values = [physicianID, isApproved, currentYear, currentSeason];
 
     try {
-        conn.query(query, values, (err, data, fields) => {
-            if (err) {
-                return next(new AppError(err, 500));
-            }
-            res.status(200).json({
-                status: "success",
-                length: data?.length,
-                data: data,
-            });
+        const connection = await conn.getConnection();
+        const [results] = await connection.execute(query, values);
+        connection.release();
+
+        res.status(200).json({
+            status: "success",
+            length: results?.length,
+            data: results,
         });
+
     } catch (error) {
         return next(new AppError(error.message, 500));
     }
@@ -469,7 +451,7 @@ exports.listWaitingReports = (req, res, next) => {
 
 
 //list sent forms for doctor accepted & rejected page with filtering fuctionality with student name
-exports.searchSentProcedureFormsWithDocIDAccordingToApproveDate = (req, res, next) => {
+exports.searchSentProcedureFormsWithDocIDAccordingToApproveDate = async (req, res, next) => {
     const page = parseInt(req.query.page) || 1; // Current page number
     const pageSize = parseInt(req.query.pageSize) || 10; // Number of items per page
     const offset = (page - 1) * pageSize;
@@ -484,51 +466,52 @@ exports.searchSentProcedureFormsWithDocIDAccordingToApproveDate = (req, res, nex
 
     try {
         if (!rotationID && !courseID) {  //if rotation and course NOT is provided
-            conn.query(
-                `
-                    SELECT pr.*
-                    FROM procedurereports pr
-                    LEFT JOIN procedures p ON pr.procedureID = p.ID
-                    LEFT JOIN student std ON pr.studentID = std.ID
-                    WHERE pr.attendingPhysicianID = ?
-                      AND pr.isSent = 1
-                      AND pr.isApproved = ?
-                      AND (UPPER(std.name) LIKE ? OR UPPER(std.surname) LIKE ?)
-                      AND pr.year = ?
-                      AND pr.season = ?
-                    ORDER BY pr.sentEpoch DESC
-                    LIMIT ? OFFSET ?;`,
-                [
-                    physicianID,
-                    approvement,
-                    `%${input.toUpperCase()}%`,
-                    `%${input.toUpperCase()}%`,
-                    currentYear,
-                    currentSeason,
-                    pageSize,
-                    offset
-                ],
-                function (err, data, fields) {
-                    if (err) return next(new AppError(err, 500));
-                    res.status(200).json({
-                        status: "success",
-                        currentPage: page,
-                        pageSize: pageSize,
-                        length: data?.length,
-                        data: data,
-                    });
-                }
-            );
+            const query = `
+            SELECT pr.*
+            FROM procedurereports pr
+            LEFT JOIN procedures p ON pr.procedureID = p.ID
+            LEFT JOIN student std ON pr.studentID = std.ID
+            WHERE pr.attendingPhysicianID = ?
+              AND pr.isSent = 1
+              AND pr.isApproved = ?
+              AND (UPPER(std.name) LIKE ? OR UPPER(std.surname) LIKE ?)
+              AND pr.year = ?
+              AND pr.season = ?
+            ORDER BY pr.sentEpoch DESC
+            LIMIT ? OFFSET ?;`;
+
+            const values = [
+                physicianID,
+                approvement,
+                `%${input.toUpperCase()}%`,
+                `%${input.toUpperCase()}%`,
+                currentYear,
+                currentSeason,
+                pageSize,
+                offset
+            ];
+
+            const connection = await conn.getConnection();
+            const [results] = await connection.execute(query, values);
+            connection.release();
+
+            res.status(200).json({
+                status: "success",
+                currentPage: page,
+                pageSize: pageSize,
+                length: results?.length,
+                data: results,
+            });
 
         } else {
             // If courseID is provided in the query, proceed directly with the main query
-            executeMainQuery(rotationID, courseID, specialtyID, procedureID);
+            await executeMainQuery(rotationID, courseID, specialtyID, procedureID);
         }
     } catch (error) {
         return next(new AppError(error.message, 500));
     }
 
-    function executeMainQuery(rotationID, finalCourseID, specialtyID, procedureID) {
+    async function executeMainQuery(rotationID, finalCourseID, specialtyID, procedureID) {
         let query = '';
         let values = [];
 
@@ -573,23 +556,25 @@ exports.searchSentProcedureFormsWithDocIDAccordingToApproveDate = (req, res, nex
 
         values.push(pageSize, offset);
 
-        conn.query(query, values, function (err, data, fields) {
-            if (err) return next(new AppError(err, 500));
-            res.status(200).json({
-                status: "success",
-                currentPage: page,
-                pageSize: pageSize,
-                length: data?.length,
-                data: data,
-            });
+        const connection = await conn.getConnection();
+        const [results] = await connection.execute(query, values);
+        connection.release();
+
+        res.status(200).json({
+            status: "success",
+            currentPage: page,
+            pageSize: pageSize,
+            length: results?.length,
+            data: results,
         });
+
     }
 
 };
 
 
 //list sent forms for student to show on student sent page with ability to filter by procedure name & an input
-exports.searchProcedureFormsForStudent = (req, res, next) => {
+exports.searchProcedureFormsForStudent = async (req, res, next) => {
     const page = parseInt(req.query.page) || 1; // Current page number
     const pageSize = parseInt(req.query.pageSize) || 10; // Number of items per page
     const offset = (page - 1) * pageSize;
@@ -603,8 +588,8 @@ exports.searchProcedureFormsForStudent = (req, res, next) => {
         if (!courseID) {
             // Use getCurrentCourse to get the courseID
             courseHelper.getCurrentCourse(studentID)
-                .then((finalCourseID) => {
-                    executeMainQuery(finalCourseID);
+                .then(async (finalCourseID) => {
+                    await executeMainQuery(finalCourseID);
                 })
                 .catch((error) => {
                     // Handle errors from getCurrentCourse
@@ -612,13 +597,13 @@ exports.searchProcedureFormsForStudent = (req, res, next) => {
                 });
         } else {
             // If courseID is provided in the query, proceed directly with the main query
-            executeMainQuery(courseID);
+            await executeMainQuery(courseID);
         }
     } catch (error) {
         return next(new AppError(error.message, 500));
     }
 
-    function executeMainQuery(finalCourseID) {
+    async function executeMainQuery(finalCourseID) {
         const query = `
         SELECT pr.*
         FROM procedurereports pr
@@ -643,25 +628,23 @@ exports.searchProcedureFormsForStudent = (req, res, next) => {
             offset
         ];
 
-        conn.query(
-            query,
-            values,
-            function (err, data, fields) {
-                if (err) return next(new AppError(err, 500));
-                res.status(200).json({
-                    status: "success",
-                    currentPage: page,
-                    pageSize: pageSize,
-                    length: data?.length,
-                    data: data,
-                });
-            }
-        );
+        const connection = await conn.getConnection();
+        const [results] = await connection.execute(query, values);
+        connection.release();
+
+        res.status(200).json({
+            status: "success",
+            currentPage: page,
+            pageSize: pageSize,
+            length: results?.length,
+            data: results,
+        });
+
     }
 };
 
 //list sent forms for student to show on student sent page with ability to filter by procedure name & an approvement & input
-exports.searchProcedureFormsForStudentByAcceptance = (req, res, next) => {
+exports.searchProcedureFormsForStudentByAcceptance = async (req, res, next) => {
     const input = req.params.searchInput === "|" ? "" : req.params.searchInput;
     const studentID = req.params.studentID;
     const isSent = req.params.isSent;
@@ -672,8 +655,8 @@ exports.searchProcedureFormsForStudentByAcceptance = (req, res, next) => {
         if (!courseID) {
             // Use getCurrentCourse to get the courseID
             courseHelper.getCurrentCourse(studentID)
-                .then((finalCourseID) => {
-                    executeMainQuery(finalCourseID);
+                .then(async (finalCourseID) => {
+                    await executeMainQuery(finalCourseID);
                 })
                 .catch((error) => {
                     // Handle errors from getCurrentCourse
@@ -681,13 +664,13 @@ exports.searchProcedureFormsForStudentByAcceptance = (req, res, next) => {
                 });
         } else {
             // If courseID is provided in the query, proceed directly with the main query
-            executeMainQuery(courseID);
+            await executeMainQuery(courseID);
         }
     } catch (error) {
         return next(new AppError(error.message, 500));
     }
 
-    function executeMainQuery(finalCourseID) {
+    async function executeMainQuery(finalCourseID) {
         const query = `
         SELECT pr.*
         FROM procedurereports pr
@@ -711,22 +694,21 @@ exports.searchProcedureFormsForStudentByAcceptance = (req, res, next) => {
             `%${input.toUpperCase()}%`
         ];
 
-        conn.query(
-            query, values,
-            function (err, data, fields) {
-                if (err) return next(new AppError(err, 500));
-                res.status(200).json({
-                    status: "success",
-                    length: data?.length,
-                    data: data,
-                });
-            }
-        );
+        const connection = await conn.getConnection();
+        const [results] = await connection.execute(query, values);
+        connection.release();
+
+        res.status(200).json({
+            status: "success",
+            length: results?.length,
+            data: results,
+        });
+
     }
 };
 
 //to delete deleted draft reports in local to remote deletion
-exports.deleteProcedureFormWithID = (req, res, next) => {
+exports.deleteProcedureFormWithID = async (req, res, next) => {
     const studentID = req.params.ID;
     const localStorageID = req.params.localStorageID;
 
@@ -736,35 +718,30 @@ exports.deleteProcedureFormWithID = (req, res, next) => {
     }
 
     try {
-        conn.query(
-            "DELETE FROM procedurereports WHERE studentID = ? && localStorageID = ?",
-            [studentID, localStorageID],
-            function (err, result) {
-                if (err) {
-                    console.error("Error deleting procedure form:", err);
-                    return next(new AppError("Internal server error", 500));
-                }
 
-                console.log("Delete result:", result);
+        const query = "DELETE FROM procedurereports WHERE studentID = ? && localStorageID = ?";
+        const values = [studentID, localStorageID];
 
-                // Check if any rows were affected to determine if a record was deleted
-                if (result.affectedRows === 0) {
-                    return next(new AppError("Procedure form not found", 404));
-                }
+        const connection = await conn.getConnection();
+        const [results] = await connection.execute(query, values);
+        connection.release();
 
-                res.status(200).json({
-                    status: "success",
-                    message: "Procedure form deleted!",
-                });
-            }
-        );
+        if (results.affectedRows === 0) {
+            return next(new AppError("Procedure form not found", 404));
+        }
+
+        res.status(200).json({
+            status: "success",
+            message: "Procedure form deleted!",
+        });
+
     } catch (error) {
         return next(new AppError(error.message, 500));
     }
 };
 
 //to see if there is a report in remote DB with a specified local storage ID
-exports.getIDofProcedureForm = (req, res, next) => {
+exports.getIDofProcedureForm = async (req, res, next) => {
     if (!req.params.studentID) {
         return next(new AppError("No procedure with this student ID found", 404));
     }
@@ -776,41 +753,39 @@ exports.getIDofProcedureForm = (req, res, next) => {
     const values = [req.params.studentID, req.params.localStorageID, currentYear, currentSeason];
 
     try {
+        const connection = await conn.getConnection();
+        const [results] = await connection.execute(query, values);
+        connection.release();
 
-        conn.query(
-            query,
-            values,
-            function (err, data, fields) {
-                if (err) return next(new AppError(err, 500));
-                res.status(200).json({
-                    status: "success",
-                    length: data?.length,
-                    data: data,
-                });
-            }
-        );
+        res.status(200).json({
+            status: "success",
+            length: results?.length,
+            data: results,
+        });
+
     } catch (error) {
         return next(new AppError(error.message, 500));
     }
 }
 
 
-exports.getLastLocalStorageID = (req, res, next) => { //returns specific patientreports with ID
+exports.getLastLocalStorageID = async (req, res, next) => { //returns specific patientreports with ID
     if (!req.params.studentID) {
         return next(new AppError("No patient with this ID found", 404));
     }
     try {
-        conn.query(
-            "select localStorageID from procedurereports where studentID =  ? order by localStorageID DESC  limit 1;",
-            [req.params.studentID],
-            function (err, data, fields) {
-                if (err) return next(new AppError(err, 500));
-                res.status(200).json({
-                    status: "success",
-                    data: data,
-                });
-            }
-        );
+        const query = "select localStorageID from procedurereports where studentID =  ? order by localStorageID DESC  limit 1;";
+        const values = [req.params.studentID];
+
+        const connection = await conn.getConnection();
+        const [results] = await connection.execute(query, values);
+        connection.release();
+
+        res.status(200).json({
+            status: "success",
+            data: results,
+        });
+
     } catch (error) {
         return next(new AppError(error.message, 500));
     }
@@ -824,23 +799,25 @@ exports.checkDraftIsSent = (req, res, next) => { //checks if the previously draf
     const localStorageID = req.params.localStorageID;
 
     try {
+        const query = `select isSent
+        from procedurereports
+        where studentID = ?
+          and localStorageID = ?
+          and courseID = ?;`;
+
         courseHelper.getCurrentCourse(studentID)
-            .then((finalCourseID) => {
-                conn.query(
-                    `select isSent
-                    from procedurereports
-                    where studentID = ?
-                      and localStorageID = ?
-                      and courseID = ?;`,
-                    [studentID, localStorageID, finalCourseID],
-                    function (err, data, fields) {
-                        if (err) return next(new AppError(err, 500));
-                        res.status(200).json({
-                            status: "success",
-                            data: data,
-                        });
-                    }
-                );
+            .then(async (finalCourseID) => {
+
+                const values = [studentID, localStorageID, finalCourseID];
+
+                const connection = await conn.getConnection();
+                const [results] = await connection.execute(query, values);
+                connection.release();
+
+                res.status(200).json({
+                    status: "success",
+                    data: results,
+                });
             })
             .catch((error) => {
                 // Handle errors from getCurrentCourse
@@ -861,7 +838,7 @@ exports.checkSaveEpoch = (req, res, next) => { //returns draft reports save epoc
 
     try {
         courseHelper.getCurrentCourse(studentID)
-            .then((finalCourseID) => {
+            .then(async (finalCourseID) => {
 
                 const query = `select saveEpoch
                     from procedurereports
@@ -870,17 +847,16 @@ exports.checkSaveEpoch = (req, res, next) => { //returns draft reports save epoc
                       and courseID = ?;`
 
                 const values = [studentID, localStorageID, finalCourseID];
-                conn.query(
-                    query,
-                    values,
-                    function (err, data, fields) {
-                        if (err) return next(new AppError(err, 500));
-                        res.status(200).json({
-                            status: "success",
-                            data: data,
-                        });
-                    }
-                );
+
+                const connection = await conn.getConnection();
+                const [results] = await connection.execute(query, values);
+                connection.release();
+
+                res.status(200).json({
+                    status: "success",
+                    data: results,
+                });
+
             })
             .catch((error) => {
                 // Handle errors from getCurrentCourse
@@ -901,7 +877,7 @@ exports.draftReportToUpdateLocal = (req, res, next) => { //returns draft report 
 
     try {
         courseHelper.getCurrentCourse(studentID)
-            .then((finalCourseID) => {
+            .then(async (finalCourseID) => {
 
                 const query = `select *
                     from procedurereports
@@ -911,17 +887,14 @@ exports.draftReportToUpdateLocal = (req, res, next) => { //returns draft report 
 
                 const values = [studentID, localStorageID, finalCourseID];
 
-                conn.query(
-                    query,
-                    values,
-                    function (err, data, fields) {
-                        if (err) return next(new AppError(err, 500));
-                        res.status(200).json({
-                            status: "success",
-                            data: data,
-                        });
-                    }
-                );
+                const connection = await conn.getConnection();
+                const [results] = await connection.execute(query, values);
+                connection.release();
+
+                res.status(200).json({
+                    status: "success",
+                    data: results,
+                });
             })
             .catch((error) => {
                 // Handle errors from getCurrentCourse
@@ -933,7 +906,7 @@ exports.draftReportToUpdateLocal = (req, res, next) => { //returns draft report 
 };
 
 //counts student's form count for specified course && approval status
-exports.getCountProcedureFormsForDashboardAccordingToApproval = (req, res, next) => {
+exports.getCountProcedureFormsForDashboardAccordingToApproval = async (req, res, next) => {
     const studentID = req.params.studentID;
     let courseID = parseInt(req.params.courseID) || null; // Default courseID
 
@@ -941,8 +914,8 @@ exports.getCountProcedureFormsForDashboardAccordingToApproval = (req, res, next)
         if (!courseID) {
             // Use getCurrentCourse to get the courseID
             courseHelper.getCurrentCourse(studentID)
-                .then((finalCourseID) => {
-                    executeMainQuery(finalCourseID);
+                .then(async (finalCourseID) => {
+                    await executeMainQuery(finalCourseID);
                 })
                 .catch((error) => {
                     // Handle errors from getCurrentCourse
@@ -950,13 +923,13 @@ exports.getCountProcedureFormsForDashboardAccordingToApproval = (req, res, next)
                 });
         } else {
             // If courseID is provided in the query, proceed directly with the main query
-            executeMainQuery(courseID);
+            await executeMainQuery(courseID);
         }
     } catch (error) {
         return next(new AppError(error.message, 500));
     }
 
-    function executeMainQuery(finalCourseID) {
+    async function executeMainQuery(finalCourseID) {
         const query = `
         SELECT COALESCE(COUNT(pa.ID), 0) AS count_value,
             appr.isApproved
@@ -981,22 +954,20 @@ exports.getCountProcedureFormsForDashboardAccordingToApproval = (req, res, next)
             currentSeason
         ];
 
-        conn.query(
-            query, values,
-            function (err, data, fields) {
-                if (err) return next(new AppError(err, 500));
-                res.status(200).json({
-                    status: "success",
-                    length: data?.length,
-                    data: data,
-                });
-            }
-        );
+        const connection = await conn.getConnection();
+        const [results] = await connection.execute(query, values);
+        connection.release();
+
+        res.status(200).json({
+            status: "success",
+            length: results?.length,
+            data: results,
+        });
     }
 };
 
 //for physician Student Progress Page counts student's form count for specified course, rotation && approval status
-exports.getDoctorCountProcedureFormsForDashboardAccordingToApproval = (req, res, next) => {
+exports.getDoctorCountProcedureFormsForDashboardAccordingToApproval = async (req, res, next) => {
     const studentID = req.params.studentID;
     const physicianID = req.params.physicianID;
     const courseID = parseInt(req.params.courseID);
@@ -1037,17 +1008,16 @@ exports.getDoctorCountProcedureFormsForDashboardAccordingToApproval = (req, res,
     ];
 
     try {
-        conn.query(
-            query, values,
-            function (err, data, fields) {
-                if (err) return next(new AppError(err, 500));
-                res.status(200).json({
-                    status: "success",
-                    length: data?.length,
-                    data: data,
-                });
-            }
-        );
+        const connection = await conn.getConnection();
+        const [results] = await connection.execute(query, values);
+        connection.release();
+
+        res.status(200).json({
+            status: "success",
+            length: results?.length,
+            data: results,
+        });
+
     } catch (error) {
         return next(new AppError(error.message, 500));
     }
@@ -1055,7 +1025,7 @@ exports.getDoctorCountProcedureFormsForDashboardAccordingToApproval = (req, res,
 };
 
 //for physician Student ttoal progress counts student's form count for specified course, rotation && approval status
-exports.getLinearTotalProgressBarData = (req, res, next) => {
+exports.getLinearTotalProgressBarData = async (req, res, next) => {
     const physicianID = req.params.physicianID;
     const courseID = parseInt(req.params.courseID);
     const rotationID = parseInt(req.params.rotationID);
@@ -1084,17 +1054,15 @@ exports.getLinearTotalProgressBarData = (req, res, next) => {
                 currentSeason,
             ];
 
-            conn.query(
-                query, values,
-                function (err, data, fields) {
-                    if (err) return next(new AppError(err, 500));
-                    res.status(200).json({
-                        status: "success",
-                        length: data?.length,
-                        data: data,
-                    });
-                }
-            );
+            const connection = await conn.getConnection();
+            const [results] = await connection.execute(query, values);
+            connection.release();
+
+            res.status(200).json({
+                status: "success",
+                length: results?.length,
+                data: results,
+            });
 
         } else { //return that rotation courses sum
 
@@ -1124,17 +1092,16 @@ exports.getLinearTotalProgressBarData = (req, res, next) => {
                 courseID
             ];
 
-            conn.query(
-                query, values,
-                function (err, data, fields) {
-                    if (err) return next(new AppError(err, 500));
-                    res.status(200).json({
-                        status: "success",
-                        length: data?.length,
-                        data: data,
-                    });
-                }
-            );
+            const connection = await conn.getConnection();
+            const [results] = await connection.execute(query, values);
+            connection.release();
+
+            res.status(200).json({
+                status: "success",
+                length: results?.length,
+                data: results,
+            });
+
         }
     } catch (error) {
         return next(new AppError(error.message, 500));

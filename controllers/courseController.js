@@ -5,50 +5,47 @@ const currentYear = config.app.year;
 const currentSeason = config.app.season;
 const currentDate = config.app.date;
 
-exports.getAllCourses = (req, res, next) => {
+exports.getAllCourses = async (req, res, next) => {
     try {
-        conn.query(
-            "SELECT * FROM courses order by code ASC",
-            function (err, data, fields) {
-                if (err) return next(new AppError(err, 500));
-                res.status(200).json({
-                    status: "success",
-                    length: data?.length,
-                    data: data,
-                });
-            }
-        );
+        const connection = await conn.getConnection();
+        const [results] = await connection.execute("SELECT * FROM courses ORDER BY code ASC");
+        connection.release();
+
+        res.status(200).json({
+            status: "success",
+            length: results.length,
+            data: results,
+        });
+
     } catch (error) {
         return next(new AppError(error.message, 500));
     }
 }
 
-exports.filterCourseByID = (req, res, next) => {
+exports.filterCourseByID = async (req, res, next) => {
 
     try {
         //check if the id is specified in the request parameter,
         if (!req.params.ID) {
             return next(new AppError("No course with this ID found", 404));
         }
-        conn.query(
-            "SELECT * FROM courses WHERE ID = ?",
-            [req.params.ID],
-            function (err, data, fields) {
-                if (err) return next(new AppError(err, 500));
-                res.status(200).json({
-                    status: "success",
-                    length: data?.length,
-                    data: data,
-                });
-            }
-        );
+
+        const connection = await conn.getConnection();
+        const [results] = await connection.execute("SELECT * FROM courses WHERE ID = ?", [req.params.ID]);
+        connection.release();
+
+        res.status(200).json({
+            status: "success",
+            length: results.length,
+            data: results,
+        });
     } catch (error) {
         return next(new AppError(error.message, 500));
     }
 };
 
 //öğrencinin şuanki kurs ismini verir
-exports.getCourseName = (req, res, next) => {
+exports.getCourseName = async (req, res, next) => {
 
     try {
         if (!req.params.stdID) {
@@ -70,25 +67,25 @@ exports.getCourseName = (req, res, next) => {
             AND ? BETWEEN i.start AND i.end;
                 `;
 
-        conn.query(
-            queryString,
-            [req.params.stdID, currentYear, currentSeason, currentDate],
-            function (err, data, fields) {
-                if (err) return next(new AppError(err, 500));
-                res.status(200).json({
-                    status: "success",
-                    length: data?.length,
-                    data: data,
-                });
-            }
-        );
+        const values = [req.params.stdID, currentYear, currentSeason, currentDate];
+
+        const connection = await conn.getConnection();
+        const [results] = await connection.execute(queryString, values);
+        connection.release();
+
+        res.status(200).json({
+            status: "success",
+            length: results.length,
+            data: results,
+        });
+
     } catch (error) {
         return next(new AppError(error.message, 500));
     }
 };
 
 //öğrencinin bağlı olduğu rotasyonların ders, sınıf ve grup bilgilerini getirir
-exports.listStudentSemesterInfos = (req, res, next) => { //add, order by courses end date
+exports.listStudentSemesterInfos = async (req, res, next) => { //add, order by courses end date
     try {
         const query = `
             SELECT DISTINCT c.*,ro.group_id,ro.class
@@ -99,25 +96,26 @@ exports.listStudentSemesterInfos = (req, res, next) => { //add, order by courses
                     LEFT JOIN courses c ON rc.course_id = c.ID
             WHERE e.std_id = ?
             order by i.start;`;
-        conn.query(
-            query,
-            [req.params.stdID],
-            function (err, data, fields) {
-                if (err) return next(new AppError(err, 500));
-                res.status(200).json({
-                    status: "success",
-                    length: data?.length,
-                    data: data,
-                });
-            }
-        );
+
+        const values = [req.params.stdID];
+
+        const connection = await conn.getConnection();
+        const [results] = await connection.execute(query, values);
+        connection.release();
+
+        res.status(200).json({
+            status: "success",
+            length: results.length,
+            data: results,
+        });
+
     } catch (error) {
         return next(new AppError(error.message, 500));
     }
 }
 
 //doktorun bağlı olduğu rotasyonların şimdiki ve ve geçmişteki kurs bilgileri gösterir
-exports.listPhysicianSemesterCourses = (req, res, next) => { //add, order by courses end date
+exports.listPhysicianSemesterCourses = async (req, res, next) => { //add, order by courses end date
     try {
         const query = `
             SELECT DISTINCT rc.course_id as ID,c.code,c.description
@@ -131,25 +129,25 @@ exports.listPhysicianSemesterCourses = (req, res, next) => { //add, order by cou
             
             and i.season = ?
             order by i.start;`;
-        conn.query(
-            query,
-            [req.params.physicianID, currentYear, currentSeason],
-            function (err, data, fields) {
-                if (err) return next(new AppError(err, 500));
-                res.status(200).json({
-                    status: "success",
-                    length: data?.length,
-                    data: data,
-                });
-            }
-        );
+
+        const values = [req.params.physicianID, currentYear, currentSeason];
+
+        const connection = await conn.getConnection();
+        const [results] = await connection.execute(query, values);
+        connection.release();
+
+        res.status(200).json({
+            status: "success",
+            length: results.length,
+            data: results,
+        });
     } catch (error) {
         return next(new AppError(error.message, 500));
     }
 }
 
 //doktorun bağlı olduğu rotasyonların şimdiki ve ve geçmişteki kurs bilgileri gösterir
-exports.listPhysicianSemesterCoursesWithRotation = (req, res, next) => { //add, order by courses end date
+exports.listPhysicianSemesterCoursesWithRotation = async (req, res, next) => { //add, order by courses end date
     try {
         const query = `
             SELECT DISTINCT rc.rotation_id,rc.course_id as ID,c.code,c.description
@@ -163,18 +161,18 @@ exports.listPhysicianSemesterCoursesWithRotation = (req, res, next) => { //add, 
             
             and i.season = ?
             order by rc.rotation_id;`;
-        conn.query(
-            query,
-            [req.params.physicianID, currentYear, currentSeason],
-            function (err, data, fields) {
-                if (err) return next(new AppError(err, 500));
-                res.status(200).json({
-                    status: "success",
-                    length: data?.length,
-                    data: data,
-                });
-            }
-        );
+
+        const values = [req.params.physicianID, currentYear, currentSeason];
+
+        const connection = await conn.getConnection();
+        const [results] = await connection.execute(query, values);
+        connection.release();
+
+        res.status(200).json({
+            status: "success",
+            length: results.length,
+            data: results,
+        });
     } catch (error) {
         return next(new AppError(error.message, 500));
     }
@@ -219,20 +217,16 @@ exports.requiredReportCountsOfCourse = async (req, res, next) => {
             values = [currentDate, currentYear, currentSeason, stdID];
         }
 
-        conn.query(
-            query,
-            values,
-            function (err, data, fields) {
-                if (err) return next(new AppError(err, 500));
+        const connection = await conn.getConnection();
+        const [results] = await connection.execute(query, values);
+        connection.release();
 
-                console.log(data);
-                res.status(200).json({
-                    status: "success",
-                    length: data?.length,
-                    data: data,
-                });
-            }
-        );
+        res.status(200).json({
+            status: "success",
+            length: results.length,
+            data: results,
+        });
+
     } catch (error) {
         return next(new AppError(error.message, 500));
     }
@@ -279,18 +273,17 @@ exports.getPeriodData = async (req, res, next) => {
             AND e.std_id = ?;
           `;
 
-        conn.query(
-            query,
-            [currentDate, currentYear, currentSeason, stdID],
-            function (err, data, fields) {
-                if (err) return next(new AppError(err, 500));
-                res.status(200).json({
-                    status: "success",
-                    length: data?.length,
-                    data: data,
-                });
-            }
-        );
+        const values = [currentDate, currentYear, currentSeason, stdID];
+        const connection = await conn.getConnection();
+        const [results] = await connection.execute(query, values);
+        connection.release();
+
+        res.status(200).json({
+            status: "success",
+            length: results.length,
+            data: results,
+        });
+
     } catch (error) {
         return next(new AppError(error.message, 500));
     }

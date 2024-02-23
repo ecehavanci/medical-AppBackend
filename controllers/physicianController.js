@@ -3,25 +3,27 @@ const conn = require("../services/db");
 const courseHelper = require("../controllers/currentCourse");
 const generateAccessToken = require('../utils/generateToken');
 
-exports.getAllPhysicians = (req, res, next) => {//SELECT * FROM attendingphysicians where is_active = 1 order by ID ASC;
+exports.getAllPhysicians = async (req, res, next) => {//SELECT * FROM attendingphysicians where is_active = 1 order by ID ASC;
     try {
-        conn.query(
-            "SELECT ID, name, surname,speciality_ID FROM attendingphysicians order by ID ASC",
-            function (err, data, fields) {
-                if (err) return next(new AppError(err, 500));
-                res.status(200).json({
-                    status: "success",
-                    length: data?.length,
-                    data: data,
-                });
-            }
-        );
+
+        const query = "SELECT ID, name, surname,speciality_ID FROM attendingphysicians order by ID ASC";
+
+        const connection = await conn.getConnection();
+        const [results] = await connection.execute(query);
+        connection.release();
+
+        res.status(200).json({
+            status: "success",
+            length: results?.length,
+            data: results,
+        });
+
     } catch (error) {
         return next(new AppError(error.message, 500));
     }
 }
 
-exports.insertPhysician = (req, res, next) => {
+exports.insertPhysician = async (req, res, next) => {
     try {
         if (!req.body) {
             return next(new AppError("No form data found", 400));
@@ -31,28 +33,33 @@ exports.insertPhysician = (req, res, next) => {
             username: req.body.name + " " + req.body.surname
         }); //temp data
 
+        const query = "INSERT INTO attendingphysicians (ID, name, surname, institute_ID, courseID, speciality_ID, phone, is_active,token) VALUES(?)";
         const values = [req.body.ID, req.body.name, req.body.surname,
         req.body.institute_ID, req.body.courseID, req.body.speciality_ID, req.body.phone, req.body.is_active, token];
 
-        conn.query(
-            "INSERT INTO attendingphysicians (ID, name, surname, institute_ID, courseID, speciality_ID, phone, is_active,token) VALUES(?)",
-            [values],
-            function (err, data, fields) {
-                if (err) {
-                    return next(new AppError(err, 500));
-                }
-                res.status(201).json({
-                    status: "success",
-                    message: "New attending physician added!",
-                });
-            }
-        );
+
+        const connection = await conn.getConnection();
+        const [results] = await connection.execute(query, values);
+        connection.release();
+
+        if (results.insertId) {
+            res.status(201).json({
+                status: "success",
+                message: "New attending physician added!",
+            });
+        } else {
+            res.status(500).json({
+                status: "error",
+                message: "Failed to add new physician",
+            });
+        }
+
     } catch (error) {
         return next(new AppError(error.message, 500));
     }
 };
 
-exports.filterPhysician = (req, res, next) => {
+exports.filterPhysician = async (req, res, next) => {
 
     try {
         if (!req.body) {
@@ -69,26 +76,24 @@ exports.filterPhysician = (req, res, next) => {
         }
 
         const query = "SELECT * FROM attendingphysicians WHERE ID = ? OR phone = ? OR name = ? OR surname = ?";
+        const values = [id, phone, name, surname];
 
-        const params = [id, phone, name, surname];
+        const connection = await conn.getConnection();
+        const [results] = await connection.execute(query, values);
+        connection.release();
 
-        conn.query(query, params, (err, data, fields) => {
-            if (err) {
-                return next(new AppError(err.message, 500));
-            }
-
-            res.status(200).json({
-                status: "success",
-                length: data.length,
-                data: data,
-            });
+        res.status(200).json({
+            status: "success",
+            length: results.length,
+            data: results,
         });
+
     } catch (error) {
         return next(new AppError(error.message, 500));
     }
 };
 
-exports.getFullPhysicianInfoByID = (req, res, next) => {
+exports.getFullPhysicianInfoByID = async (req, res, next) => {
     try {
         if (!req.body) {
             return next(new AppError("No form data found", 400));
@@ -129,38 +134,35 @@ exports.getFullPhysicianInfoByID = (req, res, next) => {
             GROUP BY
                 s.ID, c.code, c.description;    
                 `;
-        const params = [id];
+        const values = [id];
 
-        conn.query(query, params, (err, data, fields) => {
-            if (err) {
-                return next(new AppError(err.message, 500));
-            }
+        const connection = await conn.getConnection();
+        const [results] = await connection.execute(query, values);
+        connection.release();
 
-            // If the result is empty, return an error or handle it appropriately
-            if (data.length === 0) {
-                return next(new AppError("Physician not found.", 404));
-            }
+        if (data.length === 0) {
+            return next(new AppError("Physician not found.", 404));
+        }
 
-            const physicianProfile = {
-                fullName: data[0].name + " " + data[0].surname,
-                phoneNumber: data[0].phoneNumber,
-                courses: data[0].courses.split(','), // Convert courses string to array
-                courseSpecialties: JSON.parse(data[0].courseSpecialties),
-            };
+        const physicianProfile = {
+            fullName: results[0].name + " " + results[0].surname,
+            phoneNumber: results[0].phoneNumber,
+            courses: results[0].courses.split(','), // Convert courses string to array
+            courseSpecialties: JSON.parse(results[0].courseSpecialties),
+        };
 
-            console.log();
-            res.status(200).json({
-                status: "success",
-                data: physicianProfile,
-            });
+        res.status(200).json({
+            status: "success",
+            data: physicianProfile,
         });
+
     } catch (error) {
         return next(new AppError(error.message, 500));
     }
 };
 
 
-exports.updateAttendingPhysician = (req, res, next) => {
+exports.updateAttendingPhysician = async (req, res, next) => {
     try {
         const { id } = req.params; // Get the ID of the attending physician to update
 
@@ -191,27 +193,25 @@ exports.updateAttendingPhysician = (req, res, next) => {
 
         // Construct the SQL query to update the attending physician
         const query = "UPDATE attendingphysicians SET ? WHERE ID = ?";
+        const values = [updateFields, id];
 
-        // Execute the query with the update fields and ID
-        conn.query(query, [updateFields, id], (err, data, fields) => {
-            if (err) {
-                return next(new AppError(err, 500));
-            }
+        const connection = await conn.getConnection();
+        const [results] = await connection.execute(query, values);
+        connection.release();
 
-            // Check if any rows were actually updated
-            if (data.affectedRows > 0) {
-                res.status(200).json({
-                    status: "success",
-                    message: "Attending physician updated successfully",
-                });
-            } else {
-                // Handle the case where no rows were updated (e.g., the ID doesn't exist)
-                res.status(404).json({
-                    status: "error",
-                    message: "Attending physician not found or no changes made",
-                });
-            }
-        });
+        if (results.affectedRows > 0) {
+            res.status(200).json({
+                status: "success",
+                message: "Attending physician updated successfully",
+            });
+        } else {
+            // Handle the case where no rows were updated (e.g., the ID doesn't exist)
+            res.status(404).json({
+                status: "error",
+                message: "Attending physician not found or no changes made",
+            });
+        }
+
     } catch (error) {
         return next(new AppError(error.message, 500));
     }
@@ -219,26 +219,37 @@ exports.updateAttendingPhysician = (req, res, next) => {
 
 
 
-exports.deletePhysicianByID = (req, res, next) => {
+exports.deletePhysicianByID = async (req, res, next) => {
     try {
         if (!req.params.ID) {
             return next(new AppError("No physician with this ID found", 404));
         }
-        conn.query(
-            "DELETE FROM attendingphysicians WHERE ID=?",
-            [req.params.ID],
-            function (err, fields) {
-                if (err) return next(new AppError(err, 500));
-                res.status(201).json({
-                    status: "success",
-                    message: "physician deleted!",
-                });
-            }
-        );
+
+        const query = "DELETE FROM attendingphysicians WHERE ID=?";
+        const values = [req.params.ID];
+
+        const connection = await conn.getConnection();
+        const [results] = await connection.execute(query, values);
+        connection.release();
+
+        // Check if any rows were affected
+        if (results.affectedRows > 0) {
+            res.status(201).json({
+                status: "success",
+                message: "Physician deleted!",
+            });
+        } else {
+            res.status(404).json({
+                status: "error",
+                message: "Physician not found or no changes made",
+            });
+        }
+
     } catch (error) {
         return next(new AppError(error.message, 500));
     }
 }
+
 
 exports.listCoursePhysicians = (req, res, next) => {
     try {
@@ -246,19 +257,21 @@ exports.listCoursePhysicians = (req, res, next) => {
             return next(new AppError("No physician with this ID found", 404));
         }
 
-        courseHelper.getCurrentCourse(req.params.stdID).then((finalCourseID) => {
-            conn.query(
-                "select ID,name,surname,speciality_ID from attendingphysicians where courseID = ? and is_active = 1;",
-                [finalCourseID],
-                function (err, data, fields) {
-                    if (err) return next(new AppError(err, 500));
-                    res.status(200).json({
-                        status: "success",
-                        length: data?.length,
-                        data: data,
-                    });
-                }
-            );
+        courseHelper.getCurrentCourse(req.params.stdID).then(async (finalCourseID) => {
+            const query = "select ID,name,surname,speciality_ID from attendingphysicians where courseID = ? and is_active = 1;";
+            const values = [finalCourseID];
+
+
+            const connection = await conn.getConnection();
+            const [results] = await connection.execute(query, values);
+            connection.release();
+
+            res.status(200).json({
+                status: "success",
+                length: results?.length,
+                data: results,
+            });
+
         }).catch((error) => {
             return next(new AppError(error, 500));
         });
@@ -267,41 +280,42 @@ exports.listCoursePhysicians = (req, res, next) => {
     }
 }
 
-exports.listCountsReportsPhysicians = (req, res, next) => {
+exports.listCountsReportsPhysicians = (req, res, next) => { ////???????????????
     try {
         if (!req.params.ID) {
             return next(new AppError("No physician with this ID found", 404));
         }
 
-        const queryAccepted = `
-            select count(pr.ID) AS counted from patientreports pr
-            where pr.attendingPhysicianID = ?
-            && isSent = 1
-            && pr.isApproved = ?
-            `;
-        const valueAccepted = [ID, 1];
+        // const queryAccepted = `
+        //     select count(pr.ID) AS counted from patientreports pr
+        //     where pr.attendingPhysicianID = ?
+        //     && isSent = 1
+        //     && pr.isApproved = ?
+        //     `;
+        // const valueAccepted = [ID, 1];
 
-        const queryRejected = `
-            select count(pr.ID) AS counted from patientreports pr
-            where pr.attendingPhysicianID = ?
-            && isSent = 1
-            && pr.isApproved = ?
-            `;
-        const valueRejected = [ID, 2];
+        // const queryRejected = `
+        //     select count(pr.ID) AS counted from patientreports pr
+        //     where pr.attendingPhysicianID = ?
+        //     && isSent = 1
+        //     && pr.isApproved = ?
+        //     `;
+        // const valueRejected = [ID, 2];
 
-        courseHelper.getCurrentCourse(req.params.stdID).then((finalCourseID) => {
-            conn.query(
-                "select ID,name,surname,speciality_ID as specialtyID from attendingphysicians where courseID = ? and is_active = 1;",
-                [finalCourseID],
-                function (err, data, fields) {
-                    if (err) return next(new AppError(err, 500));
-                    res.status(200).json({
-                        status: "success",
-                        length: data?.length,
-                        data: data,
-                    });
-                }
-            );
+        courseHelper.getCurrentCourse(req.params.stdID).then(async (finalCourseID) => {
+            const query = "select ID,name,surname,speciality_ID as specialtyID from attendingphysicians where courseID = ? and is_active = 1;";
+            const values = [finalCourseID];
+
+            const connection = await conn.getConnection();
+            const [results] = await connection.execute(query, values);
+            connection.release();
+
+            res.status(200).json({
+                status: "success",
+                length: results?.length,
+                data: results,
+            });
+
         }).catch((error) => {
             return next(new AppError(error, 500));
         });
@@ -310,7 +324,7 @@ exports.listCountsReportsPhysicians = (req, res, next) => {
     }
 }
 
-exports.matchPhysiciandStdWithRotation = (req, res, next) => {
+exports.matchPhysiciandStdWithRotation = async (req, res, next) => {
     try {
         if (!req.params.physicianId) {
             return next(new AppError("No physician with this ID found", 404));
@@ -334,17 +348,16 @@ exports.matchPhysiciandStdWithRotation = (req, res, next) => {
 
         const values = [physicianId, physicianId, rotationNumber, courseId];
 
-        conn.query(
-            query, values,
-            function (err, data, fields) {
-                if (err) return next(new AppError(err, 500));
-                res.status(200).json({
-                    status: "success",
-                    length: data?.length,
-                    data: data,
-                });
-            }
-        );
+        const connection = await conn.getConnection();
+        const [results] = await connection.execute(query, values);
+        connection.release();
+
+        res.status(200).json({
+            status: "success",
+            length: results?.length,
+            data: results,
+        });
+
     } catch (error) {
         return next(new AppError(error.message, 500));
     }
