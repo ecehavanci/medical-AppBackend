@@ -137,10 +137,10 @@ exports.updateProcedureForm = async (req, res, next) => { //!!!!!!!!!!!!!!!!!!!!
     values.push(parseInt(req.params.ID));
 
     try {
-        if (req.body.isSent === 1) {
-            await logController.updateProcedureFormLog(selectClauses, values);
+        // if (req.body.isSent === 1) {
+        //     await logController.updateProcedureFormLog(selectClauses, values);
 
-        }
+        // }
 
         const connection = await conn.getConnection();
         const [results] = await connection.execute(query, values);

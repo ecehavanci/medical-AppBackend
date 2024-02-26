@@ -198,11 +198,11 @@ exports.updatePatientForm = async (req, res, next) => { ////////////!!!!!!!!!!!!
     console.log(...values);
 
     try {
-        if (req.body.isSent === 1) {
-            const res3 = await logController.updatePatientFormLog(selectClauses, values);
-            // console.log("res3");
-            console.log(res3);
-        }
+        // if (req.body.isSent === 1) {
+        //     const res3 = await logController.updatePatientFormLog(selectClauses, values);
+        //     // console.log("res3");
+        //     console.log(res3);
+        // }
 
         const connection = await conn.getConnection();
         const [results] = await connection.execute(query, values);
@@ -782,7 +782,7 @@ exports.deletePatientFormWithID = async (req, res, next) => { //find the form by
             message: "Patient form deleted!",
         });
 
-    } catch (error) {
+    } catch (error) {""
         return next(new AppError(error.message, 500));
     }
 
@@ -801,7 +801,7 @@ const checkAndInsertTierData = ( ///????????????????
             // find the most similar tier description to a given input string by calculating the Levenshtein 
             //distance-based similarity percentage and filtering for tiers. The closest match is returned as a result.
             const similarProcedureQuery = `
-            SELECT description,
+            SELECT description,"
             ((1 - levenshtein(?, description, 1) / GREATEST(CHAR_LENGTH(?), CHAR_LENGTH(description))) * 100) AS similarity
             FROM differentialdiagnoses
             HAVING similarity < 20
