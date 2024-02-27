@@ -20,9 +20,9 @@ exports.login = async (req, res, next) => {
     if (!req.body) {
         return next(new AppError("No login data found", 404));
     }
+    const connection = await conn.getConnection();
 
     try {
-        const connection = await conn.getConnection();
 
         if (userType == 0) { //if the user is student
 
