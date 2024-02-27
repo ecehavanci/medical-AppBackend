@@ -84,7 +84,7 @@ exports.insertProcedureForm = (req, res, next) => {
                         inserted = await checkAndUpdateProcedure(req.body.procedureID, req.body.procedureText.toLowerCase().trim(), data.insertId, res, next);
                     }
 
-                    const primaryID = data.insertId;
+                    const primaryID = results.insertId;
 
                     res.status(201).json({
                         status: "success",
