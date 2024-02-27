@@ -56,6 +56,12 @@ exports.insertPatientForm = (req, res, next) => {
                     currentSeason
                 ];
 
+                for (let i = 0; i < values.length; i++) {
+                    if (values[i] === undefined) {
+                        values[i] = null;
+                    }
+                }
+                
                 console.log(req.body);
 
                 const query = "INSERT INTO patientreports (studentID," +
