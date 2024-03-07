@@ -1,4 +1,4 @@
-const AppError = require("../utils/appError");
+const AppError = require("../utils/AppError");
 const conn = require("../services/db");
 
 exports.getAllHospitals = async (req, res, next) => {

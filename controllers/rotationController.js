@@ -1,4 +1,4 @@
-const AppError = require("../utils/appError");
+const AppError = require("../utils/AppError");
 const conn = require("../services/db");
 
 exports.updateStdRotation = async (req, res, next) => {

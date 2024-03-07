@@ -1,4 +1,4 @@
-const AppError = require("../utils/appError");
+const AppError = require("../utils/AppError");
 const conn = require("../services/db");
 var https = require('follow-redirects').https;
 const axios = require('axios');

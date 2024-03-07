@@ -1,5 +1,5 @@
 const express = require("express");
-const AppError = require("../utils/appError");
+const AppError = require("../utils/AppError");
 const conn = require("../services/db");
 const config = require("../config");
 const currentYear = config['app']["year"];

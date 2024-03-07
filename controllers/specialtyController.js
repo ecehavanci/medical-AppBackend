@@ -1,4 +1,4 @@
-const AppError = require("../utils/appError");
+const AppError = require("../utils/AppError.js");
 const conn = require("../services/db");
 const config = require("../config.js");
 const currentYear = config.app.year;
