@@ -12,15 +12,16 @@ const web = require("./web");
 const procedureRoutes = require("./procedure");
 const logRouter = require("./log");
 const hospitalRouter = require("./hospital");
+const hostwebsiteRouter = require("./hostwebsiteRouter");
 const verifyToken = require('../utils/verifyToken');
 const router = express();
 
 
 router.use((req, res, next) => {
     // Middleware to exclude certain routes from token verification
-    if (req.path === '/root/login' || req.path === '/' ||
-        (req.path === "/student/all" && req.method === 'POST') ||
-        (req.path === "/attendingphysician/all" && req.method === 'POST')) {
+    if (req.path === '/root/login' || req.path === '/' || req.path === '/hostwebsite/submit-form' ||
+        (req.path === "/student/all" && req.method === 'GET') ||
+        (req.path === "/attendingphysician/all" && req.method === 'GET')) {
         next(); // Pass through without token verification
     } else {
         verifyToken(req, res, next); // Verify token for other routes
@@ -39,6 +40,7 @@ router.use("/rotations", rotations);
 router.use("/procedure", procedureRoutes);
 router.use("/logs", logRouter);
 router.use("/hospitals", hospitalRouter);
+router.use("/hostwebsite", hostwebsiteRouter);
 
 module.exports = router;
 
