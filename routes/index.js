@@ -19,29 +19,28 @@ const router = express();
 
 router.use((req, res, next) => {
     // Middleware to exclude certain routes from token verification
-    if (req.path === '/root/login' || req.path === '/' || req.path === '/hostwebsite/submit-form' ||
-        (req.path === "/student/all" && req.method === 'GET') ||
-        (req.path === "/attendingphysician/all" && req.method === 'GET')) {
+    if (req.path === '/api/root/login' || req.path === '/api/' || req.path === '/api/hostwebsite/submit-form' ||
+        (req.path === "/api/student/all" && req.method === 'GET') ||
+        (req.path === "/api/attendingphysician/all" && req.method === 'GET')) {
         next(); // Pass through without token verification
     } else {
         verifyToken(req, res, next); // Verify token for other routes
     }
 });
 
-router.use("/root", rootRoutes);
-router.use("/student", stdRoutes);
-router.use("/patientForm", patientFormRoutes); //
-router.use("/procedureForm", procedureFormRoutes); //
-router.use("/attendingphysician", physicianRoutes);
-router.use("/differentialdiagnoses", differentialdiagnoses);
-router.use("/specialties", specialties);
-router.use("/courses", course);
-router.use("/rotations", rotations);
-router.use("/procedure", procedureRoutes);
-router.use("/logs", logRouter);
-router.use("/hospitals", hospitalRouter);
-router.use("/hostwebsite", hostwebsiteRouter);
-
+router.use("/api/root", rootRoutes);
+router.use("/api/student", stdRoutes);
+router.use("/api/patientForm", patientFormRoutes);
+router.use("/api/procedureForm", procedureFormRoutes);
+router.use("/api/attendingphysician", physicianRoutes);
+router.use("/api/differentialdiagnoses", differentialdiagnoses);
+router.use("/api/specialties", specialties);
+router.use("/api/courses", course);
+router.use("/api/rotations", rotations);
+router.use("/api/procedure", procedureRoutes);
+router.use("/api/logs", logRouter);
+router.use("/api/hospitals", hospitalRouter);
+router.use("/api/hostwebsite", hostwebsiteRouter);
 module.exports = router;
 
 /*Get Route: to get all the todos in our database.
