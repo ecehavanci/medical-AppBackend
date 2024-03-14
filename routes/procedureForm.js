@@ -19,6 +19,10 @@ router
     .get(procedureFormController.getDoctorCountProcedureFormsForDashboardAccordingToApproval);
 
 router
+    .route("/get/doctor/count/dashboard/approved/:studentID/:rotationID/:courseID")
+    .get(procedureFormController.getDoctorGeneralReportCourseData);
+
+router
     .route("/get/all/:studentID/:isSent")
     .get(procedureFormController.list5ProcedureFormsWithStudentID);
 

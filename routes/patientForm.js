@@ -15,6 +15,10 @@ router
 router
     .route("/get/doctor/count/dashboard/approved/:studentID/:rotationID/:courseID/:physicianID")
     .get(patientFormController.getDoctorCountPatientFormsForDashboardAccordingToApproval);
+    
+router
+    .route("/get/doctor/count/dashboard/approved/:studentID/:rotationID/:courseID")
+    .get(patientFormController.getDoctorGeneralReportCourseData);
 
 router
     .route("/get/doctor/count/linear-chart/:rotationID/:courseID/:physicianID")

@@ -1078,6 +1078,63 @@ exports.getDoctorCountPatientFormsForDashboardAccordingToApproval = async (req, 
     }
 };
 
+//for physician Student General Reports Page counts student's form count for specified course, rotation && approval status
+exports.getDoctorGeneralReportCourseData = async (req, res, next) => {
+    const studentID = req.params.studentID;
+    const physicianID = req.params.physicianID;
+    const courseID = parseInt(req.params.courseID);
+    const rotationID = parseInt(req.params.rotationID);
+
+
+    if (!studentID || !courseID || !rotationID) {
+        return next(new AppError("Lack of needed parameters", 404));
+    }
+
+    const query = `
+    SELECT COALESCE(COUNT(pro.ID), 0) AS count_value,
+        appr.isApproved
+    FROM (SELECT 0 AS isApproved
+        UNION
+        SELECT 1
+        UNION
+        SELECT 2) appr
+            LEFT JOIN (SELECT *
+                        FROM patientreports
+                        WHERE studentID = ?
+                        AND isSent = 1
+                        AND year = ?
+                        AND season = ?
+                        AND courseID = ?) pro ON appr.isApproved = pro.isApproved
+            LEFT JOIN enrollment e ON e.std_id = pro.studentID AND e.rotation_id = ?
+            LEFT JOIN rotation_courses rc ON rc.course_id = pro.courseID AND rc.rotation_id = e.rotation_id
+
+    GROUP BY appr.isApproved;`;
+
+    const values = [
+        studentID,
+        currentYear,
+        currentSeason,
+        courseID,
+        rotationID,
+    ];
+
+    try {
+
+        const connection = await conn.getConnection();
+        const [results] = await connection.execute(query, values);
+        connection.release();
+
+        res.status(200).json({
+            status: "success",
+            length: results?.length,
+            data: results,
+        });
+
+    } catch (error) {
+        return next(new AppError(error.message, 500));
+    }
+};
+
 //for physician Student ttoal progress counts student's form count for specified course, rotation && approval status
 exports.getLinearTotalProgressBarData = async (req, res, next) => {
     const physicianID = req.params.physicianID;
