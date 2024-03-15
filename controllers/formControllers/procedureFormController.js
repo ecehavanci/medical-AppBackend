@@ -81,7 +81,7 @@ exports.insertProcedureForm = (req, res, next) => {
                     var inserted = null;
 
                     if (req.body.isSent === 1) {
-                        inserted = await checkAndUpdateProcedure(req.body.procedureID, req.body.procedureText.toLowerCase().trim(), data.insertId, res, next);
+                        inserted = await checkAndUpdateProcedure(req.body.procedureID, req.body.procedureText.toLowerCase().trim(), results.insertId, res, next);
                     }
 
                     const primaryID = results.insertId;
