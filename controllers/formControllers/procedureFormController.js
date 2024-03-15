@@ -235,7 +235,7 @@ const checkAndUpdateProcedure = ( //??????????????
                 const [results2] = await connection.execute(query2, values2);
                 connection.release();
 
-                console.log("Inserted Data2222:", data);
+                console.log("Inserted Data2222:", results2);
                 resolve(results2.insertId);
             } else {
                 resolve(null); // Indicate that no insertion was needed
