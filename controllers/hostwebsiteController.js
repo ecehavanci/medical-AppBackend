@@ -43,26 +43,43 @@ exports.submitForm = async (req, res, next) => {
 
         // Send email
         let sent = false;
+        // transporter.sendMail(mailOptions, (error, info) => {
+        //     if (error) {
+        //         console.error('Error occurred:', error.message);
+        //     } else {
+        //         console.log('Email sent:', info.response);
+        //         sent = true;
+        //     }
+        // });
+
+        // if (results.insertId && sent) {
+        //     res.status(201).json({
+        //         status: "success",
+        //         message: "New attending contact form added!",
+        //     });
+        // } else {
+        //     res.status(500).json({
+        //         status: "error",
+        //         message: "Failed to add new contact form!",
+        //     });
+        // }
+
         transporter.sendMail(mailOptions, (error, info) => {
             if (error) {
                 console.error('Error occurred:', error.message);
-            } else {
-                console.log('Email sent:', info.response);
-                sent = true;
+                return res.status(500).json({
+                    status: "error",
+                    message: "Failed to send email!",
+                    error: error.message
+                });
             }
-        });
-
-        if (results.insertId && sent) {
+            
+            console.log('Email sent:', info.response);
             res.status(201).json({
                 status: "success",
                 message: "New attending contact form added!",
             });
-        } else {
-            res.status(500).json({
-                status: "error",
-                message: "Failed to add new contact form!",
-            });
-        }
+        });
 
     } catch (error) {
         return next(new AppError(error.message, error.statusCode || 500));
