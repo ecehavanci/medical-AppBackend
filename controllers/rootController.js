@@ -24,6 +24,8 @@ exports.login = async (req, res, next) => {
 
     try {
 
+        //////////////////// 1- check if user is in my db
+
         if (userType == 0) { //if the user is student
 
             const query = `select * from student s where s.eko_id = ? && s.is_active = 1;`;
@@ -73,6 +75,8 @@ exports.login = async (req, res, next) => {
         });
 
         const st = response.data;
+
+        ////////////////// 2- check if user is enrolled in ieu 
 
         if (st.code == 200 && st.token) {
             if (userType == 0) { //if user is a student and required info is handled
