@@ -174,6 +174,7 @@ exports.login = async (req, res, next) => {
                 'username': eko_id,
                 'password': password
             });
+            console.log(formData);
 
             let options = {
                 method: "POST",
@@ -184,11 +185,11 @@ exports.login = async (req, res, next) => {
             };
 
             await axios(options).then(async (response) => {
-                console.log("response");
-                console.log(response);
+                // console.log("response");
+                // console.log(response);
                 const oasisSt = response;
-                console.log("oasisSt");
-                console.log(oasisSt);
+                // console.log("oasisSt");
+                // console.log(oasisSt);
 
                 if (oasisSt.status == 200) {
 
