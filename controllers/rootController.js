@@ -189,8 +189,9 @@ exports.login = async (req, res, next) => {
 
             await axios(options).then(async (response) => {
 
-                const {fullName2,email2,ekoid2,ID2,status2} = response;
+                const { fullName2, email2, ekoid2, ID2, status2 } = response;
 
+                console.log(status2);
                 if (status2 == 200) {
 
                     const physicianID = ID2;//tc kimlik no
