@@ -189,7 +189,7 @@ exports.login = async (req, res, next) => {
 
             await axios(options).then(async (response) => {
 
-                const { fullName2, email2, ekoid2, ID2, status2 } = response;
+                const { fullName2, email2, ekoid2, ID2, status2 } = response.data;
 
                 console.log(status2);
                 console.log(response);
