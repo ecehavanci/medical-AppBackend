@@ -167,26 +167,22 @@ exports.login = async (req, res, next) => {
 
             ////////////////// 2- check if PHYSICIAN is enrolled in OASIS 
         } else if (st.code != 200 && userType == 1) {
-            let formData = new FormData();
-            formData.append('app_token', 'APPMEDSIS');
-            formData.append('user_type', userType);
-            formData.append('username', eko_id);
-            formData.append('password', password);
 
-            let config = {
-                method: 'post',
-                maxBodyLength: Infinity,
-                url: 'https://oasis.izmirekonomi.edu.tr/oasis_api/general/general/login-medsis',
-                headers: {
-                    ...formData.getHeaders()
-                },
-                data: formData
+            const formData = axios.toFormData({
+                'app_token': 'APPMEDSIS',
+                'user_type': userType,
+                'username': eko_id,
+                'password': password
+            });
+
+            let options = {
+                method: "POST",
+                headers: { "content-type": "application/x-www-form-urlencoded" },
+                data: formData,
+                url
             };
 
-            console.log("config");
-            console.log(config);
-
-            axios.request(config).then(async (response) => {
+            axios(options).then(async (response) => {
                 console.log("response");
                 console.log(response);
                 const oasisSt = response;
@@ -220,7 +216,7 @@ exports.login = async (req, res, next) => {
                         return res.status(200).json(returnedData);
                     }
                 }
-                else{
+                else {
                     return res.status(400).json({ message: "User could not be find in the system." });
                 }
 
