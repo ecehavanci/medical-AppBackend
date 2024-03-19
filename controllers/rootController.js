@@ -185,13 +185,14 @@ exports.login = async (req, res, next) => {
                 url: "https://oasis.izmirekonomi.edu.tr/oasis_api/general/general/login-medsis",
                 httpsAgent: new https.Agent({ rejectUnauthorized: false })
             };
-            console.log(options);
+            // console.log(options);
 
             await axios(options).then(async (response) => {
 
                 const { fullName2, email2, ekoid2, ID2, status2 } = response;
 
                 console.log(status2);
+                console.log(response);
                 if (status2 == 200) {
 
                     const physicianID = ID2;//tc kimlik no
