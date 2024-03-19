@@ -180,7 +180,7 @@ exports.login = async (req, res, next) => {
 
             let options = {
                 method: "POST",
-                headers: { "content-type": "multipart/form-data" },
+                headers: { ...formData.getHeaders() },
                 data: formData,
                 url: "https://oasis.izmirekonomi.edu.tr/oasis_api/general/general/login-medsis",
                 httpsAgent: new https.Agent({ rejectUnauthorized: false })
