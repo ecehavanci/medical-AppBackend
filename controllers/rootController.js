@@ -8,7 +8,7 @@ const dater = require(".././config");
 const currentDate = dater.app.date;
 const generateAccessToken = require('../utils/generateToken');
 const crypto = require('crypto');
-// const FormData = require('form-data');
+const FormData = require('form-data');
 
 exports.login = async (req, res, next) => {
     const { eko_id, password, userType } = req.body;
@@ -172,13 +172,11 @@ exports.login = async (req, res, next) => {
             const md5Pswd = crypto.createHash('md5').update(password).digest('hex');
             console.log(md5Pswd);
 
-            const formData = axios.toFormData({
-                'app_token': 'APPMEDSIS',
-                'user_type': userType,
-                'username': eko_id,
-                'password': md5Pswd
-            });
-            console.log(formData);
+            let formData = new FormData();
+            formData.append('app_token', 'APPMEDSIS');
+            formData.append('user_type', userType);
+            formData.append('username', eko_id);
+            formData.append('password', md5Pswd);
 
             let options = {
                 method: "POST",
