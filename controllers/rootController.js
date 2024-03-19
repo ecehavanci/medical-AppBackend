@@ -184,6 +184,8 @@ exports.login = async (req, res, next) => {
             };
 
             axios.request(config).then(async (response) => {
+                console.log("response");
+                console.log(response);
                 const oasisSt = response.data;
                 console.log("oasisSt");
                 console.log(oasisSt);
