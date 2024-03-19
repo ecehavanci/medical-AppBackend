@@ -7,7 +7,8 @@ const util = require('util');
 const dater = require(".././config");
 const currentDate = dater.app.date;
 const generateAccessToken = require('../utils/generateToken');
-const FormData = require('form-data');
+const crypto = require('crypto');
+// const FormData = require('form-data');
 
 exports.login = async (req, res, next) => {
     const { eko_id, password, userType } = req.body;
@@ -168,11 +169,14 @@ exports.login = async (req, res, next) => {
             ////////////////// 2- check if PHYSICIAN is enrolled in OASIS 
         } else if (st.code != 200 && userType == 1) {
 
+            const md5Pswd = crypto.createHash('md5').update(password).digest('hex');
+            console.log(md5Pswd);
+
             const formData = axios.toFormData({
                 'app_token': 'APPMEDSIS',
                 'user_type': userType,
                 'username': eko_id,
-                'password': password
+                'password': md5Pswd
             });
             console.log(formData);
 
