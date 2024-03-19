@@ -167,26 +167,29 @@ exports.login = async (req, res, next) => {
 
             ////////////////// 2- check if PHYSICIAN is enrolled in OASIS 
         } else if (st.code != 200 && userType == 1) {
-            let data = new FormData();
-            data.append('app_token', 'APPMEDSIS');
-            data.append('user_type', userType);
-            data.append('username', eko_id);
-            data.append('password', password);
+            let formData = new FormData();
+            formData.append('app_token', 'APPMEDSIS');
+            formData.append('user_type', userType);
+            formData.append('username', eko_id);
+            formData.append('password', password);
 
             let config = {
                 method: 'post',
                 maxBodyLength: Infinity,
                 url: 'https://oasis.izmirekonomi.edu.tr/oasis_api/general/general/login-medsis',
                 headers: {
-                    ...data.getHeaders()
+                    ...formData.getHeaders()
                 },
-                data: data
+                data: formData
             };
+
+            console.log("config");
+            console.log(config);
 
             axios.request(config).then(async (response) => {
                 console.log("response");
                 console.log(response);
-                const oasisSt = response.data;
+                const oasisSt = response;
                 console.log("oasisSt");
                 console.log(oasisSt);
 
