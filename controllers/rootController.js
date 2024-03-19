@@ -179,7 +179,7 @@ exports.login = async (req, res, next) => {
                 method: "POST",
                 headers: { "content-type": "application/x-www-form-urlencoded" },
                 data: formData,
-                url
+                url:"https://oasis.izmirekonomi.edu.tr/oasis_api/general/general/login-medsis"
             };
 
             await axios(options).then(async (response) => {
