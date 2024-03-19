@@ -34,8 +34,8 @@ exports.login = async (req, res, next) => {
 
             if (results && results.length > 0) {
                 user = results[0];
-                console.log("first pass std: ");
-                console.log(user);
+                // console.log("first pass std: ");
+                // console.log(user);
             } else {
                 return res.status(404).json({ message: "Student permissions are not setted." });
 
@@ -50,8 +50,8 @@ exports.login = async (req, res, next) => {
 
             if (results && results.length > 0) {
                 user = results[0];
-                console.log("first pass phy: ");
-                console.log(user);
+                // console.log("first pass phy: ");
+                // console.log(user);
             } else {
                 return res.status(404).json({ message: "Physician permissions are not setted." });
 
@@ -224,7 +224,7 @@ exports.login = async (req, res, next) => {
                 }
 
             }).catch((error) => {
-                console.log(error);
+                // console.log(error);
 
                 return res.status(400).json({ message: "User could not be authenticatedddddddddd." });
             });
