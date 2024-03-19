@@ -179,7 +179,7 @@ exports.login = async (req, res, next) => {
                 method: "POST",
                 headers: { "content-type": "application/x-www-form-urlencoded" },
                 data: formData,
-                url:"https://oasis.izmirekonomi.edu.tr/oasis_api/general/general/login-medsis"
+                url: "https://oasis.izmirekonomi.edu.tr/oasis_api/general/general/login-medsis"
             };
 
             await axios(options).then(async (response) => {
@@ -221,6 +221,8 @@ exports.login = async (req, res, next) => {
                 }
 
             }).catch((error) => {
+                console.log(error);
+
                 return res.status(400).json({ message: "User could not be authenticatedddddddddd." });
             });
 
@@ -230,7 +232,6 @@ exports.login = async (req, res, next) => {
 
         connection.release();
     } catch (error) {
-        console.log(error);
         connection.release();
         return res.status(500).json({ message: "Wrong username or password." });
     }
