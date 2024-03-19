@@ -4,11 +4,10 @@ var https = require('follow-redirects').https;
 const axios = require('axios');
 const dotenv = require('dotenv').config();
 const util = require('util');
-// const promisify = util.promisify;
-// const queryAsync = promisify(conn.query).bind(conn);
 const dater = require(".././config");
 const currentDate = dater.app.date;
 const generateAccessToken = require('../utils/generateToken');
+const FormData = require('form-data');
 
 exports.login = async (req, res, next) => {
     const { eko_id, password, userType } = req.body;
@@ -58,8 +57,7 @@ exports.login = async (req, res, next) => {
         }
 
         const config = {
-            siteURL: "https://emax.ieu.edu.tr/auth/default/index",
-            userAgent: "Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US) AppleWebKit/534.16 (KHTML, like Gecko) Chrome/10.0.648.204 Safari/534.16"
+            siteURL: "https://oasis.izmirekonomi.edu.tr/oasis_api/general/general/login-medsis",
         };
 
         const encodedPassword = encodeURIComponent(password);
@@ -76,7 +74,7 @@ exports.login = async (req, res, next) => {
 
         const st = response.data;
 
-        ////////////////// 2- check if user is enrolled in ieu 
+        ////////////////// 2- check if user is enrolled in LDAP 
 
         if (st.code == 200 && st.token) {
             if (userType == 0) { //if user is a student and required info is handled
@@ -164,6 +162,62 @@ exports.login = async (req, res, next) => {
                     return res.status(200).json(returnedData);
                 }
             }
+
+            ////////////////// 2- check if PHYSICIAN is enrolled in OASIS 
+        } else if (st.code != 200 && userType == 1) {
+            let data = new FormData();
+            data.append('app_token', 'APPMEDSIS');
+            data.append('user_type', userType);
+            data.append('username', eko_id);
+            data.append('password', password);
+
+            let config = {
+                method: 'post',
+                maxBodyLength: Infinity,
+                url: 'https://oasis.izmirekonomi.edu.tr/oasis_api/general/general/login-medsis',
+                headers: {
+                    ...data.getHeaders()
+                },
+                data: data
+            };
+
+            axios.request(config).then(async (response) => {
+                const oasisSt = response.data;
+
+                if (oasisSt.status == 200) {
+
+                    const physicianID = oasisSt["ID"];//tc kimlik no
+
+                    //generate a new token to user
+                    const { token, expirationDate } = generateAccessToken({
+                        username: physicianID.toString()
+                    });
+
+                    const query = `UPDATE attendingphysicians SET token = ? WHERE ID = ?;`;
+                    const value = [token, physicianID];
+                    const [tokenInsertion] = await connection.execute(query, value);
+
+                    if (tokenInsertion && tokenInsertion.affectedRows > 0) {
+
+                        const returnedData = {
+                            fullName: oasisSt.fullName, //username 
+                            email: oasisSt.email, //mail
+                            ekoid: oasisSt.ekoid, //ekoid
+                            ID: physicianID, //physician ID
+                            token: token, //token
+                            expirationDate: expirationDate, //token
+                        };
+
+                        return res.status(200).json(returnedData);
+                    }
+                }
+                else{
+                    return res.status(400).json({ message: "User could not be find in the system." });
+                }
+
+            }).catch((error) => {
+                return res.status(400).json({ message: "User could not be authenticated." });
+            });
 
         } else {
             return res.status(400).json({ message: "User could not be authenticated." });
