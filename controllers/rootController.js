@@ -230,6 +230,7 @@ exports.login = async (req, res, next) => {
 
         connection.release();
     } catch (error) {
+        console.log(error);
         connection.release();
         return res.status(500).json({ message: "Wrong username or password." });
     }
