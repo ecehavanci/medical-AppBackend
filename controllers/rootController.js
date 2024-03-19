@@ -188,8 +188,8 @@ exports.login = async (req, res, next) => {
                 // console.log("response");
                 // console.log(response);
                 const oasisSt = response;
-                // console.log("oasisSt");
-                // console.log(oasisSt);
+                console.log("oasisSt");
+                console.log(oasisSt);
 
                 if (oasisSt.status == 200) {
 
