@@ -188,44 +188,39 @@ exports.login = async (req, res, next) => {
             console.log(options);
 
             await axios(options).then(async (response) => {
-                console.log(response);
-                // // console.log("response");
-                // // console.log(response);
-                // const oasisSt = response;
-                // // console.log("oasisSt");
-                // console.log(oasisSt.status);
-                // console.log(formData);
 
-                // if (oasisSt.status == 200) {
+                const {fullName2,email2,ekoid2,ID2,status2} = response;
 
-                //     const physicianID = oasisSt["ID"];//tc kimlik no
+                if (status2 == 200) {
 
-                //     //generate a new token to user
-                //     const { token, expirationDate } = generateAccessToken({
-                //         username: physicianID.toString()
-                //     });
+                    const physicianID = ID2;//tc kimlik no
 
-                //     const query = `UPDATE attendingphysicians SET token = ? WHERE ID = ?;`;
-                //     const value = [token, physicianID];
-                //     const [tokenInsertion] = await connection.execute(query, value);
+                    //generate a new token to user
+                    const { token, expirationDate } = generateAccessToken({
+                        username: ID2.toString()
+                    });
 
-                //     if (tokenInsertion && tokenInsertion.affectedRows > 0) {
+                    const query = `UPDATE attendingphysicians SET token = ? WHERE ID = ?;`;
+                    const value = [token, physicianID];
+                    const [tokenInsertion] = await connection.execute(query, value);
 
-                //         const returnedData = {
-                //             fullName: oasisSt.fullName, //username 
-                //             email: oasisSt.email, //mail
-                //             ekoid: oasisSt.ekoid, //ekoid
-                //             ID: physicianID, //physician ID
-                //             token: token, //token
-                //             expirationDate: expirationDate, //token
-                //         };
+                    if (tokenInsertion && tokenInsertion.affectedRows > 0) {
 
-                //         return res.status(200).json(returnedData);
-                //     }
-                // }
-                // else {
-                //     return res.status(400).json({ message: "User could not be find in the system." });
-                // }
+                        const returnedData = {
+                            fullName: fullName2, //username 
+                            email: email2, //mail
+                            ekoid: ekoid2, //ekoid
+                            ID: physicianID, //physician ID
+                            token: token, //token
+                            expirationDate: expirationDate, //token
+                        };
+
+                        return res.status(200).json(returnedData);
+                    }
+                }
+                else {
+                    return res.status(400).json({ message: "User could not be find in the system." });
+                }
 
             }).catch((error) => {
                 // console.log(error);
