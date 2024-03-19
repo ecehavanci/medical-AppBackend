@@ -180,11 +180,12 @@ exports.login = async (req, res, next) => {
 
             let options = {
                 method: "POST",
-                headers: { ...formData.getHeaders() },
+                headers: { "Content-Type": "multipart/form-data" },
                 data: formData,
                 url: "https://oasis.izmirekonomi.edu.tr/oasis_api/general/general/login-medsis",
                 httpsAgent: new https.Agent({ rejectUnauthorized: false })
             };
+            console.log(options);
 
             await axios(options).then(async (response) => {
                 console.log(response);
