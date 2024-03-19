@@ -34,6 +34,7 @@ exports.login = async (req, res, next) => {
 
             if (results && results.length > 0) {
                 user = results[0];
+                console.log("first pass std: ");
                 console.log(user);
             } else {
                 return res.status(404).json({ message: "Student permissions are not setted." });
@@ -49,6 +50,7 @@ exports.login = async (req, res, next) => {
 
             if (results && results.length > 0) {
                 user = results[0];
+                console.log("first pass phy: ");
                 console.log(user);
             } else {
                 return res.status(404).json({ message: "Physician permissions are not setted." });
@@ -183,6 +185,7 @@ exports.login = async (req, res, next) => {
 
             axios.request(config).then(async (response) => {
                 const oasisSt = response.data;
+                console.log("oasisSt");
                 console.log(oasisSt);
 
                 if (oasisSt.status == 200) {
@@ -217,11 +220,11 @@ exports.login = async (req, res, next) => {
                 }
 
             }).catch((error) => {
-                return res.status(400).json({ message: "User could not be authenticated." });
+                return res.status(400).json({ message: "User could not be authenticatedddddddddd." });
             });
 
         } else {
-            return res.status(400).json({ message: "User could not be authenticated." });
+            return res.status(400).json({ message: "User could not be authenticated11111111." });
         }
 
         connection.release();
