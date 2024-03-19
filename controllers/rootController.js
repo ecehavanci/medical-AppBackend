@@ -182,7 +182,7 @@ exports.login = async (req, res, next) => {
                 url
             };
 
-            axios(options).then(async (response) => {
+            await axios(options).then(async (response) => {
                 console.log("response");
                 console.log(response);
                 const oasisSt = response;
