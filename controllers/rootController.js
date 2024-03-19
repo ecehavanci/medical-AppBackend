@@ -183,6 +183,7 @@ exports.login = async (req, res, next) => {
 
             axios.request(config).then(async (response) => {
                 const oasisSt = response.data;
+                console.log(oasisSt);
 
                 if (oasisSt.status == 200) {
 
