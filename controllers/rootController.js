@@ -60,7 +60,7 @@ exports.login = async (req, res, next) => {
         }
 
         const config = {
-            siteURL: "https://oasis.izmirekonomi.edu.tr/oasis_api/general/general/login-medsis",
+            siteURL: "https://emax.ieu.edu.tr/auth/default/index",
             userAgent: "Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US) AppleWebKit/534.16 (KHTML, like Gecko) Chrome/10.0.648.204 Safari/534.16"
         };
 
