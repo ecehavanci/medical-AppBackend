@@ -35,7 +35,7 @@ exports.login = async (req, res, next) => {
             if (results && results.length > 0) {
                 user = results[0];
                 // console.log("first pass std: ");
-                console.log(user);
+                // console.log(user);
             } else {
                 return res.status(404).json({ message: "Student permissions are not setted." });
 
@@ -104,17 +104,15 @@ exports.login = async (req, res, next) => {
 
             await axios(options).then(async (response) => {
 
-                const { fullName2, email2, ekoid2, ID2, status2 } = response.data;
+                const { fullName, email, ekoid, ID, status } = response.data;
 
-                console.log(response.data);
+                if (status == 200) {
 
-                if (status2 == 200) {
-
-                    const physicianID = ID2;//tc kimlik no
+                    const physicianID = ID;//tc kimlik no
 
                     //generate a new token to user
                     const { token, expirationDate } = generateAccessToken({
-                        username: ID2.toString()
+                        username: ID.toString()
                     });
 
                     const query = `UPDATE attendingphysicians SET token = ? WHERE ID = ?;`;
@@ -124,9 +122,9 @@ exports.login = async (req, res, next) => {
                     if (tokenInsertion && tokenInsertion.affectedRows > 0) {
 
                         const returnedData = {
-                            fullName: fullName2, //username 
-                            email: email2, //mail
-                            ekoid: ekoid2, //ekoid
+                            fullName: fullName, //username 
+                            email: email, //mail
+                            ekoid: ekoid, //ekoid
                             ID: physicianID, //physician ID
                             token: token, //token
                             expirationDate: expirationDate, //token
