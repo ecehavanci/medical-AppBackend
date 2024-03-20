@@ -78,6 +78,9 @@ exports.login = async (req, res, next) => {
 
         const st = response.data;
 
+        console.log("st");
+        console.log(st);
+
         if (st.code != 200 && userType == 1) {
 
             const md5Pswd = crypto.createHash('md5').update(password).digest('hex');
