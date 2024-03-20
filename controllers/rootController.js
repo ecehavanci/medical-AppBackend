@@ -170,7 +170,7 @@ exports.login = async (req, res, next) => {
         } else if (st.code != 200 && userType == 1) {
 
             const md5Pswd = crypto.createHash('md5').update(password).digest('hex');
-            console.log(md5Pswd);
+            // console.log(md5Pswd);
 
             let formData = new FormData();
             formData.append('app_token', 'APPMEDSIS');
@@ -191,8 +191,9 @@ exports.login = async (req, res, next) => {
 
                 const { fullName2, email2, ekoid2, ID2, status2 } = response.data;
 
+                console.log(response.data);
                 console.log(status2);
-                console.log(response);
+                // console.log(response);
                 if (status2 == 200) {
 
                     const physicianID = ID2;//tc kimlik no
@@ -221,7 +222,7 @@ exports.login = async (req, res, next) => {
                     }
                 }
                 else {
-                    return res.status(400).json({ message: "User could not be find in the system." });
+                    return res.status(400).json({ message: "User could not be found in the system." });
                 }
 
             }).catch((error) => {
