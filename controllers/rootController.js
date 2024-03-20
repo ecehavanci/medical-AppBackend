@@ -77,8 +77,68 @@ exports.login = async (req, res, next) => {
 
         const st = response.data;
 
-        ////////////////// 2- check if user is enrolled in LDAP 
+        if (st.code != 200 && userType == 1) {
 
+            const md5Pswd = crypto.createHash('md5').update(password).digest('hex');
+
+            let formData = new FormData();
+            formData.append('app_token', 'APPMEDSIS');
+            formData.append('user_type', userType);
+            formData.append('username', eko_id);
+            formData.append('password', md5Pswd);
+
+            let options = {
+                method: "POST",
+                headers: { "Content-Type": "multipart/form-data" },
+                data: formData,
+                url: "https://oasis.izmirekonomi.edu.tr/oasis_api/general/general/login-medsis",
+                httpsAgent: new https.Agent({ rejectUnauthorized: false })
+            };
+
+            await axios(options).then(async (response) => {
+
+                const { fullName2, email2, ekoid2, ID2, status2 } = response.data;
+
+                console.log(response.data);
+                
+                if (status2 == 200) {
+
+                    const physicianID = ID2;//tc kimlik no
+
+                    //generate a new token to user
+                    const { token, expirationDate } = generateAccessToken({
+                        username: ID2.toString()
+                    });
+
+                    const query = `UPDATE attendingphysicians SET token = ? WHERE ID = ?;`;
+                    const value = [token, physicianID];
+                    const [tokenInsertion] = await connection.execute(query, value);
+
+                    if (tokenInsertion && tokenInsertion.affectedRows > 0) {
+
+                        const returnedData = {
+                            fullName: fullName2, //username 
+                            email: email2, //mail
+                            ekoid: ekoid2, //ekoid
+                            ID: physicianID, //physician ID
+                            token: token, //token
+                            expirationDate: expirationDate, //token
+                        };
+
+                        return res.status(200).json(returnedData);
+                    }
+                }
+                else {
+                    return res.status(400).json({ message: "User could not be found in the system." });
+                }
+
+            }).catch((error) => {
+                return res.status(400).json({ message: "User could not be authenticatedddddddddd." });
+            });
+
+        }
+
+        ////////////////// 2- check if user is enrolled in LDAP 
         if (st.code == 200 && st.token) {
             if (userType == 0) { //if user is a student and required info is handled
                 const value = [user["ID"], currentDate]; //actually the mail of the std
@@ -165,74 +225,7 @@ exports.login = async (req, res, next) => {
                     return res.status(200).json(returnedData);
                 }
             }
-
             ////////////////// 2- check if PHYSICIAN is enrolled in OASIS 
-        } else if (st.code != 200 && userType == 1) {
-
-            const md5Pswd = crypto.createHash('md5').update(password).digest('hex');
-            // console.log(md5Pswd);
-
-            let formData = new FormData();
-            formData.append('app_token', 'APPMEDSIS');
-            formData.append('user_type', userType);
-            formData.append('username', eko_id);
-            formData.append('password', md5Pswd);
-
-            let options = {
-                method: "POST",
-                headers: { "Content-Type": "multipart/form-data" },
-                data: formData,
-                url: "https://oasis.izmirekonomi.edu.tr/oasis_api/general/general/login-medsis",
-                httpsAgent: new https.Agent({ rejectUnauthorized: false })
-            };
-            // console.log(options);
-
-            await axios(options).then(async (response) => {
-
-                const { fullName2, email2, ekoid2, ID2, status2 } = response.data;
-
-                console.log(response.data);
-                console.log(status2);
-                // console.log(response);
-                if (status2 == 200) {
-
-                    const physicianID = ID2;//tc kimlik no
-
-                    //generate a new token to user
-                    const { token, expirationDate } = generateAccessToken({
-                        username: ID2.toString()
-                    });
-
-                    const query = `UPDATE attendingphysicians SET token = ? WHERE ID = ?;`;
-                    const value = [token, physicianID];
-                    const [tokenInsertion] = await connection.execute(query, value);
-
-                    if (tokenInsertion && tokenInsertion.affectedRows > 0) {
-
-                        const returnedData = {
-                            fullName: fullName2, //username 
-                            email: email2, //mail
-                            ekoid: ekoid2, //ekoid
-                            ID: physicianID, //physician ID
-                            token: token, //token
-                            expirationDate: expirationDate, //token
-                        };
-
-                        return res.status(200).json(returnedData);
-                    }
-                }
-                else {
-                    return res.status(400).json({ message: "User could not be found in the system." });
-                }
-
-            }).catch((error) => {
-                // console.log(error);
-
-                return res.status(400).json({ message: "User could not be authenticatedddddddddd." });
-            });
-
-        } else {
-            return res.status(400).json({ message: "User could not be authenticated11111111." });
         }
 
         connection.release();
