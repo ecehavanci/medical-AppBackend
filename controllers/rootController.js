@@ -66,6 +66,7 @@ exports.login = async (req, res, next) => {
         const encodedPassword = encodeURIComponent(password);
         const postFields = `username=${eko_id}&password=${encodedPassword}&user_type=${userType}&ip=0&app_token=APPMEDSIS`;
 
+        let st;
         const response = await axios.post(config.siteURL, postFields, {
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
@@ -73,27 +74,15 @@ exports.login = async (req, res, next) => {
                 'Referer': config.siteURL
             },
             httpsAgent: new https.Agent({ rejectUnauthorized: false })
+        }).then(async (response) => {
+            st = response.data;
+        }).catch((error) => {
+
+            st = {
+                status: error.response.status,
+                code: 0,
+            };
         });
-
-        const st = response.data;
-
-        if (st.status == 400 && st.code == 0) {
-            // Handle the scenario where it's not an error but a specific response
-            // For example, you might log this, or handle it differently based on your application's logic
-            console.log("Response indicates a special case, not an error.");
-        } else {
-            // Proceed with your error handling as before
-            if ((st.status == 400 || st.code == 0) && userType == 1) {
-                // Rest of your error handling logic for physicians
-            } else if (st.code == 200 && st.token) {
-                // Rest of your logic for successful responses
-            } else {
-                // Handle other cases
-            }
-        }
-
-        console.log("st");
-        console.log(st.code);
 
         if ((st.status == 400 || st.code == 0) && userType == 1) {
 
