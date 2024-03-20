@@ -36,7 +36,7 @@ exports.login = async (req, res, next) => {
             if (results && results.length > 0) {
                 user = results[0];
                 // console.log("first pass std: ");
-                // console.log(user);
+                console.log(user);
             } else {
                 return res.status(404).json({ message: "Student permissions are not setted." });
 
@@ -61,6 +61,7 @@ exports.login = async (req, res, next) => {
 
         const config = {
             siteURL: "https://oasis.izmirekonomi.edu.tr/oasis_api/general/general/login-medsis",
+            userAgent: "Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US) AppleWebKit/534.16 (KHTML, like Gecko) Chrome/10.0.648.204 Safari/534.16"
         };
 
         const encodedPassword = encodeURIComponent(password);
@@ -99,8 +100,8 @@ exports.login = async (req, res, next) => {
 
                 const { fullName2, email2, ekoid2, ID2, status2 } = response.data;
 
-                console.log(response.data);
-                
+                // console.log(response.data);
+
                 if (status2 == 200) {
 
                     const physicianID = ID2;//tc kimlik no
@@ -136,10 +137,7 @@ exports.login = async (req, res, next) => {
                 return res.status(400).json({ message: "User could not be authenticatedddddddddd." });
             });
 
-        }
-
-        ////////////////// 2- check if user is enrolled in LDAP 
-        if (st.code == 200 && st.token) {
+        } else if (st.code == 200 && st.token) {
             if (userType == 0) { //if user is a student and required info is handled
                 const value = [user["ID"], currentDate]; //actually the mail of the std
 
@@ -226,10 +224,13 @@ exports.login = async (req, res, next) => {
                 }
             }
             ////////////////// 2- check if PHYSICIAN is enrolled in OASIS 
+        }else{
+            return res.status(200).json({ message: "No user data found." });
         }
 
         connection.release();
     } catch (error) {
+        // console.log(error);
         connection.release();
         return res.status(500).json({ message: "Wrong username or password." });
     }
