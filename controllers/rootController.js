@@ -25,7 +25,6 @@ exports.login = async (req, res, next) => {
     try {
 
         //////////////////// 1- check if user is in my db
-
         if (userType == 0) { //if the user is student
 
             const query = `select * from student s where s.eko_id = ? && s.is_active = 1;`;
@@ -79,9 +78,9 @@ exports.login = async (req, res, next) => {
         const st = response.data;
 
         console.log("st");
-        console.log(st);
+        console.log(st.code);
 
-        if (st.code != 200 && userType == 1) {
+        if ((st.status == 400 || st.code == 0) && userType == 1) {
 
             const md5Pswd = crypto.createHash('md5').update(password).digest('hex');
 
@@ -227,15 +226,38 @@ exports.login = async (req, res, next) => {
                 }
             }
             ////////////////// 2- check if PHYSICIAN is enrolled in OASIS 
-        }else{
+        } else {
             return res.status(200).json({ message: "No user data found." });
         }
 
         connection.release();
     } catch (error) {
-        // console.log(error);
+        // Handle any errors that occur during the request
+        if (error.response) {
+            // The request was made and the server responded with a status code
+            console.error('Server responded with status:', error.response.status);
+            console.error('Response data:', error.response.data);
+
+            // Check if the error code is 439
+            if (error.response.status === 439) {
+                console.error('Handling error code 439...');
+                // Handle error code 439 here
+            }
+        } else if (error.request) {
+            // The request was made but no response was received
+            console.error('No response received from server:', error.request);
+        } else {
+            // Something else went wrong
+            console.error('Error during request:', error.message);
+        }
+
+        // Check for TLS certificate validation error
+        if (error.message && error.message.includes('ERR_TLS_CERT_ALTNAME_INVALID')) {
+            console.error('TLS certificate validation error:', error.message);
+            // Handle TLS certificate validation error here
+        }
         connection.release();
-        return res.status(500).json({ message: "Wrong username or password." });
+        return res.status(500).json({ message: "Wrong username or password1." });
     }
 
 }
