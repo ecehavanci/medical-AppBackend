@@ -100,7 +100,7 @@ exports.login = async (req, res, next) => {
 
                 const { fullName2, email2, ekoid2, ID2, status2 } = response.data;
 
-                // console.log(response.data);
+                console.log(response.data);
 
                 if (status2 == 200) {
 
